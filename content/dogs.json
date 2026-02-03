@@ -1,0 +1,84 @@
+{
+    "items": [
+        {
+            "name": "ボク",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "9歳",
+            "image": "assets/里親募集中動物/犬/boku.jpg",
+            "description": "とても人が大好きで、甘えん坊な性格です。毎日の散歩が楽しみで、他の犬とも仲良くできます。"
+        },
+        {
+            "name": "ぼー",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "2歳",
+            "image": "assets/里親募集中動物/犬/bou.jpg",
+            "description": "元気いっぱいで遊び盛りの男の子です。少し怖がりな面もありますが、慣れると懐いてくれます。"
+        },
+        {
+            "name": "エット",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "推定9歳",
+            "image": "assets/里親募集中動物/犬/etto.jpg",
+            "description": "落ち着いた性格の女の子。静かな環境でゆっくり過ごすのが大好きです。"
+        },
+        {
+            "name": "風",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "3歳",
+            "image": "assets/里親募集中動物/犬/fuu.jpg",
+            "description": "走るのが大好きな活発な子です。ドッグランなどで思い切り遊ばせてあげてください。"
+        },
+        {
+            "name": "ヒン",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "2歳",
+            "image": "assets/里親募集中動物/犬/hin.jpg",
+            "description": "人懐っこく、誰にでも尻尾を振って喜びます。お座りやお代わりも練習中です。"
+        },
+        {
+            "name": "イチコ",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "3歳",
+            "image": "assets/里親募集中動物/犬/ichiko.jpg",
+            "description": "少しシャイですが、信頼した人にはとことん甘えるタイプです。"
+        },
+        {
+            "name": "カイ",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "15歳",
+            "image": "assets/里親募集中動物/犬/kai.jpg",
+            "description": "ベテランの風格漂うのんびり屋さん。日向ぼっこが日課です。"
+        },
+        {
+            "name": "かわちゃん",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/犬/kawa.JPG",
+            "description": "クリクリした目がチャームポイント。お散歩がとても上手です。"
+        },
+        {
+            "name": "シロー",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "3歳",
+            "image": "assets/里親募集中動物/犬/shiro-.jpg",
+            "description": "真っ白な毛並みが自慢。とても賢く、指示をよく聞きます。"
+        },
+        {
+            "name": "秋真",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "7歳",
+            "image": "assets/里親募集中動物/犬/shuuwa.jpg",
+            "description": "優しい目をした穏やかな男の子。子供たちとも仲良くできます。"
+        }
+    ]
+}

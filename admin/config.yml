@@ -1,0 +1,108 @@
+backend:
+  name: github
+  repo: yonnana-tokushima/yonnana-official # Replace with your GitHub username and repository name
+  branch: main
+  base_url: https://your-site.vercel.app # Recommended setting for OAuth
+  auth_endpoint: /api/auth
+
+media_folder: "assets/uploads"
+public_folder: "assets/uploads"
+
+collections:
+  - name: "data"
+    label: "サイトデータ更新"
+    files:
+      - name: "news_list"
+        label: "最新情報・イベント"
+        file: "content/news.json"
+        fields:
+          - name: "items"
+            label: "記事一覧"
+            widget: "list"
+            fields:
+              - { label: "日付", name: "date", widget: "date" }
+              - { label: "タイトル", name: "title", widget: "string" }
+              - { label: "カテゴリー", name: "category", widget: "select", options: ["HRR", "イベント", "お知らせ", "その他"] }
+              - { label: "詳細URL（任意）", name: "url", widget: "string", required: false }
+
+      - name: "dog_list"
+        label: "里親募集：犬"
+        file: "content/dogs.json"
+        fields:
+          - name: "items"
+            label: "ワンちゃん一覧"
+            widget: "list"
+            fields:
+              - { label: "名前", name: "name", widget: "string" }
+              - { label: "ステータス", name: "status", widget: "select", options: ["募集中", "トライアル中", "里親決定"] }
+              - { label: "性別", name: "gender", widget: "select", options: ["♂", "♀"] }
+              - { label: "年齢", name: "age", widget: "string" }
+              - { label: "写真", name: "image", widget: "image" }
+              - { label: "性格・紹介文", name: "description", widget: "text" }
+
+      - name: "cat_list"
+        label: "里親募集：猫"
+        file: "content/cats.json"
+        fields:
+          - name: "items"
+            label: "猫ちゃん一覧"
+            widget: "list"
+            fields:
+              - { label: "名前", name: "name", widget: "string" }
+              - { label: "ステータス", name: "status", widget: "select", options: ["募集中", "トライアル中", "里親決定"] }
+              - { label: "性別", name: "gender", widget: "select", options: ["♂", "♀"] }
+              - { label: "年齢", name: "age", widget: "string" }
+              - { label: "写真", name: "image", widget: "image" }
+              - { label: "性格・紹介文", name: "description", widget: "text" }
+
+  - name: "foster_submissions"
+    label: "里親希望お申し込み"
+    folder: "content/submissions/foster"
+    create: false
+    extension: json
+    format: json
+    fields:
+      - { label: "受付日時", name: "date", widget: "datetime" }
+      - { label: "お名前", name: "name", widget: "string" }
+      - { label: "ご住所", name: "address", widget: "string" }
+      - { label: "年齢", name: "age", widget: "string" }
+      - { label: "ご連絡先", name: "contact", widget: "string" }
+      - { label: "希望の動物", name: "animal", widget: "string" }
+      - { label: "持ち家", name: "housing", widget: "string" }
+      - { label: "家族構成", name: "family", widget: "string" }
+      - { label: "アレルギー", name: "allergy", widget: "string" }
+      - { label: "家族同意", name: "consent", widget: "string" }
+      - { label: "飼養環境", name: "environment", widget: "string" }
+      - { label: "散歩", name: "walk", widget: "string" }
+      - { label: "理由", name: "reason", widget: "text" }
+      - { label: "対応状況", name: "process_status", widget: "select", options: ["未対応", "対応中", "譲渡完了", "お断り"], default: "未対応" }
+
+  - name: "support_submissions"
+    label: "サポーター申し込み"
+    folder: "content/submissions/support"
+    create: false
+    extension: json
+    format: json
+    fields:
+      - { label: "受付日時", name: "date", widget: "datetime" }
+      - { label: "お名前", name: "name", widget: "string" }
+      - { label: "ご住所", name: "address", widget: "string" }
+      - { label: "連絡先", name: "contact", widget: "string" }
+      - { label: "口数", name: "shares", widget: "number" }
+      - { label: "入金確認", name: "payment_status", widget: "select", options: ["未入金", "確認済み"], default: "未入金" }
+
+  - name: "hrr_ad_submissions"
+    label: "HRR広告掲載依頼"
+    folder: "content/submissions/hrr_ad"
+    create: false
+    extension: json
+    format: json
+    fields:
+      - { label: "受付日時", name: "date", widget: "datetime" }
+      - { label: "会社名/個人名", name: "company", widget: "string" }
+      - { label: "担当者名", name: "name", widget: "string" }
+      - { label: "メールアドレス", name: "email", widget: "string" }
+      - { label: "電話番号", name: "phone", widget: "string" }
+      - { label: "広告サイズ", name: "size", widget: "string" }
+      - { label: "メッセージ", name: "message", widget: "text" }
+      - { label: "対応状況", name: "process_status", widget: "select", options: ["未対応", "返信済み", "掲載確定"], default: "未対応" }

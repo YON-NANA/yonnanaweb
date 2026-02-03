@@ -1,0 +1,76 @@
+{
+    "items": [
+        {
+            "name": "藍之助",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/ainyan.png",
+            "description": "クールに見えて実は甘えん坊。おもちゃで遊ぶのが大好きです。"
+        },
+        {
+            "name": "チャタ",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/chata.JPG",
+            "description": "茶トラの陽気な男の子。食いしん坊でおやつを見るとすぐ寄ってきます。"
+        },
+        {
+            "name": "ハル",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/haru.png",
+            "description": "春のようなポカポカした性格。膝の上が大好きな甘えん坊です。"
+        },
+        {
+            "name": "ひかり",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "2歳",
+            "image": "assets/里親募集中動物/猫/hikari.png",
+            "description": "キラキラした目が印象的な女の子。少し慎重派ですが、おやつには弱いです。"
+        },
+        {
+            "name": "かりん",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "推定6か月",
+            "image": "assets/里親募集中動物/猫/karin.png",
+            "description": "好奇心旺盛な子猫ちゃん。家中を元気に駆け回ります。"
+        },
+        {
+            "name": "国子",
+            "status": "募集中",
+            "gender": "♀",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/kuniko.png",
+            "description": "優雅な立ち振る舞いの貴婦人のような猫。静かに寄り添ってくれます。"
+        },
+        {
+            "name": "クロベエ",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/kurobe.png",
+            "description": "真っ黒でツヤツヤな毛並みが自慢。お話しするのが大好きな猫です。"
+        },
+        {
+            "name": "セガミ",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/segami.png",
+            "description": "マイペースでのんびり屋さん。高いところが大好きなおっとりした子です。"
+        },
+        {
+            "name": "テト",
+            "status": "募集中",
+            "gender": "♂",
+            "age": "4歳",
+            "image": "assets/里親募集中動物/猫/teto.png",
+            "description": "元気いっぱいの活発な男の子。高いジャンプが得意です。"
+        }
+    ]
+}

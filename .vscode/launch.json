@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "node-terminal",
+            "name": "JavaScript デバッグ ターミナル",
+            "request": "launch",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

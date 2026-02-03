@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動詳細 - 動物保護団体ヨンナナ</title>
+    <meta name="description" content="徳島を拠点に活動する動物保護団体ヨンナナ。活動の詳細をご紹介します。">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Specific styles for activity pages */
+        .page-header {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 120px 0 60px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .activity-content {
+            padding: 60px 0;
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 2;
+        }
+
+        .activity-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px 0;
+        }
+
+        .activity-gallery img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .back-btn-container {
+            text-align: center;
+            margin: 40px 0 80px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="assets/images/logo_v2.gif" alt="YonNana Logo" class="logo-img">
+                <span class="logo-text">動物保護団体ヨンナナ</span>
+            </a>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html#about">私たちについて</a></li>
+                    <li><a href="index.html#activities">活動内容</a></li>
+                    <li><a href="index.html#foster">里親募集</a></li>
+                    <li><a href="index.html#support" class="btn btn-nav">支援する</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1 class="page-title" id="pageTitle">活動タイトル</h1>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="activity-content" id="pageText">
+                <!-- Text will be injected here -->
+            </div>
+
+            <h3 class="text-center" style="margin-top: 40px; font-size: 1.5rem;">活動ギャラリー</h3>
+            <div class="activity-gallery" id="pageGallery">
+                <!-- Images will be injected here -->
+            </div>
+
+            <div class="back-btn-container">
+                <a href="index.html" class="btn btn-secondary">トップページに戻る</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-icon">🐾</span> 動物保護団体 <strong>ヨンナナ</strong>
+                </div>
+            </div>
+            <p class="copyright">&copy; 2024 YonNana Animal Protection Group. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Data populated by build script
+        const data = {
+            title: "TITLE_PLACEHOLDER",
+            text: `TEXT_PLACEHOLDER`,
+            images: [IMAGES_PLACEHOLDER]
+        };
+
+        document.getElementById('pageTitle').innerText = data.title;
+        document.getElementById('pageText').innerHTML = data.text;
+
+        const gallery = document.getElementById('pageGallery');
+        data.images.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.loading = "lazy";
+            img.onclick = () => window.open(src, '_blank');
+            gallery.appendChild(img);
+        });
+    </script>
+</body>
+
+</html>

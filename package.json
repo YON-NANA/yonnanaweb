@@ -1,0 +1,9 @@
+{
+    "name": "yonnana-website",
+    "version": "1.0.0",
+    "description": "YonNana Animal Protection Group Website",
+    "main": "index.html",
+    "dependencies": {
+        "octokit": "^3.1.2"
+    }
+}

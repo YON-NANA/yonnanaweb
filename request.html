@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保護依頼について - 動物保護団体ヨンナナ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="徳島県内での犬猫の保護依頼・ご相談についての案内ページです。保護には条件や費用のご負担、協力が必要となります。不幸な命を救うために、まずは内容をご確認ください。">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://your-site.vercel.app/request.html">
+    <meta property="og:title" content="保護依頼について - 動物保護団体ヨンナナ">
+    <meta property="og:description" content="犬猫の保護依頼・相談をご検討の方へ。ヨンナナの保護方針と手順のご案内。">
+    <meta property="og:image" content="https://your-site.vercel.app/assets/images/ogp-request.jpg">
+
+    <link rel="icon" type="image/gif" href="assets/images/logo_v2.gif">
+    <style>
+        .request-page {
+            padding: 120px 0 80px;
+            background-color: var(--color-bg);
+        }
+
+        .request-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .request-message {
+            background-color: #f9f7f2;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            line-height: 1.8;
+            border-left: 5px solid var(--color-primary);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--color-heading);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-item input {
+            width: auto;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #666;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="assets/images/logo_v2.gif" alt="YonNana Logo" class="logo-img">
+                <span class="logo-text">動物保護団体ヨンナナ</span>
+            </a>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html#about">私たちについて</a></li>
+                    <li><a href="index.html#activities">活動内容</a></li>
+                    <li><a href="index.html#foster">里親募集</a></li>
+                    <li><a href="request.html">保護依頼</a></li>
+                    <li><a href="support.html">寄付・会員になる</a></li>
+                    <li id="google_translate_element"></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="request-page">
+        <div class="container">
+            <div class="request-container">
+                <h2 class="section-title" style="margin-bottom: 30px;">保護依頼について</h2>
+
+                <div class="request-message">
+                    保護依頼者も私たちも動物を助けたいという気持ちは同じです。私たち団体は保護シェルターを持たず、各メンバー宅で預かりお世話をしています。そのため、保護できる頭数に限りがあり、保護依頼を受けられない場合があります。この活動は公的な支援を受けることなくおこなっており、保護依頼者さまから保護動物に対する初期医療費をいただいております。所有権放棄に対しても念書を作成、その子にかかる費用をいただいております。その他、保護した子を自身で預かる事は出来るが、里親探しを手伝ってほしい…、保護するために捕獲を手伝ってほしい…などあれば、ご相談ください。
+                </div>
+
+                <form class="request-form">
+                    <div class="form-group">
+                        <label for="name">お名前（フルネーム）</label>
+                        <input type="text" id="name" name="name" required placeholder="例：山田 太郎">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">ご依頼者住所</label>
+                        <input type="text" id="address" name="address" required placeholder="市区町村以降の住所を入力してください">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">連絡先</label>
+                        <input type="tel" id="contact" name="contact" required placeholder="例：090-1234-5678">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animal-details">保護動物詳細</label>
+                        <textarea id="animal-details" name="animal_details" required
+                            placeholder="種類、性別、推定年齢、健康状態など"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="request-location">保護依頼の住所</label>
+                        <input type="text" id="request-location" name="request_location" required
+                            placeholder="動物が現在いる場所の住所">
+                    </div>
+
+                    <div class="form-group">
+                        <label>保護の種類</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="request_type" value="一般の保護依頼" checked>
+                                一般の保護依頼
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="request_type" value="所有権放棄">
+                                所有権放棄
+                            </label>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #666; margin-top: 8px;">※状況により保護費用が変わります</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="others">その他ご相談</label>
+                        <textarea id="others" name="others" placeholder="里親探しの手伝い、捕獲の手伝いなど"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">この内容で送信する</button>
+                    <p style="text-align: center; font-size: 0.85rem; color: #888; margin-top: 15px;">
+                        ※内容を確認後、担当者より折り返しご連絡させていただきます。</p>
+                </form>
+
+                <div class="text-center">
+                    <a href="index.html" class="back-link">← トップページに戻る</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="youtube-announcement">
+                <i class="fab fa-youtube"></i>
+                <div>
+                    <span class="live-badge">LIVE</span>
+                    <strong>毎週水曜日 10:00〜 ライブ配信中！</strong><br>
+                    保護犬・保護猫の日常をお届けしています。ぜひ<a href="https://www.youtube.com/@plusde24"
+                        target="_blank">チャンネル登録</a>をお願いします。
+                </div>
+            </div>
+        </div>
+        <div class="container footer-content">
+            <div class="footer-logo">動物保護団体ヨンナナ</div>
+            <div class="footer-links">
+                <a href="https://www.instagram.com/yonnanahogo/" target="_blank" title="Instagram (保護犬・保護猫)"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://www.instagram.com/yonnana_hogoinu_hogoneko/" target="_blank"
+                    title="Instagram (ヨンナナ)"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=100006322142767" target="_blank" title="Facebook"><i
+                        class="fab fa-facebook"></i></a>
+                <a href="https://www.youtube.com/@plusde24" target="_blank" title="YouTube"><i
+                        class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+        <div class="container">
+            <p class="copyright">&copy; 2024 YonNana Animal Protection Group. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="js/script.js"></script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'ja', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+
+</html>
