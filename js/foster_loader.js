@@ -54,6 +54,11 @@ function renderAnimals(animals, container) {
             </div>
         `;
 
+        // Add Click Event to open details
+        card.addEventListener('click', () => {
+            openAnimalModal(animal);
+        });
+
         container.appendChild(card);
     });
 
@@ -61,4 +66,26 @@ function renderAnimals(animals, container) {
     if (window.refreshScrollAnimations) {
         window.refreshScrollAnimations();
     }
+}
+
+/**
+ * Opens the animal detail modal with specific data
+ */
+function openAnimalModal(animal) {
+    const modal = document.getElementById('modalAnimal');
+    if (!modal) return;
+
+    // Set content
+    document.getElementById('modalAnimalName').innerText = animal.name;
+    document.getElementById('modalAnimalTag').innerText = animal.status || '募集中';
+    document.getElementById('modalAnimalDetails').innerText = `性別：${animal.gender}　年齢：${animal.age}`;
+    document.getElementById('modalAnimalDesc').innerText = animal.description || '紹介文は現在準備中です。';
+
+    const imgSrc = animal.image || 'assets/images/placeholder.jpg';
+    document.getElementById('modalAnimalImg').style.backgroundImage = `url('${imgSrc}')`;
+
+    // Show modal
+    modal.style.display = 'block';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }

@@ -9,35 +9,61 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Modal Logic for Foster Conditions
-    const modal = document.getElementById('modalConditions');
-    const btnShow = document.getElementById('btnShowConditionsMain');
-    const btnClose = document.getElementById('closeModal');
+    // --- Modal Logic ---
 
-    if (btnShow && modal) {
-        btnShow.addEventListener('click', (e) => {
+    // 1. Foster Conditions Modal
+    const modalConditions = document.getElementById('modalConditions');
+    const btnShowConditions = document.getElementById('btnShowConditionsMain');
+    const btnCloseConditions = document.getElementById('closeModal');
+
+    // 2. Animal Detail Modal
+    const modalAnimal = document.getElementById('modalAnimal');
+    const btnCloseAnimal = document.getElementById('closeAnimalModal');
+
+    // Show Conditions
+    if (btnShowConditions && modalConditions) {
+        btnShowConditions.addEventListener('click', (e) => {
             e.preventDefault();
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Stop scrolling
+            modalConditions.classList.add('active');
+            modalConditions.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         });
     }
 
-    if (btnClose && modal) {
-        btnClose.addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
+    // Close Conditions
+    if (btnCloseConditions && modalConditions) {
+        btnCloseConditions.addEventListener('click', () => {
+            modalConditions.classList.remove('active');
+            modalConditions.style.display = 'none';
+            document.body.style.overflow = 'auto';
         });
     }
 
-    // Close modal when clicking outside
+    // Close Animal Detail
+    if (btnCloseAnimal && modalAnimal) {
+        btnCloseAnimal.addEventListener('click', () => {
+            modalAnimal.classList.remove('active');
+            modalAnimal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    }
+
+    // Close modals when clicking outside
     window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.remove('active');
+        if (e.target === modalConditions) {
+            modalConditions.classList.remove('active');
+            modalConditions.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        if (e.target === modalAnimal) {
+            modalAnimal.classList.remove('active');
+            modalAnimal.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
     });
 
-    // Intersection Observer for scroll animations
+    // --- Animations & Other Logic ---
+
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -52,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    // Function to re-observe elements (useful after dynamic loading)
     window.refreshScrollAnimations = () => {
         const elementsToAnimate = document.querySelectorAll('.about-image, .about-text, .activity-card, .reality-item, .foster-card');
         elementsToAnimate.forEach(el => {
@@ -63,14 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Initial call
     window.refreshScrollAnimations();
 
-    // Smooth scroll for nav links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
-            if (href === '#') return;
+            if (href === '#' || !href) return;
 
             e.preventDefault();
             const target = document.querySelector(href);
@@ -87,10 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    console.log('YonNana Website Initialized with Interactivity');
+    console.log('YonNana Website Initialized');
 });
 
-// Google Translate Init
 function googleTranslateElementInit() {
     new google.translate.TranslateElement({
         pageLanguage: 'ja',

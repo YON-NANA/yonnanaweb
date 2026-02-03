@@ -34,7 +34,9 @@
                     <li><a href="#activities" class="nav-link">活動内容</a></li>
                     <li><a href="#foster" class="nav-link">里親募集</a></li>
                     <li><a href="support.html" class="nav-link">ご支援</a></li>
-                    <li><a href="request.html" class="nav-link btn btn-outline" style="padding: 8px 20px;">保護依頼</a></li>
+                    <li><a href="request.html" class="nav-link"
+                            style="padding: 8px 16px; border: 1.5px solid var(--color-primary); border-radius: 50px; margin-left: 10px; color: var(--color-primary);">保護依頼</a>
+                    </li>
                     <li style="margin-left: 15px;">
                         <div id="google_translate_element"></div>
                     </li>
@@ -52,9 +54,8 @@
                 <h1 class="hero-title">共に生きる、<br>未来をつくる</h1>
                 <p class="hero-subtitle">徳島から、すべての動物に愛と安全な場所を。</p>
                 <div class="hero-btns">
-                    <a href="#foster" class="btn btn-primary">家族を探している子たち</a>
-                    <a href="support.html" class="btn btn-outline"
-                        style="color: white; border-color: white;">ご支援はこちら</a>
+                    <a href="#foster" class="btn btn-primary" style="padding: 16px 45px;">家族を探している子たち</a>
+                    <a href="support.html" class="btn btn-white-outline" style="padding: 16px 45px;">ご支援はこちら</a>
                 </div>
             </div>
         </section>
@@ -189,6 +190,32 @@
                 rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Animal Detail Modal -->
+    <div id="modalAnimal" class="modal" style="display:none;">
+        <div
+            style="background-color: var(--color-bg); margin: 5% auto; padding: 0; border-radius: 24px; max-width: 800px; width: 95%; max-height: 90vh; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 400px;">
+                <div id="modalAnimalImg" style="background-size: cover; background-position: center; height: 100%;">
+                </div>
+                <div style="padding: 40px; overflow-y: auto;">
+                    <span id="closeAnimalModal"
+                        style="position: absolute; right: 25px; top: 15px; font-size: 30px; cursor: pointer; color: var(--color-text); z-index: 10;">&times;</span>
+                    <div class="animal-detail-info">
+                        <span id="modalAnimalTag" class="detail-tag">募集中</span>
+                        <h2 id="modalAnimalName" style="font-size: 2.5rem; margin-bottom: 15px;">名前</h2>
+                        <p id="modalAnimalDetails" style="font-weight: 700; margin-bottom: 20px;">性別：？　年齢：？</p>
+                        <hr style="border: 0; border-top: 1px solid #E0DCD8; margin-bottom: 20px;">
+                        <p id="modalAnimalDesc" style="line-height: 1.8; color: var(--color-text-light);">紹介文</p>
+
+                        <div style="margin-top: 40px;">
+                            <a href="foster_form.html" class="btn btn-primary" style="width: 100%;">この子に会いに行く</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Foster Conditions Modal -->
     <div id="modalConditions" class="modal"
