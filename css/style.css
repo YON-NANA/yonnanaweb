@@ -309,7 +309,7 @@ ul {
 .about-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    gap: 80px;
     align-items: center;
 }
 
@@ -318,11 +318,33 @@ ul {
     margin-bottom: 24px;
 }
 
-.about-image {
+.about-images {
     position: relative;
+    padding-bottom: 40px;
+}
+
+.about-img-large {
+    width: 90%;
     border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+}
+
+.about-img-small {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 55%;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 8px solid var(--color-white);
+}
+
+.about-images img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Reality Section (Anti-Culling) */

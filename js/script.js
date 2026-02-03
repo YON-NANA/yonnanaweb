@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
 
     window.refreshScrollAnimations = () => {
-        const elementsToAnimate = document.querySelectorAll('.about-image, .about-text, .activity-card, .reality-item, .foster-card');
+        const elementsToAnimate = document.querySelectorAll('.about-images, .about-text, .activity-card, .reality-item, .foster-card');
         elementsToAnimate.forEach(el => {
             if (!el.classList.contains('show')) {
                 el.classList.add('hidden');
