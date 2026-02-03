@@ -17,14 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnShow && modal) {
         btnShow.addEventListener('click', (e) => {
             e.preventDefault();
-            modal.style.display = 'block';
+            modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Stop scrolling
         });
     }
 
     if (btnClose && modal) {
         btnClose.addEventListener('click', () => {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
             document.body.style.overflow = 'auto'; // Re-enable scrolling
         });
     }
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close modal when clicking outside
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
     });
@@ -52,17 +52,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, observerOptions);
 
-    const elementsToAnimate = document.querySelectorAll('.about-image, .about-text, .activity-card, .reality-item, .foster-card');
-    elementsToAnimate.forEach(el => {
-        el.classList.add('hidden');
-        observer.observe(el);
-    });
+    // Function to re-observe elements (useful after dynamic loading)
+    window.refreshScrollAnimations = () => {
+        const elementsToAnimate = document.querySelectorAll('.about-image, .about-text, .activity-card, .reality-item, .foster-card');
+        elementsToAnimate.forEach(el => {
+            if (!el.classList.contains('show')) {
+                el.classList.add('hidden');
+                observer.observe(el);
+            }
+        });
+    };
+
+    // Initial call
+    window.refreshScrollAnimations();
 
     // Smooth scroll for nav links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const target = document.querySelector(href);
             if (target) {
                 const headerOffset = 80;
                 const elementPosition = target.getBoundingClientRect().top;
@@ -78,3 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('YonNana Website Initialized with Interactivity');
 });
+
+// Google Translate Init
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'ja',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+    }, 'google_translate_element');
+}

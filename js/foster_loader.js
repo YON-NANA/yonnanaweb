@@ -1,69 +1,31 @@
 /**
  * Foster Animal Loader
- * Fetches data from a Google Sheet (published as CSV) and renders cards.
+ * Fetches animal data from local JSON files and renders cards to the grid.
  */
 
-// CONFIGURATION: Replace this URL with your published Google Sheet CSV URL
-// How to get this URL:
-// 1. Open your Google Sheet
-// 2. Go to File > Share > Publish to web
-// 3. Select "Entire Document" (or specific sheet) and "Comma-separated values (.csv)"
-// 4. Click Publish and copy the link
-const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKivzfFAQjXalXrHQpSzYyA4RxJGfIi9H0hPI6wAyhApeRrHNT15Cv0eqvMuTVQ-TLsZFUqpxLZldQ/pub?output=csv";
-
-// fallback data in case the sheet is not set up yet (optional, or leave empty)
-const FALLBACK_DATA = [];
-
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('foster-container');
+    const grid = document.getElementById('foster-grid');
+    if (!grid) return;
 
-    if (!GOOGLE_SHEET_CSV_URL) {
-        // If no URL is set, we might want to show a message or use fallback
-        // For now, let's just log it and maybe show a placeholder if dev mode
-        console.warn('Google Sheet URL is not set in js/foster_loader.js');
-        // If you want to keep the current hardcoded ones as fallback until set up, 
-        // you wouldn't load this script or would handle it differently.
-        // But the plan is to switch. Let's show a message if empty.
-        container.innerHTML = '<p class="text-center">現在、情報の読み込み設定中です。</p>';
-        return;
-    }
+    // Load both dogs and cats data
+    Promise.all([
+        fetch('content/dogs.json').then(res => res.json()),
+        fetch('content/cats.json').then(res => res.json())
+    ])
+        .then(([dogsData, catsData]) => {
+            const dogs = dogsData.items || [];
+            const cats = catsData.items || [];
 
-    fetch(GOOGLE_SHEET_CSV_URL)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(csvText => {
-            const animals = parseCSV(csvText);
-            renderAnimals(animals, container);
+            // Combine them: Dogs first, then Cats
+            const animals = [...dogs, ...cats];
+
+            renderAnimals(animals, grid);
         })
         .catch(error => {
-            console.error('Error fetching data:', error);
-            container.innerHTML = '<p class="text-center">データの読み込みに失敗しました。</p>';
+            console.error('Error loading animal data:', error);
+            grid.innerHTML = '<p class="text-center">データの読み込みに失敗しました。</p>';
         });
 });
-
-function parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    const animals = [];
-
-    for (let i = 1; i < lines.length; i++) {
-        // Handle simple CSV splitting (doesn't handle commas inside quotes, but enough for simple data)
-        const currentLine = lines[i].split(',');
-
-        if (currentLine.length === headers.length) {
-            const animal = {};
-            for (let j = 0; j < headers.length; j++) {
-                animal[headers[j]] = currentLine[j].trim();
-            }
-            animals.push(animal);
-        }
-    }
-    return animals;
-}
 
 function renderAnimals(animals, container) {
     if (animals.length === 0) {
@@ -71,30 +33,32 @@ function renderAnimals(animals, container) {
         return;
     }
 
-    const grid = document.createElement('div');
-    grid.className = 'foster-grid';
+    container.innerHTML = ''; // Clear container
 
     animals.forEach(animal => {
-        // Expected columns: Name, Gender, Age, ImageFilename, Status
-        // ImageFilename should be just the name, e.g., "ainyan.png"
-        // We assume images are in assets/里親募集中動物/猫/
-
-        // Safety check for image path - can be customized
-        const imagePath = `assets/里親募集中動物/猫/${animal['ImageFilename']}`;
-
         const card = document.createElement('div');
-        card.className = 'foster-card';
+        card.className = 'foster-card hidden'; // Hidden by default for scroll animation
+
+        // Use placeholder if image is missing
+        const imgSrc = animal.image || 'assets/images/placeholder.jpg';
+
         card.innerHTML = `
-            <img src="${imagePath}" alt="${animal['Name']}" onerror="this.src='assets/images/placeholder.jpg'">
+            <div class="foster-img-wrap">
+                <img src="${imgSrc}" alt="${animal.name}" onerror="this.src='assets/images/placeholder.jpg'">
+            </div>
             <div class="foster-info">
-                <h4>${animal['Status'] || '募集中'}</h4>
-                <p class="foster-name">名前：${animal['Name']}</p>
-                <p class="foster-details">性別：${animal['Gender']}　年齢：${animal['Age']}</p>
+                <span class="foster-tag">${animal.status || '募集中'}</span>
+                <h3 class="foster-name">${animal.name}</h3>
+                <p class="foster-details">性別：${animal.gender}　年齢：${animal.age}</p>
+                <p class="foster-desc" style="font-size: 0.85rem; margin-top: 10px; color: var(--color-text-light); height: 3.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${animal.description || ''}</p>
             </div>
         `;
-        grid.appendChild(card);
+
+        container.appendChild(card);
     });
 
-    container.innerHTML = '';
-    container.appendChild(grid);
+    // Re-initialize scroll animation for newly added cards
+    if (window.refreshScrollAnimations) {
+        window.refreshScrollAnimations();
+    }
 }
