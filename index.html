@@ -84,21 +84,21 @@
                     <h2 class="section-title">私たちの活動</h2>
                 </div>
                 <div class="activities-grid">
-                    <div class="activity-card hidden">
+                    <a href="activity_protect.html" class="activity-card hidden">
                         <div class="activity-icon-box"><i class="fas fa-paw"></i></div>
                         <h3>保護・譲渡活動</h3>
                         <p>保健所や困難な多頭飼育現場から犬猫をレスキューし、里親へと繋ぎます。</p>
-                    </div>
-                    <div class="activity-card hidden">
+                    </a>
+                    <a href="activity_hrr.html" class="activity-card hidden">
                         <div class="activity-icon-box"><i class="fas fa-book-open"></i></div>
                         <h3>HRRの発行</h3>
                         <p>保護動物の現状を伝えるフリーマガジンを制作・配布し、意識を変える活動です。</p>
-                    </div>
-                    <div class="activity-card hidden">
+                    </a>
+                    <a href="activity_promote.html" class="activity-card hidden">
                         <div class="activity-icon-box"><i class="fas fa-bullhorn"></i></div>
                         <h3>啓発活動</h3>
                         <p>SNSやイベントを通じ、適正飼養や殺処分の現状について広く伝えています。</p>
-                    </div>
+                    </a>
                 </div>
             </div>
         </section>
@@ -186,6 +186,32 @@
                 rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Foster Conditions Modal -->
+    <div id="modalConditions" class="modal"
+        style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); backdrop-filter: blur(5px);">
+        <div
+            style="background-color: var(--color-bg); margin: 5% auto; padding: 40px; border-radius: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: var(--shadow-lg);">
+            <span id="closeModal"
+                style="position: absolute; right: 25px; top: 15px; font-size: 30px; cursor: pointer; color: var(--color-text);">&times;</span>
+            <h2 style="margin-bottom: 25px; color: var(--color-text);">里親（譲渡）の条件</h2>
+            <div style="text-align: left; font-size: 0.95rem; line-height: 1.8;">
+                <p>ヨンナナでは一匹一匹の命を大切に、以下の条件を満たす方へ譲渡を行っています：</p>
+                <ul style="list-style: disc; padding-left: 20px; margin: 20px 0;">
+                    <li>終生飼養を約束していただける方</li>
+                    <li>完全室内飼育が可能な方（犬・猫共通）</li>
+                    <li>適切な医療（狂犬病、ワクチン、不妊手術等）を受けさせられる方</li>
+                    <li>同居家族全員の同意がある方</li>
+                    <li>譲渡契約書を締結し、身分証の提示ができる方</li>
+                    <li>ペット可の住宅にお住まいの方</li>
+                </ul>
+                <p>※単身者、高齢者の方、未成年の方は、万が一の際の保証人（後継飼養者）が必要となる場合があります。</p>
+                <div style="margin-top: 30px; text-align: center;">
+                    <a href="foster_form.html" class="btn btn-primary">里親申し込み・お問い合わせ</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/script.js"></script>

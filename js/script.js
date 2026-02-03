@@ -9,6 +9,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Modal Logic for Foster Conditions
+    const modal = document.getElementById('modalConditions');
+    const btnShow = document.getElementById('btnShowConditionsMain');
+    const btnClose = document.getElementById('closeModal');
+
+    if (btnShow && modal) {
+        btnShow.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Stop scrolling
+        });
+    }
+
+    if (btnClose && modal) {
+        btnClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+
     // Intersection Observer for scroll animations
     const observerOptions = {
         threshold: 0.1,
@@ -19,13 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('show');
-                // Once shown, stop observing
                 observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    // Initial hidden elements to observe
     const elementsToAnimate = document.querySelectorAll('.about-image, .about-text, .activity-card, .reality-item, .foster-card');
     elementsToAnimate.forEach(el => {
         el.classList.add('hidden');
@@ -50,5 +76,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    console.log('YonNana Website Initialized');
+    console.log('YonNana Website Initialized with Interactivity');
 });
