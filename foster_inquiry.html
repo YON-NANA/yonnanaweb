@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>この子について問合わせる - 動物保護団体ヨンナナ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=1.8">
+    <meta name="description" content="保護犬・保護猫についてのお問い合わせフォームです。気になる子がいましたら、お気軽にお問い合わせください。">
+    <link rel="icon" type="image/gif" href="assets/images/logo_v2.gif">
+    <style>
+        .inquiry-page {
+            padding: 120px 0 80px;
+            background-color: var(--color-bg);
+        }
+
+        .inquiry-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--color-text-light);
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--color-text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #E0DCD8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(139, 168, 136, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--color-primary-dark);
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="inquiry-page">
+        <div class="inquiry-container">
+            <h1 class="page-title">この子について問合わせる</h1>
+            <p class="page-subtitle">
+                気になる子についてのご質問やご相談を承ります。<br>
+                以下のフォームにご記入の上、送信してください。
+            </p>
+
+            <form id="inquiryForm">
+                <div class="form-group">
+                    <label>お名前<span class="required">*</span></label>
+                    <input type="text" name="name" placeholder="例：山田 太郎" required>
+                </div>
+
+                <div class="form-group">
+                    <label>メールアドレス<span class="required">*</span></label>
+                    <input type="email" name="email" placeholder="例：example@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>電話番号<span class="required">*</span></label>
+                    <input type="tel" name="phone" placeholder="例：090-1234-5678" required>
+                </div>
+
+                <div class="form-group">
+                    <label>気になる子の名前（わかる場合）</label>
+                    <input type="text" name="animalName" placeholder="例：ぼー">
+                </div>
+
+                <div class="form-group">
+                    <label>お問い合わせ内容<span class="required">*</span></label>
+                    <textarea name="message" placeholder="この子の性格についてもっと詳しく知りたい、実際に会ってみたい、など、お気軽にお書きください。"
+                        required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">送信する</button>
+            </form>
+
+            <a href="index.html#foster" class="back-link">← 里親募集ページに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('inquiryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+
+            // Google Apps Script URL (後で設定)
+            const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+            // 送信処理（実際のGoogle Apps Script URLを設定後に有効化）
+            console.log('問い合わせ内容:', data);
+
+            // 仮の成功メッセージ
+            alert('お問い合わせありがとうございます！\n内容を確認次第、ご連絡させていただきます。');
+            this.reset();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>里親申し込み - 動物保護団体ヨンナナ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=1.8">
+    <meta name="description" content="保護犬・保護猫の里親申し込みフォームです。新しい家族として迎えたい方は、こちらからお申し込みください。">
+    <link rel="icon" type="image/gif" href="assets/images/logo_v2.gif">
+    <style>
+        .foster-apply-page {
+            padding: 120px 0 80px;
+            background-color: var(--color-bg);
+        }
+
+        .foster-apply-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: var(--color-text-light);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .notice-box {
+            background-color: #fff9e6;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .notice-box h3 {
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .notice-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--color-text);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #E0DCD8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(139, 168, 136, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-item input {
+            width: auto;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--color-primary-dark);
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="foster-apply-page">
+        <div class="foster-apply-container">
+            <h1 class="page-title">里親申し込み</h1>
+            <p class="page-subtitle">
+                新しい家族として迎えていただける方を募集しています。<br>
+                以下の内容をご確認の上、お申し込みください。
+            </p>
+
+            <div class="notice-box">
+                <h3><i class="fas fa-exclamation-circle"></i> 里親になるための条件</h3>
+                <ul>
+                    <li>完全室内飼育ができる方</li>
+                    <li>適切な医療を受けさせられる方</li>
+                    <li>家族全員の同意がある方</li>
+                    <li>終生飼育を約束できる方</li>
+                    <li>定期的な近況報告をしていただける方</li>
+                </ul>
+            </div>
+
+            <form id="fosterApplyForm">
+                <div class="form-group">
+                    <label>お名前<span class="required">*</span></label>
+                    <input type="text" name="name" placeholder="例：山田 太郎" required>
+                </div>
+
+                <div class="form-group">
+                    <label>メールアドレス<span class="required">*</span></label>
+                    <input type="email" name="email" placeholder="例：example@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>電話番号<span class="required">*</span></label>
+                    <input type="tel" name="phone" placeholder="例：090-1234-5678" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ご住所<span class="required">*</span></label>
+                    <input type="text" name="address" placeholder="例：徳島県徳島市..." required>
+                </div>
+
+                <div class="form-group">
+                    <label>希望する子の名前<span class="required">*</span></label>
+                    <input type="text" name="animalName" placeholder="例：ぼー" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ご家族構成<span class="required">*</span></label>
+                    <input type="text" name="family" placeholder="例：夫婦2人、子供2人（小学生）" required>
+                </div>
+
+                <div class="form-group">
+                    <label>住居形態<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="house" name="housing" value="持ち家（一戸建て）" required>
+                            <label for="house">持ち家（一戸建て）</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="mansion" name="housing" value="持ち家（マンション）">
+                            <label for="mansion">持ち家（マンション）</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="rent" name="housing" value="賃貸（ペット可）">
+                            <label for="rent">賃貸（ペット可）</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>飼育経験<span class="required">*</span></label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="exp-yes" name="experience" value="あり" required>
+                            <label for="exp-yes">あり</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="exp-no" name="experience" value="なし">
+                            <label for="exp-no">なし</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>現在飼育中のペット</label>
+                    <input type="text" name="currentPets" placeholder="例：犬1匹、猫2匹 / いない場合は「なし」">
+                </div>
+
+                <div class="form-group">
+                    <label>里親を希望する理由・メッセージ<span class="required">*</span></label>
+                    <textarea name="message" placeholder="この子を家族に迎えたい理由や、飼育環境について教えてください。" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">申し込む</button>
+            </form>
+
+            <a href="index.html#foster" class="back-link">← 里親募集ページに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fosterApplyForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+
+            // Google Apps Script URL (後で設定)
+            const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+            // 送信処理（実際のGoogle Apps Script URLを設定後に有効化）
+            console.log('里親申し込み内容:', data);
+
+            // 仮の成功メッセージ
+            alert('里親のお申し込みありがとうございます！\n内容を確認次第、ご連絡させていただきます。\n\n※審査には数日～1週間程度かかる場合がございます。');
+            this.reset();
+        });
+    </script>
+</body>
+
+</html>
