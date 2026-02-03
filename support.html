@@ -11,7 +11,7 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.2">
     <meta name="description" content="徳島県の動物保護団体ヨンナナへの支援ページです。寄付、年間サポーターへの入会、物資での支援など、皆様の温かいご支援を心よりお待ちしております。">
 
     <!-- Open Graph / Facebook -->
@@ -115,20 +115,23 @@
 
         .supporter-btn {
             display: inline-block;
-            background-color: var(--color-primary);
-            color: white;
+            background-color: transparent;
+            color: var(--color-primary);
             padding: 15px 30px;
+            border: 2px solid var(--color-primary);
             border-radius: 50px;
             text-decoration: none;
             font-weight: 700;
             text-align: center;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             margin-top: auto;
         }
 
         .supporter-btn:hover {
-            background-color: var(--color-primary-dark);
-            transform: scale(1.05);
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .material-list {
