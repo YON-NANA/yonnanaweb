@@ -111,6 +111,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     console.log('YonNana Website Initialized');
+
+    // Hamburger Menu Logic
+    const hamburger = document.getElementById('hamburger-menu');
+    const navList = document.querySelector('.nav-list');
+
+    if (hamburger && navList) {
+        hamburger.addEventListener('click', () => {
+            navList.classList.toggle('active');
+            hamburger.querySelector('i').classList.toggle('fa-bars');
+            hamburger.querySelector('i').classList.toggle('fa-times');
+        });
+
+        // Close menu when a link is clicked
+        navList.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navList.classList.remove('active');
+                hamburger.querySelector('i').classList.add('fa-bars');
+                hamburger.querySelector('i').classList.remove('fa-times');
+            });
+        });
+    }
 });
 
 function googleTranslateElementInit() {

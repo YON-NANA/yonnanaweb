@@ -521,15 +521,45 @@ ul {
 @media (max-width: 768px) {
     .nav-list {
         display: none;
+        position: absolute;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .nav-list.active {
+        display: flex;
+    }
+
+    .nav-list li {
+        margin: 15px 0;
+        text-align: center;
+    }
+
+    .hamburger {
+        display: block;
+        cursor: pointer;
     }
 
     .section {
-        padding: 80px 0;
+        padding: 60px 0;
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
     }
+}
+
+/* Hamburger Menu Icon */
+.hamburger {
+    display: none;
+    font-size: 1.5rem;
+    color: var(--color-primary);
 }
 
 /* Modal UI */
@@ -561,43 +591,56 @@ ul {
     }
 }
 
+/* Responsive Modal Layout */
+@media (max-width: 768px) {
+    #modalAnimal>div {
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        max-height: 90vh !important;
+        width: 90% !important;
+    }
+
+    #modalAnimal>div>div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+    }
+
+    #modalAnimalImg {
+        height: 250px !important;
+        width: 100%;
+        flex-shrink: 0;
+    }
+
+    .animal-detail-info {
+        padding: 20px !important;
+    }
+}
+
 /* Google Translate Styling */
 .goog-te-gadget {
     font-family: var(--font-body) !important;
+    color: transparent !important;
 }
 
-.goog-te-gadget-simple {
-    background-color: transparent !important;
-    border: 1px solid var(--color-primary) !important;
-    padding: 6px 12px !important;
-    border-radius: 50px !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
+.goog-te-gadget .goog-te-combo {
+    color: #444 !important;
+    border: 1px solid #ccc !important;
+    padding: 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.9rem !important;
+    margin: 4px 0 !important;
 }
 
-.goog-te-gadget-simple span {
-    color: var(--color-primary) !important;
-    font-size: 0.85rem !important;
-}
-
-.goog-te-gadget-icon {
+/* Hide "Powered by Google" text */
+.goog-te-gadget>span>a {
     display: none !important;
 }
 
-.goog-te-banner-frame.skiptranslate {
-    display: none !important;
+.goog-te-gadget>div {
+    display: inline-block !important;
 }
 
-body {
-    top: 0 !important;
-}
-
-/* Form & Input Styling (High Visibility) */
-.ad-form-group {
-    margin-bottom: 24px;
-    text-align: left;
-}
 
 .ad-form-group label {
     display: block;
