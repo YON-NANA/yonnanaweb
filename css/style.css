@@ -618,6 +618,11 @@ ul {
 }
 
 /* Google Translate Styling */
+#google_translate_element {
+    display: inline-block;
+    min-height: 25px;
+}
+
 .goog-te-gadget {
     font-family: var(--font-body) !important;
     font-size: 0 !important;
