@@ -334,9 +334,9 @@ ul {
 
 .about-img-small {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 55%;
+    bottom: -40px;
+    right: -20px;
+    width: 45%;
     border-radius: var(--border-radius);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
