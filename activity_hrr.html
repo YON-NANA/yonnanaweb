@@ -183,22 +183,22 @@
 
                 <div class="ad-form-container">
                     <h3>広告掲載のお問い合わせフォーム</h3>
-                    <form class="ad-form">
+                    <form id="hrrAdForm" class="ad-form">
                         <div class="ad-form-group">
                             <label>会社名・団体名（個人の場合はお名前）</label>
-                            <input type="text" placeholder="例：株式会社ヨンナナ" required>
+                            <input type="text" name="company" placeholder="例：株式会社ヨンナナ" required>
                         </div>
                         <div class="ad-form-group">
                             <label>担当者名</label>
-                            <input type="text" placeholder="例：山田 太郎" required>
+                            <input type="text" name="name" placeholder="例：山田 太郎" required>
                         </div>
                         <div class="ad-form-group">
                             <label>メールアドレス / 電話番号</label>
-                            <input type="text" placeholder="例：080-6394-4497" required>
+                            <input type="text" name="contact" placeholder="例：080-6394-4497" required>
                         </div>
                         <div class="ad-form-group">
                             <label>ご希望のサイズ</label>
-                            <select required>
+                            <select name="size" required>
                                 <option value="">選択してください</option>
                                 <option value="S">Sサイズ (¥8,000)</option>
                                 <option value="M">Mサイズ (¥15,000)</option>
@@ -210,7 +210,7 @@
                         </div>
                         <div class="ad-form-group">
                             <label>お問い合わせ内容（任意）</label>
-                            <textarea placeholder="掲載時期のご相談や、デザイン制作のご依頼など" rows="4"></textarea>
+                            <textarea name="message" placeholder="掲載時期のご相談や、デザイン制作のご依頼など" rows="4"></textarea>
                         </div>
                         <button type="submit" class="ad-submit-btn">掲載について問い合わせる</button>
                     </form>
@@ -247,56 +247,57 @@
             </div>
         </div>
         <div class="container">
-            <p class="copyright">&copy; 2024 YonNana Animal Protection Group. All rights reserved.</p>
+            <p class="copyright">&copy; 2024 YonNana. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/script.js"></script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ja',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.querySelector('.ad-form');
-            if (form) {
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault();
+        document.getElementById('hrrAdForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-                    const submitBtn = form.querySelector('.ad-submit-btn');
-                    submitBtn.disabled = true;
-                    const originalText = submitBtn.innerText;
-                    submitBtn.innerText = "送信中...";
+            const submitBtn = this.querySelector('.ad-submit-btn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '送信中...';
+            submitBtn.disabled = true;
 
-                    const data = {
-                        company: form.querySelector('input[placeholder*="株式会社"]').value,
-                        name: form.querySelector('input[placeholder*="山田"]').value,
-                        contact: form.querySelector('input[placeholder*="080"]').value,
-                        size: form.querySelector('select').value,
-                        message: form.querySelector('textarea').value
-                    };
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.sheetName = 'hrr_ad'; // 広告掲載依頼用シート名
 
-                    try {
-                        const response = await fetch('/api/submit', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ type: 'hrr_ad', data })
-                        });
+            // Google Apps Script URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
 
-                        if (response.ok) {
-                            form.innerHTML = `
-                                <div style="text-align: center; padding: 40px; background: #fff; border-radius: 10px;">
-                                    <h3 style="color: var(--color-primary); margin-bottom: 20px;">お問い合わせありがとうございます！</h3>
-                                    <p>内容を送信いたしました。担当者より改めてご連絡させていただきます。</p>
-                                    <button onclick="location.reload()" class="btn btn-outline" style="margin-top: 20px;">フォームへ戻る</button>
-                                </div>
-                            `;
-                        } else {
-                            alert("送信に失敗しました。お手数ですが、080-6394-4497（藤本）までご連絡ください。");
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = originalText;
-                        }
-                    } catch (error) {
-                        alert("通信エラーが発生しました。インターネット接続を確認してください。");
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = originalText;
-                    }
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    alert('広告掲載のお申し込みを受け付けました。\n内容を確認次第、担当者よりご連絡させていただきます。');
+                    this.reset();
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信に失敗しました。');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
                 });
-            }
         });
     </script>
     <script src="js/script.js"></script>

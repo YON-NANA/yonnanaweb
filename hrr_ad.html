@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRR広告掲載依頼 - 動物保護団体ヨンナナ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=1.8">
+    <meta name="description" content="動物保護団体ヨンナナが発行するフリーマガジン「HRR」への広告掲載依頼フォームです。">
+    <link rel="icon" type="image/gif" href="assets/images/logo_v2.gif">
+    <style>
+        .ad-page {
+            padding: 120px 0 80px;
+            background-color: var(--color-bg);
+        }
+
+        .ad-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .ad-form-group {
+            margin-bottom: 25px;
+        }
+
+        .ad-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .ad-form-group input,
+        .ad-form-group textarea,
+        .ad-form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .ad-submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ad-submit-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="assets/images/logo_v2.gif" alt="YonNana Logo" class="logo-img">
+                <span class="logo-text">動物保護団体ヨンナナ</span>
+            </a>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html#about" class="nav-link">私たちについて</a></li>
+                    <li><a href="index.html#activities" class="nav-link">活動内容</a></li>
+                    <li><a href="index.html#foster" class="nav-link">里親募集</a></li>
+                    <li><a href="support.html" class="nav-link">ご支援</a></li>
+                    <li><a href="request.html" class="nav-link">保護依頼</a></li>
+                    <li id="google_translate_element"></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="ad-page">
+        <div class="container">
+            <div class="ad-container">
+                <h2 style="color: var(--color-primary); margin-bottom: 20px; text-align: center;">HRR 広告掲載お申し込み</h2>
+                <p style="text-align: center; margin-bottom: 40px; line-height: 1.8;">
+                    「HRR（Happy Return Rescue）」への広告掲載をご検討いただきありがとうございます。<br>
+                    以下のフォームより、掲載希望の内容をお送りください。担当者より詳細をご連絡いたします。
+                </p>
+
+                <form id="adForm" class="ad-form">
+                    <div class="ad-form-group">
+                        <label>会社名 / 活動名 / 個人名 <span style="color:red">*</span></label>
+                        <input type="text" name="company" placeholder="例：株式会社〇〇、ドッグカフェ△△、山田 花子" required>
+                    </div>
+
+                    <div class="ad-form-group">
+                        <label>ご担当者様名 <span style="color:red">*</span></label>
+                        <input type="text" name="name" placeholder="例：山田 太郎" required>
+                    </div>
+
+                    <div class="ad-form-group">
+                        <label>メールアドレス <span style="color:red">*</span></label>
+                        <input type="email" name="email" placeholder="例：info@example.com" required>
+                    </div>
+
+                    <div class="ad-form-group">
+                        <label>電話番号</label>
+                        <input type="tel" name="phone" placeholder="例：090-1234-5678">
+                    </div>
+
+                    <div class="ad-form-group">
+                        <label>ご希望の掲載サイズ（もし決まっていれば）</label>
+                        <select name="size">
+                            <option value="">未定・相談したい</option>
+                            <option value="名刺サイズ">名刺サイズ</option>
+                            <option value="1/4ページ">1/4ページ</option>
+                            <option value="1/2ページ">1/2ページ</option>
+                            <option value="1ページ">1ページ（全面）</option>
+                            <option value="表紙/裏表紙">表紙/裏表紙</option>
+                        </select>
+                    </div>
+
+                    <div class="ad-form-group">
+                        <label>メッセージ・ご要望</label>
+                        <textarea name="message" rows="5" placeholder="掲載時期のご希望や、ご質問等ございましたらご記入ください。"></textarea>
+                    </div>
+
+                    <button type="submit" class="ad-submit-btn">送信する</button>
+                    <p style="text-align: center; font-size: 0.85rem; color: #888; margin-top: 15px;">
+                        ※送信後、自動的に受付完了メッセージが表示されます。</p>
+                </form>
+
+                <a href="index.html" class="back-link">← トップページに戻る</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-logo">動物保護団体ヨンナナ</div>
+            <p class="copyright">&copy; 2024 YonNana. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'ja',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript"
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script src="js/script.js"></script>
+    <script>
+        document.getElementById('adForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('.ad-submit-btn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '送信中...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.sheetName = 'hrr_ad'; // 広告掲載依頼用シート名
+
+            // Google Apps Script URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    alert('広告掲載のお申し込みを受け付けました。\n内容を確認次第、担当者よりご連絡させていただきます。');
+                    this.reset();
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信に失敗しました。');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>
