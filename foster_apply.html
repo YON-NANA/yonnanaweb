@@ -309,18 +309,38 @@
         document.getElementById('fosterApplyForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '送信中...';
+            submitBtn.disabled = true;
+
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
+            data.sheetName = 'foster'; // シート名を指定
 
-            // Google Apps Script URL (後で設定)
-            const scriptURL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+            // Google Apps Script URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
 
-            // 送信処理（実際のGoogle Apps Script URLを設定後に有効化）
-            console.log('里親申し込み内容:', data);
-
-            // 仮の成功メッセージ
-            alert('里親のお申し込みありがとうございます！\n内容を確認次第、ご連絡させていただきます。\n\n※審査には数日～1週間程度かかる場合がございます。');
-            this.reset();
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors', // 重要: GASへのPOSTはno-cors
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    alert('里親のお申し込みありがとうございます！\n内容を確認次第、ご連絡させていただきます。\n\n※審査には数日～1週間程度かかる場合がございます。');
+                    this.reset();
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信に失敗しました。時間をおいて再度お試しいただくか、直接メールでお問い合わせください。');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                });
         });
     </script>
 </body>

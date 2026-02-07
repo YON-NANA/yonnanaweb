@@ -155,7 +155,7 @@
                     保護依頼者も私たちも動物を助けたいという気持ちは同じです。私たち団体は保護シェルターを持たず、各メンバー宅で預かりお世話をしています。そのため、保護できる頭数に限りがあり、保護依頼を受けられない場合があります。この活動は公的な支援を受けることなくおこなっており、保護依頼者さまから保護動物に対する初期医療費をいただいております。所有権放棄に対しても念書を作成、その子にかかる費用をいただいております。その他、保護した子を自身で預かる事は出来るが、里親探しを手伝ってほしい…、保護するために捕獲を手伝ってほしい…などあれば、ご相談ください。
                 </div>
 
-                <form class="request-form">
+                <form id="requestForm" class="request-form">
                     <div class="form-group">
                         <label for="name">お名前（フルネーム）</label>
                         <input type="text" id="name" name="name" required placeholder="例：山田 太郎">
@@ -247,11 +247,52 @@
     <script src="js/script.js"></script>
     <script type="text/javascript">
         function googleTranslateElementInit() {
-            new google.translate.TranslateElement({ pageLanguage: 'ja', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+            new google.translate.TranslateElement({
+                pageLanguage: 'ja',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
         }
     </script>
     <script type="text/javascript"
-        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        document.getElementById('requestForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '送信中...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.sheetName = 'request';
+
+            // Google Apps Script URL
+            const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    alert('保護依頼を受け付けました。\n内容を確認後、担当者よりご連絡させていただきます。');
+                    this.reset();
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信に失敗しました。');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+        });
+    </script>
 </body>
 
 </html>

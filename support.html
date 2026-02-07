@@ -390,38 +390,38 @@
             });
 
             if (form) {
-                form.addEventListener('submit', async (e) => {
+                form.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    const formData = new FormData(form);
-                    const data = {
-                        name: formData.get('name'),
-                        address: formData.get('address'),
-                        contact: formData.get('contact'),
-                        shares: formData.get('shares')
-                    };
 
                     const submitBtn = form.querySelector('.ad-submit-btn');
                     submitBtn.disabled = true;
                     submitBtn.innerText = "送信中...";
 
-                    try {
-                        const response = await fetch('/api/submit', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ type: 'support', data })
-                        });
-                        if (response.ok) {
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData);
+                    data.sheetName = 'support';
+
+                    // Google Apps Script URL
+                    const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
+
+                    fetch(scriptURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                        .then(() => {
                             form.style.display = 'none';
                             thanks.style.display = 'block';
-                        } else {
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
                             alert("送信に失敗しました。お手数ですが、080-6394-4497（藤本）までご連絡ください。");
-                        }
-                    } catch (error) {
-                        alert("通信エラーが発生しました。インターネット接続を確認してください。");
-                    } finally {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = "お申し込み内容を送信する";
-                    }
+                        })
+                        .finally(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = "お申し込み内容を送信する";
+                        });
                 });
             }
         });
