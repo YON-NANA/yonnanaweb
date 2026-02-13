@@ -271,12 +271,12 @@
             data.sheetName = 'request';
 
             // Google Apps Script URL
-            const scriptURL = 'https://script.google.com/macros/s/AKfycby4tLTRKBlIwx-sXZcPMNbRTjzDka6BwKRwgLh4jJw2qZ9pIJ8soRwLU9dEoR2JGMPL/exec';
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbxdLZVk2S8JJFq6wiNa7O1mH9tyYG4SUeZoxp2VxevUKJv8D2m22auWOQf7FDK71Ybs/exec';
 
             fetch(scriptURL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify(data)
             })
                 .then(() => {

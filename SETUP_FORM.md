@@ -57,6 +57,8 @@ function doPost(e) {
     // 除外するキー
     const excludeKeys = ['sheetName'];
     
+
+    
     // オブジェクトのキー順に値を追加（順序が変わる可能性があるので、実運用ではヘッダー管理推奨）
     // 今回はフォーム側で順序付けて送信するか、スプレッドシート側で調整してください
     for (const key in data) {
