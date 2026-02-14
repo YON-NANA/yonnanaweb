@@ -634,23 +634,49 @@ ul {
 /* Google Translate Styling */
 #google_translate_element {
     display: inline-block;
-    min-height: 25px;
+    vertical-align: middle;
+    line-height: normal;
+    /* ヘッダーの行高の影響をリセット */
 }
 
 .goog-te-gadget {
     font-family: var(--font-body) !important;
+    color: transparent !important;
+    /* テキスト（Powered byなど）を透明にする */
     font-size: 0 !important;
+    display: inline-block !important;
 }
 
 .goog-te-gadget .goog-te-combo {
     color: #444 !important;
     border: 1px solid #ccc !important;
-    padding: 6px !important;
-    border-radius: 4px !important;
-    font-size: 14px !important;
-    margin: 4px 0 !important;
+    padding: 5px 8px !important;
+    border-radius: 20px !important;
+    /* 角丸にしてボタンっぽく */
+    font-size: 13px !important;
+    margin: 0 !important;
     display: inline-block !important;
+    cursor: pointer;
+    background-color: white !important;
+    height: auto !important;
+    vertical-align: middle !important;
 }
+
+/* ロゴ画像とバナーを非表示（見た目をすっきりさせるため） */
+.goog-te-gadget img {
+    display: none !important;
+}
+
+/* 翻訳ツールバー（上部に出るやつ）を消す設定 */
+body {
+    top: 0 !important;
+}
+
+.goog-te-banner-frame {
+    display: none !important;
+    visibility: hidden !important;
+}
+
 
 /* Hide "Powered by Google" text */
 .goog-te-gadget>span>a {
