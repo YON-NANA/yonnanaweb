@@ -553,6 +553,20 @@ ul {
     .hero-title {
         font-size: 2.2rem;
     }
+
+    .hero-btns {
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 300px;
+        margin: 0 auto;
+        gap: 15px;
+        display: flex !important;
+    }
+
+    .hero-btns .btn {
+        width: 100%;
+        padding: 16px 0 !important;
+    }
 }
 
 /* Hamburger Menu Icon */
@@ -801,5 +815,31 @@ ul {
 
     .news-date {
         font-size: 0.8rem;
+    }
+}
+
+/* Hero Button Responsiveness Fix */
+.hero-btn-custom {
+    padding: 16px 45px;
+    white-space: nowrap;
+    /* テキストの折り返しを禁止 */
+}
+
+@media (max-width: 768px) {
+    .hero-btns {
+        flex-direction: column !important;
+        gap: 15px !important;
+        align-items: center !important;
+    }
+
+    .hero-btn-custom {
+        width: 100% !important;
+        max-width: 300px !important;
+        padding: 15px 20px !important;
+        /* 左右パディングを少し確保 */
+        text-align: center !important;
+        justify-content: center !important;
+        font-size: 0.95rem !important;
+        /* 少し文字を小さく */
     }
 }
