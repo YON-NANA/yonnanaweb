@@ -662,8 +662,10 @@ ul {
     vertical-align: middle !important;
 }
 
-/* ロゴ画像とバナーを非表示（見た目をすっきりさせるため） */
-.goog-te-gadget img {
+/* プルダウン以外の余計なリンクやテキストを完全に隠す */
+.goog-te-gadget>span,
+.goog-te-gadget>div:not(:first-child),
+.goog-te-gadget a {
     display: none !important;
 }
 
