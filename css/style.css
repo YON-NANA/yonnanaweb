@@ -632,45 +632,48 @@ ul {
 }
 
 /* Google Translate Styling */
-/* Google Translate Styling */
 #google_translate_element {
     display: inline-block;
     vertical-align: middle;
     margin-left: 10px;
 }
 
-/* 翻訳ツール関連の調整（最低限） */
+/* コンテナ内のフォントサイズを0にして、隙間やテキストを消す */
 .goog-te-gadget {
     font-family: var(--font-body) !important;
     color: transparent !important;
-    /* "Powered by Google" の文字色を透明に */
+    font-size: 0 !important;
 }
 
-/* プルダウン（言語選択ボックス）のスタイル */
-.goog-te-combo {
-    margin: 0 !important;
+/* プルダウン（セレクトボックス）だけを表示 */
+.goog-te-gadget .goog-te-combo {
+    display: inline-block !important;
+    font-size: 14px !important;
+    /* ここだけ文字サイズを戻す */
+    color: #444 !important;
+    background-color: #fff !important;
     padding: 6px 10px !important;
     border: 1px solid #ddd !important;
     border-radius: 20px !important;
-    /* 角丸で見やすく */
-    font-size: 14px !important;
-    color: #444 !important;
-    background: #fff !important;
+    margin: 0 !important;
     cursor: pointer;
     vertical-align: middle;
 }
 
-/* 不要なロゴリンクを隠す */
+/* それ以外（言語リスト、ロゴ、リンクなど）をすべて非表示 */
+.goog-te-gadget>span,
+.goog-te-gadget>div,
+.goog-te-gadget a,
 .goog-logo-link {
     display: none !important;
 }
 
-.goog-te-gadget .goog-te-combo:focus {
-    outline: none;
-    border-color: var(--color-primary) !important;
+/* アイコンや画像も非表示 */
+.goog-te-gadget img {
+    display: none !important;
 }
 
-/* 翻訳ツールバー（上部のバー）を非表示 */
+/* ツールバー非表示 */
 body {
     top: 0 !important;
 }
@@ -681,14 +684,7 @@ body {
 }
 
 
-/* Hide "Powered by Google" text */
-.goog-te-gadget>span>a {
-    display: none !important;
-}
 
-.goog-te-gadget>div {
-    display: inline-block !important;
-}
 
 
 .ad-form-group label {
