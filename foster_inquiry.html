@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>こ�E子につぁE��問合わせめE- 動物保護団体ヨンナナ</title>
+    <title>この子について問合わせる - 動物保護団体ヨンナナ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=1.9">
-    <meta name="description" content="保護犬・保護猫につぁE��のお問ぁE��わせフォームです。気になる子がぁE��したら、お気軽にお問ぁE��わせください、E>
+    <link rel="stylesheet" href="css/style.css?v=1.8">
+    <meta name="description" content="保護犬・保護猫についてのお問い合わせフォームです。気になる子がいましたら、お気軽にお問い合わせください。">
     <link rel="icon" type="image/gif" href="assets/images/logo_v2.gif">
     <style>
         .inquiry-page {
@@ -117,16 +117,16 @@
                 <img src="assets/images/fujimoto_avatar.png" alt="藤本"
                     style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-primary);">
                 <div>
-                    <h1 class="page-title">こ�E子につぁE��問合わせめE/h1>
-                    <p style="color: var(--color-text-light); margin: 0;">気になることがあれ�E、お気軽にお問ぁE��わせください</p>
+                    <h1 class="page-title">この子について問合わせる</h1>
+                    <p style="color: var(--color-text-light); margin: 0;">気になることがあれば、お気軽にお問い合わせください</p>
                 </div>
             </div>
 
             <div
                 style="background-color: #f9f7f2; padding: 25px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid var(--color-primary);">
                 <p style="line-height: 1.8; margin: 0;">
-                    <strong>こんにちは�E�E/strong><br>
-                    気になる子につぁE��のご質問やご相諁E��承ります。性格のこと、健康状態�Eこと、実際に会ってみたいなど、どんなことでもお気軽にお聞きください。以下�E質問にお答えぁE��だければ、スムーズにご対応できます、E
+                    <strong>こんにちは！</strong><br>
+                    気になる子についてのご質問やご相談を承ります。性格のこと、健康状態のこと、実際に会ってみたいなど、どんなことでもお気軽にお聞きください。以下の質問にお答えいただければ、スムーズにご対応できます。
                 </p>
             </div>
 
@@ -135,7 +135,7 @@
                     <label><i class="fas fa-user"
                             style="margin-right: 8px; color: var(--color-primary);"></i>お名前をお聞かせください<span
                             class="required">*</span></label>
-                    <input type="text" name="name" placeholder="例：山田 太郁E required>
+                    <input type="text" name="name" placeholder="例：山田 太郎" required>
                 </div>
 
                 <div class="form-group">
@@ -149,27 +149,27 @@
                     <label><i class="fas fa-phone"
                             style="margin-right: 8px; color: var(--color-primary);"></i>お電話番号を教えてください<span
                             class="required">*</span></label>
-                    <input type="tel" name="phone" placeholder="例！E90-1234-5678" required>
+                    <input type="tel" name="phone" placeholder="例：090-1234-5678" required>
                 </div>
 
                 <div class="form-group">
                     <label><i class="fas fa-paw"
-                            style="margin-right: 8px; color: var(--color-primary);"></i>気になる子�E名前�E�わかる場合！E/label>
+                            style="margin-right: 8px; color: var(--color-primary);"></i>気になる子の名前（わかる場合）</label>
                     <input type="text" name="animalName" placeholder="例：ぼー">
                 </div>
 
                 <div class="form-group">
                     <label><i class="fas fa-comment-dots"
-                            style="margin-right: 8px; color: var(--color-primary);"></i>どんなことが気になりますか�E�Espan
+                            style="margin-right: 8px; color: var(--color-primary);"></i>どんなことが気になりますか？<span
                             class="required">*</span></label>
-                    <textarea name="message" placeholder="例：この子�E性格につぁE��もっと詳しく知りたぁE��実際に会ってみたい、他�E動物との相性が気になる、など"
+                    <textarea name="message" placeholder="例：この子の性格についてもっと詳しく知りたい、実際に会ってみたい、他の動物との相性が気になる、など"
                         required></textarea>
                 </div>
 
                 <button type="submit" class="submit-btn">送信する</button>
             </form>
 
-            <a href="index.html#foster" class="back-link"><i class="fas fa-arrow-left"></i> 里親募集ペ�Eジに戻めE/a>
+            <a href="index.html#foster" class="back-link"><i class="fas fa-arrow-left"></i> 里親募集ページに戻る</a>
         </div>
     </div>
 
@@ -196,14 +196,14 @@
                 body: JSON.stringify(data)
             })
                 .then(() => {
-                    alert('お問ぁE��わせありがとぁE��ざいます！\n冁E��を確認次第、ご連絡させてぁE��だきます、E);
+                    alert('お問い合わせありがとうございます！\n内容を確認次第、ご連絡させていただきます。');
                     this.reset();
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('送信に失敗しました。時間をおいて再度お試しいただくか、直接メールでお問ぁE��わせください、E);
+                    alert('送信に失敗しました。時間をおいて再度お試しいただくか、直接メールでお問い合わせください。');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                 });
