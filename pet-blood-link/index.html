@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimalBloodConnect - 命をつなぐ</title>
+    <!-- Tailwind CSS (CDN for prototype) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'life-red': '#D32F2F', /* Logo Red */
+                        'life-green': '#2E7D32', /* Logo Green */
+                        'trust-blue': '#1565C0', /* Logo Blue */
+                        'clean-white': '#F1FAEE',
+                        'deep-blue': '#1D3557',
+                        'warm-gray': '#F8F9FA'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+        }
+
+        .hero-bg {
+            background-image: url('assets/hero-bg.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(29, 53, 87, 0.6);
+            /* Deep Blue Overlay with 60% opacity */
+            z-index: 0;
+        }
+
+        /* Cute Paw Print Pattern */
+        .bg-paw-pattern {
+            background-color: #F8F9FA;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e63946' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* Custom Animation: Heartbeat for the Life Connection */
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+
+            14% {
+                transform: scale(1.1);
+            }
+
+            28% {
+                transform: scale(1);
+            }
+
+            42% {
+                transform: scale(1.1);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-heartbeat {
+            animation: heartbeat 2s infinite;
+        }
+    </style>
+</head>
+
+<body class="text-gray-800 antialiased bg-paw-pattern">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20"> <!-- Increase height for logo -->
+                <div class="flex items-center">
+                    <!-- Logo Image (Placeholder until file is saved) -->
+                    <img src="assets/logo.png" alt="AnimalBloodConnect" class="h-14 w-auto">
+                    <!-- Fallback Text if image fails -->
+                    <span class="ml-3 text-2xl font-bold hidden md:block">
+                        <span class="text-life-green">Animal</span><span class="text-life-red">Blood</span><span
+                            class="text-trust-blue">Connect</span>
+                    </span>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#about" class="text-gray-600 hover:text-life-red font-medium transition flex items-center">
+                        <svg class="w-5 h-5 mr-1 text-life-red" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M12.9 14.32a8 8 0 1 1 1.41-1.41l5.35 5.33-1.42 1.42-5.33-5.34zM8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z">
+                            </path>
+                        </svg>
+                        仕組み
+                    </a>
+                    <a href="hospital_login.html" class="text-trust-blue font-medium transition">動物病院ログイン</a>
+                    <a href="register.html"
+                        class="bg-life-red text-white px-6 py-2 rounded-full font-bold hover:bg-red-600 transition shadow-md flex items-center">
+                        <span class="mr-2">🐶🐱</span> ドナー登録
+                    </a>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-bg pt-32 pb-20 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <circle cx="10" cy="10" r="20" fill="white" />
+                <circle cx="80" cy="80" r="30" fill="white" />
+            </svg>
+        </div>
+
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <!-- Animation Design: "Connection of Life" - Replaced by Hero Photo -->
+            <div class="mb-4"></div>
+
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                あなたの愛犬・愛猫が<br>
+                <span class="text-life-red bg-white px-4 py-1 rounded-full inline-block mt-2 shadow-lg">誰かの命を救う</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-10 text-gray-200">
+                全国の動物病院と心優しい飼い主をつなぐ、<br>完全非営利の献血マッチングプラットフォーム。
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="register.html"
+                    class="bg-life-red text-white text-lg font-bold px-10 py-4 rounded-full shadow-lg hover:bg-red-600 transform hover:scale-105 transition duration-300 flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
+                    </svg>
+                    ドナー登録する
+                </a>
+                <a href="#how-it-works"
+                    class="bg-white text-deep-blue text-lg font-bold px-10 py-4 rounded-full shadow-lg hover:bg-gray-100 transition duration-300">
+                    詳しく知る
+                </a>
+            </div>
+
+            <!-- Stats (Mock) -->
+            <div
+                class="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8 text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                <div>
+                    <div class="text-3xl font-bold text-white">128</div>
+                    <div class="text-sm text-gray-300">現在の登録ドナー数</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-white">15</div>
+                    <div class="text-sm text-gray-300">今月救われた命</div>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <div class="text-3xl font-bold text-white">42</div>
+                    <div class="text-sm text-gray-300">提携動物病院</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-warm-gray">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-deep-blue mb-4">選ばれる3つの理由</h2>
+                <div class="w-20 h-1 bg-life-red mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-10">
+                <!-- Feature 1 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <div
+                        class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-trust-blue">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">完全匿名で安心</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        チャット機能でやり取りするため、病院に行くまで個人の連絡先を交換する必要はありません。
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6 text-life-red">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">金銭授受なし</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        善意のボランティアベースです。謝礼などの金銭トラブルを未然に防ぐルールを徹底しています。
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition duration-300">
+                    <div
+                        class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">病院認証制</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        登録・検索できるのは、事前に審査・承認された動物病院のみ。安心してご参加いただけます。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold text-deep-blue mb-8">
+                あなたの協力が必要です
+            </h2>
+            <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
+                輸血さえあれば助かる命があります。<br>
+                しかし、血液は長期保存ができず、常に不足しています。<br>
+                あなたの愛犬・愛猫が、明日誰かのヒーローになるかもしれません。
+            </p>
+            <a href="register.html"
+                class="inline-block bg-trust-blue text-white text-lg font-bold px-12 py-4 rounded-full shadow-lg hover:bg-blue-600 transition duration-300">
+                ドナー登録を始める（無料）
+            </a>
+            <p class="mt-4 text-sm text-gray-400">所要時間：約3分</p>
+        </div>
+    </section>
+
+    <!-- Partner Shelters Section -->
+    <section class="py-16 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">協力パートナー（動物保護団体）</h2>
+            <p class="text-gray-500 mb-10">全国の保護団体と連携し、支援の輪を広げています。</p>
+
+            <div
+                class="grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70 grayscale hover:grayscale-0 transition duration-500">
+                <!-- Logos (Placeholders) -->
+                <div class="flex items-center justify-center p-4 border border-gray-200 rounded-lg h-24">
+                    <span class="font-bold text-gray-400">Yonnana Rescue</span>
+                </div>
+                <div class="flex items-center justify-center p-4 border border-gray-200 rounded-lg h-24">
+                    <span class="font-bold text-gray-400">Partner A</span>
+                </div>
+                <div class="flex items-center justify-center p-4 border border-gray-200 rounded-lg h-24">
+                    <span class="font-bold text-gray-400">Partner B</span>
+                </div>
+                <div class="flex items-center justify-center p-4 border border-gray-200 rounded-lg h-24">
+                    <span class="font-bold text-gray-400">Partner C</span>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <a href="#" class="text-life-red font-bold hover:underline text-sm">
+                    保護団体の皆様へ：パートナー登録について &rarr;
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="col-span-2">
+                    <h3 class="text-2xl font-bold mb-4">PetBloodConnect</h3>
+                    <p class="text-gray-400 mb-4">
+                        日本動物救済機構（JARA）が提供する、<br>
+                        命をつなぐプラットフォーム。
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-gray-200">リンク</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">ホーム</a></li>
+                        <li><a href="#" class="hover:text-white">ドナー登録</a></li>
+                        <li><a href="hospital_login.html" class="hover:text-white">動物病院ログイン</a></li>
+                        <li><a href="#" class="hover:text-white">運営団体について</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-gray-200">サポート</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">利用規約</a></li>
+                        <li><a href="#" class="hover:text-white">プライバシーポリシー</a></li>
+                        <li><a href="hospital_inquiry.html" class="hover:text-white">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
+                <div class="mb-4">
+                    <span class="block text-gray-400 text-xs mb-1">運営事務局</span>
+                    <span class="text-xl font-bold text-white tracking-widest">日本動物救済機構（Japan Animal Rescue Agency /
+                        JARA）</span>
+                </div>
+                &copy; 2026 AnimalBloodConnect. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>

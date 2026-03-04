@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>病院お問い合わせ - AnimalBloodConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'life-red': '#D32F2F',
+                        'life-green': '#2E7D32',
+                        'trust-blue': '#1565C0',
+                        'deep-blue': '#1D3557',
+                        'warm-gray': '#F8F9FA'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F1FAEE;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen py-12 px-4 flex items-center justify-center">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 md:p-12">
+        <div class="text-center mb-10">
+            <div class="flex justify-center mb-4">
+                <img src="assets/logo.png" alt="AnimalBloodConnect" class="h-16 w-auto">
+            </div>
+            <h1 class="text-3xl font-bold text-deep-blue mb-2">病院様 新規提携・お問い合わせ</h1>
+            <p class="text-gray-500 font-medium tracking-tight">日本動物救済機構（JARA）供血ネットワーク</p>
+        </div>
+
+        <div id="formContainer">
+            <form id="hospitalInquiryForm" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">病院名 <span class="text-red-500">*</span></label>
+                        <input type="text" name="hospitalName" placeholder="〇〇動物病院"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">担当者名 <span class="text-red-500">*</span></label>
+                        <input type="text" name="contactName" placeholder="山田 太郎"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition"
+                            required>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">メールアドレス <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" placeholder="hospital@example.com"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">電話番号 <span class="text-red-500">*</span></label>
+                        <input type="tel" name="phone" placeholder="03-1234-5678"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition"
+                            required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">病院所在地</label>
+                    <input type="text" name="address" placeholder="東京都渋谷区..."
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">お問い合わせ内容 <span class="text-red-500">*</span></label>
+                    <textarea name="message" rows="4" placeholder="提携を希望される旨や、ご質問などをご記入ください"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue transition"
+                        required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-trust-blue text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-blue-600 transition flex items-center justify-center">
+                    送信する
+                </button>
+            </form>
+        </div>
+
+        <div id="successMessage" class="hidden text-center py-10">
+            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-deep-blue mb-4">送信が完了しました</h2>
+            <p class="text-gray-500 mb-8">
+                お問い合わせありがとうございます。<br>
+                事務局にて内容を確認の上、担当者より折り返しご連絡させていただきます。
+            </p>
+            <a href="index.html" class="text-trust-blue font-bold hover:underline">
+                トップページへ戻る
+            </a>
+        </div>
+
+        <div class="mt-8 text-center pt-6 border-t border-gray-50">
+            <a href="hospital_login.html" class="text-sm text-gray-500 hover:text-trust-blue transition font-medium">
+                病院ログインはこちら
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('hospitalInquiryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = '送信中...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            data.sheetName = 'hospital_inquiry';
+
+            // Google Apps Script URL (taken from foster_inquiry.html)
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbxdLZVk2S8JJFq6wiNa7O1mH9tyYG4SUeZoxp2VxevUKJv8D2m22auWOQf7FDK71Ybs/exec';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    document.getElementById('formContainer').classList.add('hidden');
+                    document.getElementById('successMessage').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('送信に失敗しました。お手数ですが時間をおいて再度お試しください。');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>
