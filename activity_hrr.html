@@ -70,6 +70,44 @@
             text-align: center;
             margin: 40px 0 80px;
         }
+
+        /* HRR Infinite Slider */
+        .hrr-slider-wrapper {
+            overflow: hidden;
+            width: 100vw;
+            margin-left: calc(50% - 50vw);
+            margin-right: calc(50% - 50vw);
+            background: #fdfaf5;
+            padding: 40px 0;
+            margin-top: 80px;
+            margin-bottom: 60px;
+        }
+        .hrr-slider-inner {
+            display: flex;
+            width: max-content;
+            animation: slide-left 40s linear infinite;
+        }
+        .hrr-slider-inner:hover {
+            animation-play-state: paused;
+        }
+        .hrr-slider-inner img {
+            height: 350px;
+            width: auto;
+            object-fit: contain;
+            margin: 0 15px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        @keyframes slide-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50%)); }
+        }
+        @media (max-width: 768px) {
+            .hrr-slider-inner img {
+                height: 250px;
+                margin: 0 10px;
+            }
+        }
     </style>
 </head>
 
@@ -120,6 +158,32 @@
 
                 <p>「この冊子をきっかけに、保護犬を家族に迎えました」という声もいただき、私たちの活動の大きな励みになっています。</p>
             </div>
+
+            <div class="hrr-slider-wrapper">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h3 style="font-size: 1.8rem; color: var(--color-primary); font-family: var(--font-heading);">最新号（全ページ公開）</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">※ゆっくり横へスクロールします。画像をタップ（カーソルを合わせる）で一時停止します。</p>
+                </div>
+                <div class="hrr-slider-inner">
+                    <!-- Set 1 -->
+                    <img src="assets/HRRの発行/1.png" alt="HRR Vol.25 Page 1">
+                    <img src="assets/HRRの発行/2.png" alt="HRR Vol.25 Page 2">
+                    <img src="assets/HRRの発行/3.png" alt="HRR Vol.25 Page 3">
+                    <img src="assets/HRRの発行/4.png" alt="HRR Vol.25 Page 4">
+                    <img src="assets/HRRの発行/5.png" alt="HRR Vol.25 Page 5">
+                    <img src="assets/HRRの発行/6.png" alt="HRR Vol.25 Page 6">
+                    <img src="assets/HRRの発行/7.png" alt="HRR Vol.25 Page 7">
+                    <!-- Set 2 for infinite scroll -->
+                    <img src="assets/HRRの発行/1.png" alt="HRR Vol.25 Page 1">
+                    <img src="assets/HRRの発行/2.png" alt="HRR Vol.25 Page 2">
+                    <img src="assets/HRRの発行/3.png" alt="HRR Vol.25 Page 3">
+                    <img src="assets/HRRの発行/4.png" alt="HRR Vol.25 Page 4">
+                    <img src="assets/HRRの発行/5.png" alt="HRR Vol.25 Page 5">
+                    <img src="assets/HRRの発行/6.png" alt="HRR Vol.25 Page 6">
+                    <img src="assets/HRRの発行/7.png" alt="HRR Vol.25 Page 7">
+                </div>
+            </div>
+
             <h3 class="text-center" style="margin-top: 40px; font-size: 1.5rem; font-family: var(--font-heading);">
                 活動ギャラリー</h3>
             <div class="activity-gallery">
