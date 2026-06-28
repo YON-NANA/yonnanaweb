@@ -474,6 +474,18 @@ ul {
     margin-bottom: 12px;
 }
 
+/* 譲渡済ステータス */
+.foster-tag--adopted {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+/* 虹の橋ステータス */
+.foster-tag--rainbow {
+    background: #EDE7F6;
+    color: #6A4C8C;
+}
+
 .foster-name {
     font-size: 1.25rem;
     margin-bottom: 8px;
