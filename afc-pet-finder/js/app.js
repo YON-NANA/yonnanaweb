@@ -36,20 +36,28 @@ const AFC = {
       }
 
       installBtn.addEventListener('click', async () => {
+        if (!window.deferredPrompt) {
+          await new Promise(r => setTimeout(r, 500));
+        }
+
         if (window.deferredPrompt) {
           try {
-            window.deferredPrompt.prompt();
-            const { outcome } = await window.deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
+            await window.deferredPrompt.prompt();
+            const choiceResult = await window.deferredPrompt.userChoice;
+            if (choiceResult && choiceResult.outcome === 'accepted') {
               window.deferredPrompt = null;
               installBtn.classList.add('hidden');
             }
           } catch (err) {
-            console.error('PWA install error:', err);
+            console.error('PWA install prompt error:', err);
             AFC.showPwaGuide();
           }
         } else {
-          AFC.showPwaGuide();
+          if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            alert('すでにアプリはホーム画面にインストールされています！');
+          } else {
+            AFC.showPwaGuide();
+          }
         }
       });
 
