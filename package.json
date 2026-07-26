@@ -4,6 +4,7 @@
     "description": "YonNana Animal Protection Group Website",
     "main": "index.html",
     "dependencies": {
+        "jimp": "^1.6.1",
         "octokit": "^3.1.2"
     }
 }

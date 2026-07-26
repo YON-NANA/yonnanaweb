@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太陽のポスター | Animal Blood Connect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- QRコード生成ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        /* A4サイズ 210×297mm */
+        .poster {
+            width: 210mm;
+            min-height: 297mm;
+            background: #FDFCF8;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── 背景の肉球パターン ── */
+        .poster::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D32F2F' fill-opacity='0.04'%3E%3Cellipse cx='40' cy='50' rx='14' ry='10'/%3E%3Cellipse cx='22' cy='32' rx='7' ry='5'/%3E%3Cellipse cx='58' cy='32' rx='7' ry='5'/%3E%3Cellipse cx='30' cy='24' rx='5' ry='4'/%3E%3Cellipse cx='50' cy='24' rx='5' ry='4'/%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── ヘッダー帯 ── */
+        .header-band {
+            background: linear-gradient(135deg, #1D3557 0%, #2a4a70 100%);
+            padding: 16px 24px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+        .header-band .logo-text {
+            color: white;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+        .header-band .logo-text span.green { color: #81C784; }
+        .header-band .logo-text span.red { color: #EF9A9A; }
+        .header-band .logo-text span.blue { color: #90CAF9; }
+        .header-band .badge {
+            background: #D32F2F;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 4px 12px;
+            border-radius: 100px;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── 太陽エリア ── */
+        .taiyou-section {
+            background: linear-gradient(180deg, #FFF8E1 0%, #FFF3CD 60%, #FDFCF8 100%);
+            padding: 32px 24px 24px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 太陽の輝き円 */
+        .sun-glow {
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, #FFD54F 0%, #FFCA28 40%, rgba(255,202,40,0) 70%);
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .sun-glow::before {
+            content: '';
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,213,79,0.3) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        .dog-emoji {
+            font-size: 80px;
+            line-height: 1;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+        }
+
+        .taiyou-name {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 36px;
+            font-weight: 900;
+            color: #E65100;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 8px rgba(230,81,0,0.2);
+            margin-bottom: 4px;
+        }
+        .taiyou-subtitle {
+            font-size: 11px;
+            color: #BF6820;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+        }
+
+        /* ── ストーリーカード ── */
+        .story-card {
+            background: white;
+            margin: 0 20px 0;
+            border-radius: 16px;
+            padding: 20px 22px;
+            border-left: 5px solid #D32F2F;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 1;
+        }
+        .story-card .story-label {
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            color: #D32F2F;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .story-card .story-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #FFCDD2;
+            margin-left: 10px;
+        }
+        .story-text {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 13.5px;
+            line-height: 2;
+            color: #333;
+            font-weight: 400;
+        }
+        .story-text strong {
+            color: #1D3557;
+            font-weight: 900;
+        }
+        .story-text .highlight {
+            background: linear-gradient(transparent 60%, #FFECB3 60%);
+        }
+
+        /* ── メインメッセージ ── */
+        .main-message {
+            text-align: center;
+            padding: 28px 20px 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .main-message h1 {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 26px;
+            font-weight: 900;
+            color: #1D3557;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .main-message h1 .red { color: #D32F2F; }
+        .main-message .sub {
+            font-size: 12px;
+            color: #666;
+            font-weight: 700;
+            line-height: 1.8;
+        }
+
+        /* ── QRコードエリア ── */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 20px 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .qr-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(29,53,87,0.15);
+            border: 3px solid #1D3557;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 200px;
+        }
+        .qr-label-top {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            color: #D32F2F;
+            text-align: center;
+        }
+        #qrcode {
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #qrcode canvas, #qrcode img {
+            width: 140px !important;
+            height: 140px !important;
+        }
+        .qr-label-bottom {
+            font-size: 10px;
+            font-weight: 900;
+            color: #1D3557;
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+        .url-text {
+            font-size: 9px;
+            color: #888;
+            margin-top: 6px;
+            font-weight: 700;
+            id: url-display;
+        }
+
+        /* ── 3つの安心ポイント ── */
+        .three-points {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .point-item {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border-top: 3px solid #1D3557;
+        }
+        .point-item .point-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+        .point-item .point-title { font-size: 11px; font-weight: 900; color: #1D3557; display: block; margin-bottom: 3px; }
+        .point-item .point-desc { font-size: 9.5px; color: #666; font-weight: 700; line-height: 1.5; }
+
+        /* ── フッター ── */
+        .footer-band {
+            background: #1D3557;
+            padding: 16px 24px;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+        .footer-band .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-band .org-name {
+            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.8;
+        }
+        .footer-band .org-name strong {
+            color: white;
+            font-size: 12px;
+        }
+        .footer-band .pets {
+            font-size: 28px;
+            letter-spacing: 4px;
+        }
+
+        /* 印刷設定 */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .poster {
+                box-shadow: none;
+                width: 210mm;
+                min-height: 297mm;
+                page-break-after: always;
+            }
+            .print-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="poster">
+
+    <!-- ヘッダー帯 -->
+    <div class="header-band">
+        <div class="logo-text">
+            <span class="green">Animal</span><span class="red">Blood</span><span class="blue">Connect</span>
+            &nbsp;（ABC）供血ネットワーク
+        </div>
+        <div class="badge">非営利・無料</div>
+    </div>
+
+    <!-- 太陽セクション -->
+    <div class="taiyou-section">
+        <div class="sun-glow">
+            <span class="dog-emoji">🐕</span>
+        </div>
+        <div class="taiyou-name">太陽</div>
+        <div class="taiyou-subtitle">TAIYOU — THE DOG WHO GIVES BACK LIFE</div>
+    </div>
+
+    <!-- ストーリーカード -->
+    <div class="story-card">
+        <div class="story-label">🌟 太陽のストーリー</div>
+        <p class="story-text">
+            ある日、<strong>事故に遭った一頭の犬</strong>がいました。<br>
+            名前は<strong class="highlight">「太陽」</strong>。<br>
+            　<br>
+            輸血によって、太陽は奇跡的に一命をとりとめました。<br>
+            　<br>
+            今、太陽は<strong>供血ドナー</strong>として、<br>
+            ほかの犬たちの命を救い続けています。<br>
+            　<br>
+            <span style="color:#D32F2F; font-weight:900;">このプロジェクトは、太陽のストーリーから始まりました。</span>
+        </p>
+    </div>
+
+    <!-- メインメッセージ -->
+    <div class="main-message">
+        <h1>
+            あなたの愛犬・愛猫が<br>
+            <span class="red">誰かの命を救う</span><br>
+            かもしれない。
+        </h1>
+        <p class="sub">
+            供血ドナー登録は無料・3分で完了。<br>
+            あなたのペットを登録してください。
+        </p>
+    </div>
+
+    <!-- QRコード -->
+    <div class="qr-section">
+        <div class="qr-wrapper">
+            <div class="qr-label-top">📱 ドナー登録はこちら</div>
+            <div id="qrcode"></div>
+            <div class="qr-label-bottom">スマホでスキャン<br>してください</div>
+        </div>
+        <p class="url-text" id="url-display" style="font-size:10px; color:#888; margin-top:10px; font-weight:700; text-align:center;"></p>
+    </div>
+
+    <!-- 3つの安心ポイント -->
+    <div class="three-points">
+        <div class="point-item">
+            <span class="point-icon">🔒</span>
+            <span class="point-title">完全匿名</span>
+            <span class="point-desc">個人情報は<br>マッチング後のみ開示</span>
+        </div>
+        <div class="point-item">
+            <span class="point-icon">💴</span>
+            <span class="point-title">金銭授受なし</span>
+            <span class="point-desc">完全ボランティア<br>謝礼は禁止</span>
+        </div>
+        <div class="point-item">
+            <span class="point-icon">🏥</span>
+            <span class="point-title">病院主導</span>
+            <span class="point-desc">認証済み動物病院の<br>判断で進みます</span>
+        </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer-band">
+        <div class="footer-inner">
+            <div class="org-name">
+                <strong>動物保護団体ヨンナナ</strong><br>
+                Japan Animal Rescue Agency (JARA)<br>
+                運営: Animal Blood Connect Project
+            </div>
+            <div class="pets">🐶🐱</div>
+        </div>
+    </div>
+</div>
+
+<!-- 印刷ボタン（印刷時は非表示） -->
+<div class="print-btn" style="margin: 20px auto; text-align:center;">
+    <button onclick="generateQR(); window.print();"
+        style="background:#1D3557; color:white; border:none; padding:14px 40px; border-radius:100px; font-size:16px; font-weight:900; cursor:pointer; font-family:'Noto Sans JP'; box-shadow:0 4px 20px rgba(29,53,87,0.3);">
+        🖨️ このポスターを印刷する（A4）
+    </button>
+    <br><br>
+    <label style="font-weight:700; font-size:14px; font-family:'Noto Sans JP';">
+        🔗 QRコードのURL:
+        <input type="text" id="qr-url-input"
+            value="https://pet-blood-connect.vercel.app/register"
+            style="width:340px; padding:8px 12px; border:2px solid #ddd; border-radius:8px; font-size:13px; font-family:monospace; margin-left:8px;"
+            oninput="generateQR()"
+        />
+    </label>
+</div>
+
+<script>
+    let qrInstance = null;
+
+    function generateQR() {
+        const url = document.getElementById('qr-url-input').value || 'https://pet-blood-connect.vercel.app/register';
+        document.getElementById('url-display').textContent = url;
+
+        const container = document.getElementById('qrcode');
+        container.innerHTML = '';
+
+        qrInstance = new QRCode(container, {
+            text: url,
+            width: 140,
+            height: 140,
+            colorDark: '#1D3557',
+            colorLight: '#FFFFFF',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
+
+    // ページ読み込み時にQRコードを生成
+    window.onload = generateQR;
+</script>
+</body>
+</html>

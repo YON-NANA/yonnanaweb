@@ -50,3 +50,4 @@ Next.js アプリケーションから接続するために必要なキーを確
 - **Donors**: `Enable Read Access for authenticated hospitals only` (プライバシー保護のため)
 
 この設定については、アプリ開発が進んだ段階で改めて詳細なポリシーを適用します。
+1qxz

@@ -5,20 +5,27 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { subscribeToNotifications } from '@/lib/push-notifications';
 
 interface Profile {
     display_name: string | null;
     avatar_url: string | null;
 }
 
-interface Pet {
+interface PetDonor {
     id: string;
     pet_name: string;
     species: string;
     breed: string;
     weight_kg: number;
     blood_type: string | null;
+    prefecture: string;
+    city: string;
+    contact_name: string;
+    contact_phone: string;
     created_at: string;
+    birth_date: string | null;
+    verification_status?: string;
 }
 
 interface Match {
@@ -54,10 +61,11 @@ export default function MyPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [pets, setPets] = useState<Pet[]>([]);
+    const [pets, setPets] = useState<PetDonor[]>([]);
     const [matches, setMatches] = useState<Match[]>([]);
     const [activeRequests, setActiveRequests] = useState<BloodRequest[]>([]);
     const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null);
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     // 二段階承認のチェックリスト
     const [approvalChecks, setApprovalChecks] = useState({
@@ -66,6 +74,7 @@ export default function MyPage() {
         rest_period: false,
         privacy_agree: false
     });
+    const [selectedPetId, setSelectedPetId] = useState<string>('');
 
     // ペット登録フォーム用ステータス
     const [isRegistering, setIsRegistering] = useState(false);
@@ -74,9 +83,29 @@ export default function MyPage() {
         species: 'dog',
         breed: '',
         weight_kg: '',
+        birth_year: '',
+        birth_month: '',
         blood_type: '',
         prefecture: '東京都',
-        city: ''
+        city: '',
+        contact_name: '',
+        contact_phone: ''
+    });
+
+    // ペット編集フォーム用ステータス
+    const [editingPetId, setEditingPetId] = useState<string | null>(null);
+    const [editDonor, setEditDonor] = useState({
+        pet_name: '',
+        species: 'dog',
+        breed: '',
+        weight_kg: '',
+        birth_year: '',
+        birth_month: '',
+        blood_type: '',
+        prefecture: '東京都',
+        city: '',
+        contact_name: '',
+        contact_phone: ''
     });
 
     useEffect(() => {
@@ -103,7 +132,12 @@ export default function MyPage() {
                     .select('*')
                     .eq('owner_id', user.id)
                     .order('created_at', { ascending: false });
-                if (petsData) setPets(petsData as Pet[]);
+                if (petsData) {
+                    setPets(petsData as PetDonor[]);
+                    if (petsData.length > 0) {
+                        setSelectedPetId(petsData[0].id);
+                    }
+                }
 
                 // Active Blood Requests
                 const { data: requestsData } = await supabase
@@ -115,6 +149,14 @@ export default function MyPage() {
                     .eq('status', 'active')
                     .order('created_at', { ascending: false });
                 if (requestsData) setActiveRequests(requestsData as unknown as BloodRequest[]);
+
+                // 🔔 Push Subscription Check
+                const { data: subData } = await supabase
+                    .from('push_subscriptions')
+                    .select('user_id')
+                    .eq('user_id', user.id)
+                    .single();
+                if (subData) setIsSubscribed(true);
 
                 // Matches - 自分のペット(ドナー)のIDリストで絞り込む
                 // まずpetsDataからIDを取得
@@ -176,11 +218,9 @@ export default function MyPage() {
 
         if (!selectedRequest) return;
 
-        // 仮: 現在のユーザーが登録している最初のペットを対象ドナーとする
-        // ※ 本来はどのペットで応募するか選ばせるUIが必要ですが、今回は1番目のペットを自動選択
-        const targetPet = pets[0];
+        const targetPet = pets.find(p => p.id === selectedPetId);
         if (!targetPet) {
-            alert("ドナーが登録されていません。先に「登録中のドナー」から追加してください。");
+            alert("ドナーが選択されていません。");
             return;
         }
 
@@ -273,6 +313,13 @@ export default function MyPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            const today = new Date();
+            const birthDateISO = newDonor.birth_year ? (
+                newDonor.birth_month 
+                ? `${newDonor.birth_year}-${newDonor.birth_month.padStart(2, '0')}-01`
+                : `${newDonor.birth_year}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+            ) : null;
+
             const { data, error } = await supabase
                 .from('donors')
                 .insert([{
@@ -281,23 +328,107 @@ export default function MyPage() {
                     species: newDonor.species,
                     breed: newDonor.breed,
                     weight_kg: Number(newDonor.weight_kg),
+                    birth_date: birthDateISO,
                     blood_type: newDonor.blood_type || null,
                     prefecture: newDonor.prefecture,
-                    city: newDonor.city
+                    city: newDonor.city,
+                    contact_name: newDonor.contact_name,
+                    contact_phone: newDonor.contact_phone
                 }])
                 .select();
 
             if (error) throw error;
 
             if (data && data.length > 0) {
-                setPets([data[0] as unknown as Pet, ...pets]);
+                setPets([data[0] as unknown as PetDonor, ...pets]);
             }
             setIsRegistering(false);
-            setNewDonor({ pet_name: '', species: 'dog', breed: '', weight_kg: '', blood_type: '', prefecture: '東京都', city: '' });
+            setNewDonor({ 
+                pet_name: '', 
+                species: 'dog', 
+                breed: '', 
+                weight_kg: '', 
+                birth_year: '',
+                birth_month: '',
+                blood_type: '', 
+                prefecture: '東京都', 
+                city: '', 
+                contact_name: '', 
+                contact_phone: '' 
+            });
             alert('ドナーペットの登録が完了しました。');
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : '不明なエラー';
             alert('登録に失敗しました: ' + message);
+        }
+    };
+
+    const handleEditStart = (pet: PetDonor) => {
+        let bYear = '';
+        let bMonth = '';
+        if (pet.birth_date) {
+            const date = new Date(pet.birth_date);
+            bYear = String(date.getFullYear());
+            // 元のデータが1日以外なら月は未指定（登録日基準）とみなす、という運用も可能ですが、
+            // ここではシンプルに月を取得します。
+            bMonth = String(date.getMonth() + 1);
+        }
+
+        setEditingPetId(pet.id);
+        setEditDonor({
+            pet_name: pet.pet_name,
+            species: pet.species,
+            breed: pet.breed,
+            weight_kg: String(pet.weight_kg),
+            birth_year: bYear,
+            birth_month: bMonth,
+            blood_type: pet.blood_type || '',
+            prefecture: pet.prefecture || '東京都',
+            city: pet.city || '',
+            contact_name: pet.contact_name || '',
+            contact_phone: pet.contact_phone || ''
+        });
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (!editingPetId) return;
+
+            const today = new Date();
+            const birthDateISO = editDonor.birth_year ? (
+                editDonor.birth_month 
+                ? `${editDonor.birth_year}-${editDonor.birth_month.padStart(2, '0')}-01`
+                : `${editDonor.birth_year}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+            ) : null;
+
+            const { data, error } = await supabase
+                .from('donors')
+                .update({
+                    pet_name: editDonor.pet_name,
+                    species: editDonor.species,
+                    breed: editDonor.breed,
+                    weight_kg: Number(editDonor.weight_kg),
+                    birth_date: birthDateISO,
+                    blood_type: editDonor.blood_type || null,
+                    prefecture: editDonor.prefecture,
+                    city: editDonor.city,
+                    contact_name: editDonor.contact_name,
+                    contact_phone: editDonor.contact_phone
+                })
+                .eq('id', editingPetId)
+                .select();
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                setPets(pets.map(p => p.id === editingPetId ? (data[0] as unknown as PetDonor) : p));
+            }
+            setEditingPetId(null);
+            alert('登録情報を更新しました。');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '不明なエラー';
+            alert('更新に失敗しました: ' + message);
         }
     };
 
@@ -327,7 +458,7 @@ export default function MyPage() {
                             className="h-8 w-auto object-contain transition duration-300 contrast-125 brightness-200"
                         />
                         <span className="ml-3 text-lg font-black tracking-tighter leading-none text-white opacity-90">
-                            JARA Public Net
+                            AMAJ Public Net
                         </span>
                     </Link>
                     <button onClick={handleLogout} className="text-[10px] font-black tracking-widest text-white/40 hover:text-white transition uppercase">
@@ -353,9 +484,22 @@ export default function MyPage() {
                             </div>
 
                             <div className="pt-6 border-t border-gray-50 space-y-2 relative z-10">
-                                <button className="w-full py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-[11px] font-black tracking-widest uppercase transition">
+                                <button className="w-full py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-[11px] font-black tracking-widest uppercase transition mb-2">
                                     Edit Profile
                                 </button>
+                                <button 
+                                    onClick={async () => {
+                                        await subscribeToNotifications();
+                                        // 登録後に状態を再チェックするように促すか、簡易的にtrueにする
+                                        setIsSubscribed(true);
+                                    }}
+                                    className={`w-full py-4 ${isSubscribed ? 'bg-green-500' : 'bg-trust-blue'} text-white rounded-2xl text-[11px] font-black tracking-widest uppercase transition shadow-lg shadow-blue-100`}
+                                >
+                                    {isSubscribed ? '✅ 通知は有効です' : '🔔 通知を有効にする'}
+                                </button>
+                                {isSubscribed && (
+                                    <p className="text-[10px] text-green-600 font-bold mt-2">緊急要請をリアルタイムで受信できます</p>
+                                )}
                             </div>
                         </div>
 
@@ -382,8 +526,11 @@ export default function MyPage() {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {activeRequests.map(req => {
-                                        // この病院とすでにマッチング済みかどうかを確認
-                                        const existingMatch = matches.find(m => m.hospital_id === req.hospital_id);
+                                        // この病院 かつ 「同じ動物種（犬・猫）」のペットですでにマッチング済みかどうかを確認
+                                        const existingMatch = matches.find(m => 
+                                            m.hospital_id === req.hospital_id && 
+                                            pets.find(p => p.id === m.donor_id)?.species === req.species
+                                        );
                                         const isAlreadyMatched = !!existingMatch;
 
                                         return (
@@ -392,7 +539,13 @@ export default function MyPage() {
                                                     {req.urgency === 'emergency' ? '🚨 緊急' : '⚠️ 至急'}
                                                 </div>
                                                 <div className="flex items-center space-x-3 mb-4">
-                                                    <span className="text-2xl">{req.species === 'dog' ? '🐶' : '🐱'}</span>
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 border border-red-50">
+                                                        <img 
+                                                          src={req.species === 'dog' ? '/assets/icon_dog.png' : '/assets/icon_cat.png'} 
+                                                          alt={req.species}
+                                                          className="w-full h-full object-contain"
+                                                        />
+                                                    </div>
                                                     <span className="text-[10px] font-black text-gray-400 border border-gray-100 px-2 py-0.5 rounded leading-none">血液型: {req.blood_type || '不問'}</span>
                                                 </div>
                                                 <h3 className="font-black text-lg text-deep-blue mb-2 leading-tight">{req.hospitals?.hospital_name}</h3>
@@ -416,7 +569,14 @@ export default function MyPage() {
                                                 ) : (
                                                     // 未対応の場合は二段階承認へ
                                                     <button
-                                                        onClick={() => setSelectedRequest(req)}
+                                                        onClick={() => {
+                                                            setSelectedRequest(req);
+                                                            // 要請と同じ種類のペットをデフォルトで選択
+                                                            const firstMatchingPet = pets.find(p => p.species === req.species);
+                                                            if (firstMatchingPet) {
+                                                                setSelectedPetId(firstMatchingPet.id);
+                                                            }
+                                                        }}
                                                         className="w-full py-4 bg-life-red text-white rounded-2xl font-black text-xs tracking-widest uppercase shadow-lg shadow-red-100 hover:bg-black transition transform active:scale-95"
                                                     >
                                                         要請に応じる（二段階承認へ）
@@ -432,7 +592,10 @@ export default function MyPage() {
                         {/* Registered Pets */}
                         <section>
                             <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-2xl font-black text-deep-blue tracking-tight">🐾 登録中のドナー</h2>
+                                <h2 className="text-2xl font-black text-deep-blue tracking-tight flex items-center gap-2">
+                                    <img src="/assets/icon_dog.png" alt="paw" className="w-6 h-6 object-contain" />
+                                    登録中のドナー
+                                </h2>
                                 <button onClick={() => setIsRegistering(true)} className="text-[10px] font-black text-life-red bg-red-50 px-4 py-2 rounded-full tracking-widest uppercase hover:bg-red-100 transition">
                                     ＋ Add Donor
                                 </button>
@@ -447,14 +610,65 @@ export default function MyPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {pets.map(pet => (
-                                        <div key={pet.id} className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 group relative transition duration-500 hover:shadow-2xl hover:shadow-gray-200/50">
+                                    {pets.map(pet => {
+                                        // ドナー年齢上限チェック（犬: 9歳で終了、猫: 8歳で終了）
+                                        const retirementAge = pet.species === 'dog' ? 9 : 8;
+                                        let isDonorRetired = false;
+                                        let currentPetAge: number | null = null;
+                                        if (pet.birth_date) {
+                                            const birthDate = new Date(pet.birth_date);
+                                            const today = new Date();
+                                            let age = today.getFullYear() - birthDate.getFullYear();
+                                            const monthDiff = today.getMonth() - birthDate.getMonth();
+                                            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                                                age--;
+                                            }
+                                            currentPetAge = age;
+                                            isDonorRetired = age >= retirementAge;
+                                        }
+
+                                        return (
+                                        <div key={pet.id} className={`bg-white p-8 rounded-[40px] shadow-sm border group relative transition duration-500 hover:shadow-2xl hover:shadow-gray-200/50 ${isDonorRetired ? 'border-amber-200 opacity-90' : 'border-gray-100'}`}>
+                                            {/* ドナー終了バナー */}
+                                            {isDonorRetired && (
+                                                <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 text-center">
+                                                    <div className="text-3xl mb-2">🌸</div>
+                                                    <p className="text-sm font-black text-amber-800 mb-1">ドナー活動を終了しました</p>
+                                                    <p className="text-xs text-amber-700 font-bold leading-relaxed">
+                                                        {pet.pet_name} ちゃんは{currentPetAge}歳になりました。<br />
+                                                        今までお世話になりました。ありがとうございました。🐾
+                                                    </p>
+                                                    <p className="text-[10px] text-amber-500 font-bold mt-2">
+                                                        {pet.species === 'dog' ? '犬' : '猫'}のドナーは{retirementAge}歳で自動終了となります
+                                                    </p>
+                                                </div>
+                                            )}
                                             <div className="flex items-center space-x-5">
-                                                <div className="w-16 h-16 bg-gray-50 text-3xl flex items-center justify-center rounded-[24px] shadow-inner font-bold">
-                                                    {pet.species === 'dog' ? '🐶' : '🐱'}
+                                                <div className={`w-16 h-16 flex items-center justify-center rounded-[24px] shadow-inner p-2 ${isDonorRetired ? 'bg-amber-50' : 'bg-gray-50'}`}>
+                                                    <img 
+                                                      src={pet.species === 'dog' ? '/assets/icon_dog.png' : '/assets/icon_cat.png'} 
+                                                      alt={pet.species}
+                                                      className={`w-full h-full object-contain ${pet.species === 'cat' ? 'scale-125' : ''} ${isDonorRetired ? 'grayscale opacity-60' : ''}`}
+                                                    />
                                                 </div>
                                                 <div className="flex-grow">
-                                                    <h3 className="font-black text-xl text-deep-blue leading-none mb-2">{pet.pet_name}</h3>
+                                                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                                                        <h3 className="font-black text-xl text-deep-blue leading-none">{pet.pet_name}</h3>
+                                                        {isDonorRetired ? (
+                                                            <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-100 text-amber-700">
+                                                                終了 🌸
+                                                            </span>
+                                                        ) : (
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${pet.verification_status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-600'}`}>
+                                                                {pet.verification_status === 'verified' ? '確認済み ✅' : '仮登録中 🐾'}
+                                                            </span>
+                                                        )}
+                                                        {currentPetAge !== null && !isDonorRetired && (
+                                                            <span className="text-[10px] font-bold text-gray-400">
+                                                                {currentPetAge}歳（{retirementAge}歳で終了）
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{pet.breed}</span>
                                                         <span className="text-gray-200">|</span>
@@ -463,19 +677,26 @@ export default function MyPage() {
                                                 </div>
                                             </div>
                                             <div className="absolute top-8 right-8 flex space-x-2 opacity-0 group-hover:opacity-100 transition">
-                                                <button onClick={() => handleDeletePet(pet.id, pet.pet_name)} className="p-2 text-gray-300 hover:text-red-500 transition">
+                                                <button onClick={() => handleEditStart(pet)} title="編集する" className="p-2 text-gray-300 hover:text-trust-blue transition">
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                </button>
+                                                <button onClick={() => handleDeletePet(pet.id, pet.pet_name)} title="削除する" className="p-2 text-gray-300 hover:text-red-500 transition">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </section>
 
                         {/* Recent Matches */}
                         <section>
-                            <h2 className="text-2xl font-black text-deep-blue mb-8 tracking-tight">💬 病院との個別チャット</h2>
+                            <h2 className="text-2xl font-black text-deep-blue mb-8 tracking-tight flex items-center gap-2">
+                                <img src="/assets/icon_cat.png" alt="chat" className="w-6 h-6 object-contain" />
+                                病院との個別チャット
+                            </h2>
                             <div className="bg-white rounded-[40px] p-1 shadow-sm border border-gray-100 overflow-hidden">
                                 {matches.length === 0 ? (
                                     <div className="p-20 text-center">
@@ -517,9 +738,27 @@ export default function MyPage() {
                     <div className="bg-white w-full max-w-lg rounded-[48px] shadow-2xl relative z-10 overflow-hidden animate-in zoom-in duration-300">
                         <div className="p-10 md:p-14 text-left">
                             <h3 className="text-2xl font-black text-deep-blue tracking-tighter leading-tight mb-4">要請への応答（二段階承認）</h3>
-                            <p className="text-xs text-gray-400 font-bold leading-relaxed mb-10">
+                            <p className="text-xs text-gray-400 font-bold leading-relaxed mb-6">
                                 この要請に応答すると、あなたの情報が{selectedRequest.hospitals?.hospital_name}へ「承認済み候補」として開示されます。
                             </p>
+
+                            <div className="mb-6">
+                                <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest leading-none">対象ドナー（ペット）を選択</label>
+                                <select
+                                    value={selectedPetId}
+                                    onChange={(e) => setSelectedPetId(e.target.value)}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold focus:border-life-red outline-none transition appearance-none"
+                                >
+                                    {pets.filter(p => p.species === selectedRequest.species).map(pet => (
+                                        <option key={pet.id} value={pet.id}>
+                                            {pet.pet_name} ({pet.species === 'dog' ? '犬' : '猫'} / {pet.blood_type || '血液型不明'})
+                                        </option>
+                                    ))}
+                                    {pets.filter(p => p.species === selectedRequest.species).length === 0 && (
+                                        <option value="">対象のペットが登録されていません</option>
+                                    )}
+                                </select>
+                            </div>
 
                             <div className="space-y-6">
                                 <label className="flex items-start space-x-4 cursor-pointer group">
@@ -579,7 +818,7 @@ export default function MyPage() {
                 </div>
             )}
 
-            {/* 🐶 新規ドナー登録モーダル */}
+            {/* 🐕 新規ドナー登録モーダル */}
             {isRegistering && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-xl" onClick={() => setIsRegistering(false)}></div>
@@ -623,6 +862,37 @@ export default function MyPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Birth Year</label>
+                                    <select
+                                        value={newDonor.birth_year}
+                                        onChange={e => setNewDonor({ ...newDonor, birth_year: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    >
+                                        <option value="">年を選択</option>
+                                        {Array.from({ length: 20 }, (_, i) => {
+                                            const year = new Date().getFullYear() - i;
+                                            return <option key={year} value={String(year)}>{year}年</option>;
+                                        })}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Birth Month (Optional)</label>
+                                    <select
+                                        value={newDonor.birth_month}
+                                        onChange={e => setNewDonor({ ...newDonor, birth_month: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                    >
+                                        <option value="">不明</option>
+                                        {Array.from({ length: 12 }, (_, i) => (
+                                            <option key={i + 1} value={String(i + 1)}>{i + 1}月</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Breed</label>
                                     <input
                                         type="text"
@@ -656,11 +926,23 @@ export default function MyPage() {
                                         className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
                                     >
                                         <option value="">不明</option>
-                                        <option value="DEA1.1+">DEA 1.1 + (犬)</option>
-                                        <option value="DEA1.1-">DEA 1.1 - (犬)</option>
-                                        <option value="A">A型 (猫)</option>
-                                        <option value="B">B型 (猫)</option>
-                                        <option value="AB">AB型 (猫)</option>
+                                        {newDonor.species === 'dog' ? (
+                                            <>
+                                                <option value="DEA1.1+">DEA 1.1 +</option>
+                                                <option value="DEA1.1-">DEA 1.1 -</option>
+                                                <option value="DEA1.2">DEA 1.2</option>
+                                                <option value="DEA3">DEA 3</option>
+                                                <option value="DEA4">DEA 4</option>
+                                                <option value="DEA5">DEA 5</option>
+                                                <option value="DEA7">DEA 7</option>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <option value="A">A型</option>
+                                                <option value="B">B型</option>
+                                                <option value="AB">AB型</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
                                 <div>
@@ -675,12 +957,194 @@ export default function MyPage() {
                                     />
                                 </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Owner Name</label>
+                                    <input
+                                        type="text"
+                                        value={newDonor.contact_name}
+                                        onChange={e => setNewDonor({ ...newDonor, contact_name: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        placeholder="山田 太郎"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={newDonor.contact_phone}
+                                        onChange={e => setNewDonor({ ...newDonor, contact_phone: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        placeholder="090-1234-5678"
+                                        required
+                                    />
+                                </div>
+                            </div>
 
                             <button
                                 type="submit"
                                 className="w-full py-4 bg-trust-blue text-white rounded-2xl font-black text-sm tracking-widest uppercase shadow-lg shadow-blue-100 hover:bg-blue-600 transition"
                             >
                                 供血ドナーを登録する
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* ✏️ ドナー情報編集モーダル */}
+            {editingPetId && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-xl" onClick={() => setEditingPetId(null)}></div>
+                    <div className="bg-white rounded-[40px] w-full max-w-lg p-8 md:p-12 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 className="text-2xl font-black text-deep-blue tracking-tighter">登録情報の編集</h3>
+                                <p className="text-xs text-gray-500 font-bold mt-2">ペットの情報を最新のものに更新します。</p>
+                            </div>
+                            <button onClick={() => setEditingPetId(null)} className="text-gray-400 hover:text-gray-800 text-xl font-bold transition transform hover:scale-110">
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleEditSubmit} className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Species</label>
+                                    <select
+                                        value={editDonor.species}
+                                        onChange={e => setEditDonor({ ...editDonor, species: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    >
+                                        <option value="dog">犬 (Dog)</option>
+                                        <option value="cat">猫 (Cat)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pet Name</label>
+                                    <input
+                                        type="text"
+                                        value={editDonor.pet_name}
+                                        onChange={e => setEditDonor({ ...editDonor, pet_name: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Breed</label>
+                                    <input
+                                        type="text"
+                                        value={editDonor.breed}
+                                        onChange={e => setEditDonor({ ...editDonor, breed: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Birth Year</label>
+                                    <select
+                                        value={editDonor.birth_year}
+                                        onChange={e => setEditDonor({ ...editDonor, birth_year: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    >
+                                        <option value="">年を選択</option>
+                                        {Array.from({ length: 20 }, (_, i) => {
+                                            const year = new Date().getFullYear() - i;
+                                            return <option key={year} value={String(year)}>{year}年</option>;
+                                        })}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Birth Month (Optional)</label>
+                                    <select
+                                        value={editDonor.birth_month}
+                                        onChange={e => setEditDonor({ ...editDonor, birth_month: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                    >
+                                        <option value="">不明</option>
+                                        {Array.from({ length: 12 }, (_, i) => (
+                                            <option key={i + 1} value={String(i + 1)}>{i + 1}月</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Owner Name</label>
+                                    <input
+                                        type="text"
+                                        value={editDonor.contact_name}
+                                        onChange={e => setEditDonor({ ...editDonor, contact_name: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={editDonor.contact_phone}
+                                        onChange={e => setEditDonor({ ...editDonor, contact_phone: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Blood Type</label>
+                                    <select
+                                        value={editDonor.blood_type}
+                                        onChange={e => setEditDonor({ ...editDonor, blood_type: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                    >
+                                        <option value="">不明</option>
+                                        {editDonor.species === 'dog' ? (
+                                            <>
+                                                <option value="DEA1.1+">DEA 1.1 +</option>
+                                                <option value="DEA1.1-">DEA 1.1 -</option>
+                                                <option value="DEA1.2">DEA 1.2</option>
+                                                <option value="DEA3">DEA 3</option>
+                                                <option value="DEA4">DEA 4</option>
+                                                <option value="DEA5">DEA 5</option>
+                                                <option value="DEA7">DEA 7</option>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <option value="A">A型</option>
+                                                <option value="B">B型</option>
+                                                <option value="AB">AB型</option>
+                                            </>
+                                        )}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Prefecture</label>
+                                    <input
+                                        type="text"
+                                        value={editDonor.prefecture}
+                                        onChange={e => setEditDonor({ ...editDonor, prefecture: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-trust-blue/20"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full py-4 bg-trust-blue text-white rounded-2xl font-black text-sm tracking-widest uppercase shadow-lg shadow-blue-100 hover:bg-blue-600 transition"
+                            >
+                                更新を保存する
                             </button>
                         </form>
                     </div>

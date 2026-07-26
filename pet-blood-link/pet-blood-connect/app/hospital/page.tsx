@@ -30,27 +30,30 @@ export default function HospitalLandingPage() {
                 {/* ① ファーストビュー */}
                 <section className="pt-40 pb-24 bg-gradient-to-b from-blue-50 to-white px-6">
                     <div className="max-w-4xl mx-auto text-center">
+                        <div className="bg-amber-100 text-amber-700 text-xs font-black px-4 py-2 rounded-full uppercase tracking-widest mb-6">
+                            🛡️ 事前審査制・信頼のネットワーク
+                        </div>
                         <h1 className="text-4xl md:text-5xl font-black text-deep-blue mb-6 leading-tight">
                             医療判断に集中できる<br />
                             供血マッチング
                         </h1>
                         <p className="text-xl md:text-2xl text-trust-blue font-black mb-12">
-                            承認済みドナーのみを表示。<br />
-                            貴院が最終判断を行います。
+                            本人確認と実態調査を経て有効化されます。<br />
+                            信頼できる医療機関のみが参加する仕組みです。
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <Link href="/hospital/login" className="bg-life-red text-white text-lg font-black px-12 py-5 rounded-full shadow-2xl shadow-red-200 hover:bg-red-600 transition inline-block">
-                                管理画面へログイン
+                                🏥 無料で登録して始める
                             </Link>
-                            <Link href="/hospital/inquiry" className="bg-white text-trust-blue border-2 border-trust-blue text-lg font-black px-12 py-5 rounded-full hover:bg-blue-50 transition inline-block">
-                                新規提携のお問い合わせ
-                            </Link>
+                            <a href="#how-it-works" className="bg-white text-trust-blue border-2 border-trust-blue text-lg font-black px-12 py-5 rounded-full hover:bg-blue-50 transition inline-block">
+                                仕組みを見る
+                            </a>
                         </div>
                     </div>
                 </section>
 
                 {/* ② 仕組み（簡潔図解） */}
-                <section className="py-24 px-6 border-y border-gray-50">
+                <section id="how-it-works" className="py-24 px-6 border-y border-gray-50">
                     <div className="max-w-6xl mx-auto">
                         <h2 className="text-3xl font-black text-deep-blue text-center mb-16">当院主導の要請フロー</h2>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -92,6 +95,13 @@ export default function HospitalLandingPage() {
                                     </li>
                                 ))}
                             </ul>
+                            <div className="mt-10 bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                                <h3 className="text-sm font-black text-trust-blue uppercase tracking-widest mb-3">病院認証プロセス</h3>
+                                <p className="text-sm text-gray-600 font-bold leading-relaxed">
+                                    本システムへの参加には事前審査があります。<br />
+                                    審査内容：病院所在地・診療内容・輸血対応可否の確認。事務局による審査・承認後、病院アカウントが有効化されます。
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -99,13 +109,13 @@ export default function HospitalLandingPage() {
                 {/* ④ 実際の操作フロー */}
                 <section className="py-24 px-6">
                     <div className="max-w-4xl mx-auto">
-                        <h2 className="text-3xl font-black text-deep-blue text-center mb-16">導入から運用まで</h2>
+                        <h2 className="text-3xl font-black text-deep-blue text-center mb-16">登録から運用まで</h2>
                         <div className="space-y-4">
                             {[
-                                { step: "登録", desc: "専用フォームから病院情報を送信" },
-                                { step: "承認", desc: "JARA事務局による管理承認" },
-                                { step: "発令", desc: "管理画面の要請ボタンで全体へ通知" },
-                                { step: "選択", desc: "候補者から1名を選択しチャット開始" }
+                                { step: '1分', label: '申請', desc: '病院名・メール・パスワードを入力して利用申請を送信' },
+                                { step: '審査', label: '認証', desc: '事務局にて実態調査を行い、最短当日〜3営業日以内にアカウントを有効化' },
+                                { step: '即時', desc: `有効化後、すぐに要請を発令しドナー検索が可能になります`, label: '利用開始' },
+                                { step: '随時', label: '選択', desc: '候補者から1名を選択しチャット開始。完全無料' }
                             ].map((item, idx) => (
                                 <div key={idx} className="flex items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
                                     <div className="bg-trust-blue text-white font-black px-4 py-1 rounded-lg text-xs mr-6">
@@ -129,8 +139,17 @@ export default function HospitalLandingPage() {
                 </div>
             </div>
 
-            <footer className="bg-deep-blue/95 text-white/40 py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest border-t border-white/5">
-                © 2026 Japan Animal Rescue Agency (JARA)
+            <footer className="bg-deep-blue/95 text-white/40 py-8 px-6 text-center text-[10px] font-black uppercase tracking-widest border-t border-white/5 flex flex-col items-center gap-4">
+                <div className="flex flex-col gap-4">
+                    <div className="flex gap-8 justify-center">
+                        <Link href="/terms" className="hover:text-white transition">利用規約</Link>
+                        <Link href="/privacy" className="hover:text-white transition">プライバシーポリシー</Link>
+                    </div>
+                    <p className="max-w-2xl mx-auto opacity-60 leading-relaxed text-[8px] md:text-[10px]">
+                        ※本システムはJSVTM（日本獣医輸血研究会）の献血指針・輸血方法指針・交差適合試験指針を参考に設計されています。
+                    </p>
+                </div>
+                <p>© 2026 Animal Mutual Aid Japan (AMAJ)</p>
             </footer>
         </div>
     );

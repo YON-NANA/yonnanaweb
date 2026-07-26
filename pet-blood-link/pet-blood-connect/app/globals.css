@@ -58,21 +58,12 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Custom Utility Classes */
+/* 基本の背景設定（位置はプログラム側で制御） */
 .hero-bg {
   background-image: url('/assets/hero-bg.png');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   position: relative;
-}
-
-.hero-bg::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(29, 53, 87, 0.6);
-  /* Deep Blue Overlay with 60% opacity */
-  z-index: 0;
 }
 
 .bg-paw-pattern {

@@ -16,6 +16,16 @@ interface HospitalData {
     description: string;
 }
 
+const PREFECTURES = [
+    '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+    '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+    '新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県',
+    '静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県',
+    '奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県',
+    '徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県',
+    '熊本県','大分県','宮崎県','鹿児島県','沖縄県',
+];
+
 export default function HospitalSettings() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -24,7 +34,7 @@ export default function HospitalSettings() {
     const [formData, setFormData] = useState<HospitalData>({
         id: '',
         hospital_name: '',
-        address_prefecture: '東京都',
+        address_prefecture: '',
         address_city: '',
         address_detail: '',
         phone_number: '',
@@ -68,17 +78,16 @@ export default function HospitalSettings() {
         try {
             const { error } = await supabase
                 .from('hospitals')
-                .update({
+                .upsert({
+                    id: userId,
                     hospital_name: formData.hospital_name,
                     address_prefecture: formData.address_prefecture,
                     address_city: formData.address_city,
                     address_detail: formData.address_detail,
                     phone_number: formData.phone_number,
                     website_url: formData.website_url,
-                    description: formData.description,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', userId);
+                    description: formData.description
+                });
 
             if (error) throw error;
 
@@ -89,10 +98,35 @@ export default function HospitalSettings() {
                 .eq('id', userId);
 
             alert('設定を保存しました。');
-        } catch (err: any) {
-            alert('保存に失敗しました: ' + err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '不明なエラー';
+            alert('保存に失敗しました: ' + message);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!window.confirm("退会してアカウントに関連する情報を削除してもよろしいですか？\n※この操作は取り消せません。")) {
+            return;
+        }
+
+        try {
+            if (!userId) return;
+
+            const { error: deleteError } = await supabase
+                .from('hospitals')
+                .delete()
+                .eq('id', userId);
+            
+            if (deleteError) throw deleteError;
+
+            alert('退会処理が完了しました。ご利用ありがとうございました。');
+            await supabase.auth.signOut();
+            router.push('/');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : '不明なエラー';
+            alert('退会処理に失敗しました: ' + message);
         }
     };
 
@@ -196,11 +230,12 @@ export default function HospitalSettings() {
                                         value={formData.address_prefecture}
                                         onChange={handleChange}
                                         className="w-full bg-gray-50 border-none rounded-2xl p-4 focus:ring-2 focus:ring-trust-blue transition font-bold"
+                                        required
                                     >
-                                        <option value="東京都">東京都</option>
-                                        <option value="神奈川県">神奈川県</option>
-                                        <option value="千葉県">千葉県</option>
-                                        <option value="埼玉県">埼玉県</option>
+                                        <option value="">選択してください</option>
+                                        {PREFECTURES.map(pref => (
+                                            <option key={pref} value={pref}>{pref}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="col-span-1 md:col-span-2 space-y-2">
@@ -234,11 +269,18 @@ export default function HospitalSettings() {
                             </div>
                         </section>
 
-                        <div className="pt-6 border-t border-gray-100 flex justify-end">
+                        <div className="pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+                            <button
+                                type="button"
+                                onClick={handleDeleteAccount}
+                                className="text-xs md:text-sm font-bold text-red-400 hover:text-red-600 underline transition"
+                            >
+                                病院アカウントを削除して退会する
+                            </button>
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="bg-trust-blue text-white font-black px-12 py-5 rounded-[24px] shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition disabled:opacity-50"
+                                className="w-full md:w-auto bg-trust-blue text-white font-black px-12 py-5 rounded-[24px] shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition disabled:opacity-50"
                             >
                                 {saving ? '保存中...' : '設定を保存する'}
                             </button>

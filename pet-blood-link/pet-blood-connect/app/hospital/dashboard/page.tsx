@@ -25,6 +25,7 @@ export default function HospitalDashboard() {
     const [donors, setDonors] = useState<Donor[]>([]);
     const [loading, setLoading] = useState(true);
     const [hospitalName, setHospitalName] = useState('読み込み中...');
+    const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
     // 要請フォームのステート
@@ -35,6 +36,11 @@ export default function HospitalDashboard() {
         message: ''
     });
 
+    // 発令中の要請
+    const [activeRequests, setActiveRequests] = useState<{
+        id: string; species: string; urgency: string; blood_type: string | null; message: string | null; created_at: string;
+    }[]>([]);
+
     const fetchHospitalInfo = React.useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -44,16 +50,47 @@ export default function HospitalDashboard() {
 
         const { data, error } = await supabase
             .from('hospitals')
-            .select('hospital_name')
+            .select('hospital_name, phone_number, address_city')
             .eq('id', user.id)
             .single();
 
         if (error || !data) {
             setHospitalName('（病院未登録）');
+            setIsProfileIncomplete(true);
         } else {
             setHospitalName(data.hospital_name);
+            // 電話番号または市区町村が未入力なら未完成と判定
+            if (!data.phone_number || !data.address_city) {
+                setIsProfileIncomplete(true);
+            }
         }
     }, [router]);
+
+    const fetchActiveRequests = React.useCallback(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+            .from('blood_requests')
+            .select('id, species, urgency, blood_type, message, created_at')
+            .eq('hospital_id', user.id)
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+        if (data) setActiveRequests(data);
+    }, []);
+
+    const handleCancelRequest = async (requestId: string) => {
+        if (!confirm('この要請を取り消しますか？')) return;
+        const { error } = await supabase
+            .from('blood_requests')
+            .update({ status: 'cancelled' })
+            .eq('id', requestId);
+        if (error) {
+            alert('取り消しに失敗しました: ' + error.message);
+        } else {
+            setActiveRequests(prev => prev.filter(r => r.id !== requestId));
+            alert('要請を取り消しました。');
+        }
+    };
 
     const fetchMatchedCandidates = React.useCallback(async () => {
         try {
@@ -112,7 +149,8 @@ export default function HospitalDashboard() {
     useEffect(() => {
         fetchHospitalInfo();
         fetchMatchedCandidates();
-    }, [fetchHospitalInfo, fetchMatchedCandidates]);
+        fetchActiveRequests();
+    }, [fetchHospitalInfo, fetchMatchedCandidates, fetchActiveRequests]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -137,10 +175,46 @@ export default function HospitalDashboard() {
 
             if (error) throw error;
 
-            alert('供血要請を発令しました。近隣の登録ドナーへ通知されます。');
+            // 📢 プッシュ通知の送信プロセス
+            try {
+                // 1. 該当する種類のペットを登録している飼い主のIDを取得
+                const { data: targetDonors } = await supabase
+                    .from('donors')
+                    .select('owner_id')
+                    .eq('species', requestForm.species);
+
+                if (targetDonors && targetDonors.length > 0) {
+                    const uniqueOwnerIds = Array.from(new Set(targetDonors.map(d => d.owner_id)));
+                    
+                    // 2. 購読（Subscription）情報を取得
+                    const { data: subs } = await supabase
+                        .from('push_subscriptions')
+                        .select('subscription')
+                        .in('user_id', uniqueOwnerIds);
+
+                    if (subs && subs.length > 0) {
+                        // 3. APIルート経由でプッシュ送信
+                        await fetch('/api/push/send', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                subscriptions: subs.map(s => s.subscription),
+                                title: `🚨 緊急供血要請 (${requestForm.species === 'dog' ? '犬' : '猫'})`,
+                                body: `${hospitalName}より要請: ${requestForm.message || '至急対応可能なドナーを探しています'}`,
+                                url: '/mypage'
+                            })
+                        });
+                    }
+                }
+            } catch (pushErr) {
+                console.error('Push notification failed:', pushErr);
+            }
+
+            alert('供血要請を発令しました。登録ドナーへプッシュ通知が送信されます。');
             setIsRequestModalOpen(false);
             // フォームリセット
             setRequestForm({ species: 'dog', blood_type: '', urgency: 'normal', message: '' });
+            fetchActiveRequests();
 
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : '不明なエラー';
@@ -163,7 +237,7 @@ export default function HospitalDashboard() {
                             className="h-8 w-auto object-contain transition duration-300"
                         />
                         <span className="ml-3 text-lg font-black tracking-tighter leading-none text-white opacity-80">
-                            JARA Medical
+                            AMAJ Medical
                         </span>
                     </Link>
                 </div>
@@ -218,10 +292,75 @@ export default function HospitalDashboard() {
                         </button>
                     </div>
 
+                    {/* 🟡 オンボーディングバナー（プロフィール未完成時） */}
+                    {isProfileIncomplete && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in slide-in-from-top duration-500">
+                            <div className="flex items-start space-x-4">
+                                <span className="text-2xl flex-shrink-0">📝</span>
+                                <div>
+                                    <p className="font-black text-amber-800 text-sm mb-1">病院情報が未入力です</p>
+                                    <p className="text-xs text-amber-600 font-bold leading-relaxed">
+                                        電話番号・住所・病院案内文を登録すると、ドナーからの信頼度が向上します。後からでも登録できます。
+                                    </p>
+                                </div>
+                            </div>
+                            <a
+                                href="/hospital/settings"
+                                className="flex-shrink-0 bg-amber-500 text-white font-black px-6 py-3 rounded-2xl text-sm hover:bg-amber-600 transition shadow-lg shadow-amber-100 whitespace-nowrap"
+                            >
+                                病院情報を入力する →
+                            </a>
+                        </div>
+                    )}
+
                     <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-50 flex items-center text-blue-900/60 font-medium text-sm shadow-sm">
                         <span className="mr-4 text-xl">ℹ️</span>
                         要請発令後、登録ドナーへ通知が送られ、条件を承認した候補者のみが表示されます。
                     </div>
+
+                    {/* 発令中の要請リスト */}
+                    {activeRequests.length > 0 && (
+                        <div className="mt-8 bg-red-50 border border-red-100 rounded-3xl p-6">
+                            <h2 className="text-sm font-black text-life-red uppercase tracking-widest mb-4 flex items-center">
+                                <span className="animate-pulse mr-2">🚨</span>現在発令中の要請 ({activeRequests.length}件)
+                            </h2>
+                            <div className="space-y-3">
+                                {activeRequests.map(req => (
+                                    <div key={req.id} className="bg-white rounded-2xl p-4 flex items-center justify-between border border-red-100 shadow-sm">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 border border-red-50">
+                                                <img 
+                                                  src={req.species === 'dog' ? '/assets/icon_dog.png' : '/assets/icon_cat.png'} 
+                                                  alt={req.species}
+                                                  className={`w-full h-full object-contain ${req.species === 'cat' ? 'scale-125' : ''}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-gray-800 text-sm">
+                                                    {req.species === 'dog' ? '犬' : '猫'} ／
+                                                    <span className={`ml-2 px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                        req.urgency === 'emergency' ? 'bg-red-100 text-red-600' :
+                                                        req.urgency === 'urgent' ? 'bg-orange-100 text-orange-600' :
+                                                        'bg-gray-100 text-gray-500'
+                                                    }`}>
+                                                        {req.urgency === 'emergency' ? '緊急' : req.urgency === 'urgent' ? '至急' : '通常'}
+                                                    </span>
+                                                    {req.blood_type && <span className="ml-2 text-xs text-gray-400">血液型: {req.blood_type}</span>}
+                                                </p>
+                                                <p className="text-[10px] text-gray-400 mt-0.5">{new Date(req.created_at).toLocaleString('ja-JP')}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleCancelRequest(req.id)}
+                                            className="flex-shrink-0 bg-red-600 hover:bg-red-700 text-white font-black text-xs px-4 py-2 rounded-xl transition active:scale-95"
+                                        >
+                                            取り消す
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </header>
 
                 <section className="text-left">
@@ -239,7 +378,9 @@ export default function HospitalDashboard() {
                         </div>
                     ) : donors.length === 0 ? (
                         <div className="py-32 bg-white rounded-[40px] border border-gray-100 border-dashed text-center">
-                            <div className="text-4xl mb-6 grayscale opacity-30">🐾</div>
+                            <div className="w-16 h-16 mx-auto mb-6 opacity-20">
+                                <img src="/assets/icon_dog.png" alt="paw" className="w-full h-full object-contain grayscale" />
+                            </div>
                             <p className="text-gray-400 font-bold leading-relaxed mb-6">
                                 現在アクティブなマッチングはありません。
                             </p>
@@ -252,7 +393,7 @@ export default function HospitalDashboard() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                            {(donors as (Donor & { match_id: string, match_status: string })[]).map((donor) => (
+                            {(donors as (Donor & { match_id: string, match_status: string, hasUnread: boolean })[]).map((donor) => (
                                 <div key={donor.match_id} className={`bg-white rounded-3xl shadow-sm border ${donor.match_status === 'cancelled' || donor.match_status === 'hospital_cancelled' ? 'border-red-200 bg-red-50/20 opacity-70' : 'border-gray-100'} p-8 hover:shadow-xl transition duration-500 overflow-hidden relative group`}>
                                     {/* Status Badge */}
                                     <div className="absolute top-4 right-4">
@@ -264,13 +405,17 @@ export default function HospitalDashboard() {
 
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner font-bold">
-                                                {donor.species === 'dog' ? '🐶' : '🐱'}
+                                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center p-2 shadow-inner">
+                                                <img 
+                                                  src={donor.species === 'dog' ? '/assets/icon_dog.png' : '/assets/icon_cat.png'} 
+                                                  alt={donor.species}
+                                                  className="w-full h-full object-contain"
+                                                />
                                             </div>
                                             <div>
                                                 <h3 className="font-black text-lg text-gray-800 leading-tight">{donor.pet_name}</h3>
                                                 <div className="flex items-center mt-1">
-                                                    {/* JARA Trust Score Rendering */}
+                                                    {/* AMAJ Trust Score Rendering */}
                                                     <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest mr-2 leading-none ${((donor as unknown as { trust_score?: number }).trust_score ?? 100) < 70 ? 'text-life-red bg-red-50' : 'text-life-green bg-green-50'}`}>
                                                         信頼: {((donor as unknown as { trust_score?: number }).trust_score ?? 100)}%
                                                     </span>
@@ -298,7 +443,7 @@ export default function HospitalDashboard() {
                                     ) : (
                                         <Link href={`/chat/${donor.id}?matchId=${donor.match_id}&view=hospital`} className="relative block">
                                             <span className={`block w-full py-4 ${donor.match_status === 'accepted' ? 'bg-life-green shadow-green-100 hover:bg-green-600' : 'bg-[#0F172A] hover:bg-trust-blue shadow-blue-50'} text-white text-center rounded-2xl font-black text-xs transition shadow-lg tracking-widest uppercase relative`}>
-                                                {(donor as any).hasUnread && (
+                                                {donor.hasUnread && (
                                                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white"></span>
@@ -361,7 +506,7 @@ export default function HospitalDashboard() {
                                     <label className="block text-[10px] font-black text-gray-400 mb-2 uppercase tracking-widest leading-none">希望血液型（任意）</label>
                                     <input
                                         type="text"
-                                        placeholder="例: DEA1.1 positivo / A型"
+                                        placeholder={requestForm.species === 'dog' ? '例: DEA1.1+ / DEA1.1-' : '例: A型 / B型 / AB型'}
                                         value={requestForm.blood_type}
                                         onChange={(e) => setRequestForm({ ...requestForm, blood_type: e.target.value })}
                                         className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold focus:border-trust-blue outline-none transition"
