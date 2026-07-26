@@ -37,14 +37,18 @@ const AFC = {
 
       installBtn.addEventListener('click', async () => {
         if (window.deferredPrompt) {
-          window.deferredPrompt.prompt();
-          const { outcome } = await window.deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
-            window.deferredPrompt = null;
-            installBtn.classList.add('hidden');
+          try {
+            window.deferredPrompt.prompt();
+            const { outcome } = await window.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              window.deferredPrompt = null;
+              installBtn.classList.add('hidden');
+            }
+          } catch (err) {
+            console.error('PWA install error:', err);
+            AFC.showPwaGuide();
           }
         } else {
-          // Native install not ready/supported, show guide
           AFC.showPwaGuide();
         }
       });
