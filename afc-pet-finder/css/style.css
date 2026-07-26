@@ -16,48 +16,48 @@
 /* ─── CSS Variables ─── */
 :root {
   /* Brand Colors */
-  --primary:       #1E7E4E;
-  --primary-light: #2ECC71;
-  --primary-dark:  #145A36;
+  --primary:       #166534;
+  --primary-light: #22C55E;
+  --primary-dark:  #14532D;
   --gold:          #D97706;
   --gold-light:    #F59E0B;
   --gold-dark:     #B45309;
 
   /* Status Colors */
-  --lost:    #E65100;
-  --found:   #2E7D32;
-  --witness: #0288D1;
-  --alert:   #D32F2F;
-  --match:   #7B1FA2;
+  --lost:    #EA580C;
+  --found:   #16A34A;
+  --witness: #0284C7;
+  --alert:   #DC2626;
+  --match:   #9333EA;
 
-  /* Backgrounds (Warm Bright Light Theme) */
-  --bg-deep:    #F4F7F6;
+  /* Backgrounds (Richer Contrast Light-Medium Tone) */
+  --bg-deep:    #E2E8F0;
   --bg-dark:    #FFFFFF;
   --bg-card:    #FFFFFF;
-  --bg-card-hover: #EDF4F0;
-  --bg-input:   #F0F4F2;
+  --bg-card-hover: #F1F5F9;
+  --bg-input:   #F8FAFC;
   --bg-overlay: rgba(255, 255, 255, 0.95);
 
-  /* Glass Effects for Light Mode */
-  --glass-bg:     rgba(255, 255, 255, 0.90);
-  --glass-border: rgba(0, 0, 0, 0.08);
+  /* Glass Effects */
+  --glass-bg:     rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(15, 23, 42, 0.12);
   --glass-blur:   blur(12px);
 
-  /* Text Colors for High Contrast Legibility */
+  /* Text Colors for Crisp High Contrast Legibility */
   --text-primary:   #0F172A;
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --text-muted:     #64748B;
   --text-gold:      #B45309;
 
-  /* Borders & Shadows */
-  --border:       rgba(0, 0, 0, 0.08);
-  --border-focus: rgba(30, 126, 78, 0.6);
+  /* Borders & Shadows (Clearer & Sharper) */
+  --border:       rgba(15, 23, 42, 0.12);
+  --border-focus: rgba(22, 101, 52, 0.6);
 
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-md: 0 6px 20px rgba(0,0,0,0.06);
-  --shadow-lg: 0 12px 36px rgba(0,0,0,0.10);
-  --shadow-gold: 0 0 20px rgba(217,119,6,0.15);
-  --shadow-green: 0 0 20px rgba(30,126,78,0.15);
+  --shadow-sm: 0 2px 6px rgba(15,23,42,0.06);
+  --shadow-md: 0 8px 24px rgba(15,23,42,0.09);
+  --shadow-lg: 0 16px 40px rgba(15,23,42,0.14);
+  --shadow-gold: 0 0 20px rgba(217,119,6,0.20);
+  --shadow-green: 0 0 20px rgba(22,101,52,0.20);
 
   --space-xs:  0.25rem;
   --space-sm:  0.5rem;
