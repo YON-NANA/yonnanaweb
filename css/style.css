@@ -8,66 +8,57 @@
 /* ===================================================
    Custom Leaflet Dark Mode (High Contrast on Detailed View)
    =================================================== */
-.leaflet-container {
-  background: var(--bg-deep) !important;
-}
+.leaflet-container { background: #E5E9EC !important; }
 
 /* 詳細マップ表示時のみ、反転フィルターを適用して道路や建物をはっきり見せる */
-.detailed-view .leaflet-layer,
-.detailed-view .leaflet-control-zoom-in,
-.detailed-view .leaflet-control-zoom-out,
-.detailed-view .leaflet-control-attribution {
-  filter: invert(100%) hue-rotate(180deg) brightness(150%) contrast(85%);
-}
+
 
 /* ─── CSS Variables ─── */
 :root {
   /* Brand Colors */
-  --primary:       #1A5C3A;
-  --primary-light: #2D8A5A;
-  --primary-dark:  #0D3321;
-  --gold:          #C9A84C;
-  --gold-light:    #E8C96A;
-  --gold-dark:     #9E7D35;
+  --primary:       #1E7E4E;
+  --primary-light: #2ECC71;
+  --primary-dark:  #145A36;
+  --gold:          #D97706;
+  --gold-light:    #F59E0B;
+  --gold-dark:     #B45309;
 
   /* Status Colors */
-  --lost:    #FF6B35;
-  --found:   #2ECC71;
-  --witness: #3498DB;
-  --alert:   #E74C3C;
-  --match:   #9B59B6;
+  --lost:    #E65100;
+  --found:   #2E7D32;
+  --witness: #0288D1;
+  --alert:   #D32F2F;
+  --match:   #7B1FA2;
 
-  /* Backgrounds */
-  --bg-deep:    #080F1A;
-  --bg-dark:    #0D1B2A;
-  --bg-card:    rgba(255, 255, 255, 0.04);
-  --bg-card-hover: rgba(255, 255, 255, 0.08);
-  --bg-input:   rgba(255, 255, 255, 0.06);
-  --bg-overlay: rgba(8, 15, 26, 0.85);
+  /* Backgrounds (Warm Bright Light Theme) */
+  --bg-deep:    #F4F7F6;
+  --bg-dark:    #FFFFFF;
+  --bg-card:    #FFFFFF;
+  --bg-card-hover: #EDF4F0;
+  --bg-input:   #F0F4F2;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
 
-  /* Glass */
-  --glass-bg:     rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.10);
-  --glass-blur:   blur(20px);
+  /* Glass Effects for Light Mode */
+  --glass-bg:     rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-blur:   blur(12px);
 
-  /* Text */
-  --text-primary:   #F0EDE8;
-  --text-secondary: rgba(240, 237, 232, 0.65);
-  --text-muted:     rgba(240, 237, 232, 0.35);
-  --text-gold:      #C9A84C;
+  /* Text Colors for High Contrast Legibility */
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
+  --text-gold:      #B45309;
 
-  /* Borders */
-  --border:       rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(201, 168, 76, 0.6);
+  /* Borders & Shadows */
+  --border:       rgba(0, 0, 0, 0.08);
+  --border-focus: rgba(30, 126, 78, 0.6);
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
-  --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
-  --shadow-gold: 0 0 30px rgba(201,168,76,0.2);
-  --shadow-green: 0 0 30px rgba(26,92,58,0.3);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.10);
+  --shadow-gold: 0 0 20px rgba(217,119,6,0.15);
+  --shadow-green: 0 0 20px rgba(30,126,78,0.15);
 
-  /* Spacing */
   --space-xs:  0.25rem;
   --space-sm:  0.5rem;
   --space-md:  1rem;
@@ -76,23 +67,19 @@
   --space-2xl: 3rem;
   --space-3xl: 4rem;
 
-  /* Border Radius */
   --radius-sm:   8px;
   --radius-md:   12px;
   --radius-lg:   20px;
   --radius-xl:   32px;
   --radius-full: 9999px;
 
-  /* Transitions */
   --transition-fast:   0.15s ease;
   --transition-normal: 0.3s ease;
   --transition-slow:   0.5s ease;
 
-  /* Typography */
   --font-jp:   'Noto Sans JP', sans-serif;
   --font-en:   'Outfit', sans-serif;
 
-  /* Nav */
   --nav-height: 72px;
 }
 
@@ -180,18 +167,21 @@ h5 { font-size: 1rem; }
 /* ─── Navigation ─── */
 .nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--nav-height);
-  background: rgba(8, 15, 26, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border);
   z-index: 1000;
-  transition: background var(--transition-normal);
+  transition: var(--transition-normal);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
 
 .nav.scrolled {
-  background: rgba(8, 15, 26, 0.95);
+  background: rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow-md);
 }
 
@@ -1304,10 +1294,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 
 /* ─── Leaflet Overrides ─── */
-.leaflet-container {
-  background: var(--bg-dark) !important;
-  font-family: var(--font-jp) !important;
-}
+.leaflet-container { background: #E5E9EC !important; }
 
 .leaflet-popup-content-wrapper {
   background: var(--bg-card) !important;
@@ -1358,7 +1345,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
     position: fixed;
     top: var(--nav-height);
     left: 0; right: 0;
-    background: rgba(8,15,26,0.97);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: var(--glass-blur);
     padding: var(--space-lg);
     border-bottom: 1px solid var(--border);
@@ -1411,7 +1398,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 .pwa-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(8, 15, 26, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
