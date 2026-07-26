@@ -1,318 +1,796 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>動物保護団体ヨンナナ | 徳島県 殺処分ゼロを目指して</title>
-    <meta name="description" content="徳島県を拠点に活動する動物保護団体ヨンナナ。犬猫の保護、里親募集、フリーマガジンHRRの発行を通じて、一匹でも多くの命を救う活動を行っています。">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AFC Pet Finder — 迷子動物捜索プラットフォーム | 日本動物共助機構</title>
+  <meta name="description" content="AIによる捜索エリア予測・特徴タグ自動マッチング・匿名チャット。日本動物共助機構（AFC）が運営する迷子動物捜索の総合プラットフォーム。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    /* Home-specific styles */
+    .hero-section {
+      min-height: calc(100vh - var(--nav-height));
+      display: flex;
+      align-items: center;
+      padding: var(--space-3xl) 0;
+      position: relative;
+      overflow: hidden;
+    }
 
-    <link rel="stylesheet" href="css/style.css?v=1.9">
-    <link rel="shortcut icon" href="assets/images/logo_v2.gif">
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3xl);
+      align-items: center;
+    }
+
+    .hero-map-preview {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), var(--shadow-green);
+      border: 1px solid var(--glass-border);
+      height: 420px;
+    }
+
+    #heroMap { height: 100%; }
+
+    .hero-map-overlay {
+      position: absolute;
+      top: var(--space-md);
+      left: var(--space-md);
+      right: var(--space-md);
+      z-index: 400;
+      display: flex;
+      gap: var(--space-sm);
+    }
+
+    .map-badge {
+      padding: 4px 10px;
+      background: rgba(8,15,26,0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .map-badge.lost  { color: var(--lost); }
+    .map-badge.found { color: var(--found); }
+    .map-badge.govt  { color: var(--gold); }
+
+    .cta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-3xl);
+    }
+
+    .cta-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      text-align: center;
+      text-decoration: none;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      display: block;
+    }
+
+    .cta-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .cta-card.lost-card:hover   { border-color: rgba(255,107,53,0.4); background: rgba(255,107,53,0.05); }
+    .cta-card.found-card:hover  { border-color: rgba(46,204,113,0.4); background: rgba(46,204,113,0.05); }
+    .cta-card.witness-card:hover{ border-color: rgba(52,152,219,0.4); background: rgba(52,152,219,0.05); }
+
+    .cta-icon {
+      width: 64px; height: 64px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto var(--space-md);
+    }
+
+    .icon-lost    { background: rgba(255,107,53,0.15); }
+    .icon-found   { background: rgba(46,204,113,0.15); }
+    .icon-witness { background: rgba(52,152,219,0.15); }
+
+    .stats-bar {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl) var(--space-2xl);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-xl);
+      margin: var(--space-3xl) 0;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      font-family: var(--font-en);
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: var(--space-xs);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .recent-section {
+      padding: var(--space-3xl) 0;
+    }
+
+    .section-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+    }
+
+    .pet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .steps-visual {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-xl);
+      position: relative;
+    }
+
+    .steps-visual::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-light), var(--gold), var(--found));
+      z-index: 0;
+    }
+
+    .how-step {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .how-step-num {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      border: 2px solid var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-md);
+      font-size: 1.5rem;
+      position: relative;
+    }
+
+    .how-step-num::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: rgba(26,92,58,0.1);
+    }
+
+    .govt-banner {
+      background: linear-gradient(135deg, rgba(26,92,58,0.15) 0%, rgba(201,168,76,0.08) 100%);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2xl);
+      margin-top: var(--space-3xl);
+    }
+
+    .partner-logos {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .partner-logo-pill {
+      padding: 6px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .floating-alert {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 900;
+      max-width: 340px;
+      background: var(--bg-card);
+      border: 1px solid rgba(155,89,182,0.3);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-md);
+      animation: slideInLeft 0.4s ease 3s both;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-120%); opacity: 0; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    footer {
+      padding: var(--space-2xl) 0;
+      border-top: 1px solid var(--border);
+      margin-top: var(--space-3xl);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-2xl);
+      margin-bottom: var(--space-xl);
+    }
+
+    .footer-links a {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 4px 0;
+      transition: color var(--transition-fast);
+    }
+    .footer-links a:hover { color: var(--text-primary); }
+    .footer-links h4 {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-map-preview { height: 300px; }
+      .cta-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .steps-visual { grid-template-columns: repeat(2, 1fr); }
+      .steps-visual::before { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .govt-banner { flex-direction: column; }
+    }
+
+    @media (max-width: 600px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; padding: var(--space-lg); }
+      .steps-visual { grid-template-columns: 1fr; }
+    }
+
+    /* Hero Section Enhancements */
+    .hero-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 var(--space-xl) 0;
+      display: grid;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+    .hero-features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      line-height: 1.6;
+    }
+    .hero-features-list li i {
+      font-size: 1.1rem;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .hero-features-list li strong {
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .hero-tagline {
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-lg);
+      letter-spacing: 0.05em;
+      border-left: 3px solid var(--primary-light);
+      padding-left: var(--space-sm);
+    }
+  </style>
+  <script src="js/api.js" defer></script>
 </head>
-
 <body>
 
-    <!-- Header -->
-    <header class="header" id="header">
-        <div class="container header-container">
-            <a href="#" class="logo">
-                <img src="assets/images/logo_v2.gif" alt="ヨンナナ ロゴ" class="logo-img">
-                <span class="logo-text">動物保護団体ヨンナナ</span>
+<!-- ─── Navigation ─── -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html"         class="nav-link active">ホーム</a>
+      <a href="map.html"           class="nav-link">捜索マップ</a>
+      <a href="match.html"         class="nav-link">マッチング</a>
+      <a href="admin-data.html"    class="nav-link">行政データ</a>
+      <a href="chat.html"          class="nav-link">チャット</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Page Content ─── -->
+<main class="page-wrapper">
+
+  <!-- Alert Banner -->
+  <div style="background: rgba(255,107,53,0.08); border-bottom: 1px solid rgba(255,107,53,0.15); padding: 10px 0;">
+    <div class="container-lg" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;font-size:0.85rem;">
+        <span>🔴</span>
+        <span style="color:var(--text-secondary)"><strong style="color:var(--lost)">本日8件</strong>の迷子が新規報告されています</span>
+      </div>
+      <a href="map.html" style="font-size:0.8rem;color:var(--gold);font-weight:600;">捜索マップを確認 →</a>
+    </div>
+  </div>
+
+  <!-- ─── Hero ─── -->
+  <section class="hero-section section">
+    <div class="container-lg">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <i class="fas fa-brain" style="color:var(--gold)"></i>
+            AI 動物捜索 — 日本初の予測型プラットフォーム
+          </div>
+          <h1 class="hero-title" style="font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.25; margin-bottom: var(--space-xs); font-family: var(--font-jp); font-weight: 900;">
+            迷子ペットを<br>
+            <span class="accent" style="color: var(--gold); text-shadow: 0 0 20px rgba(201,168,76,0.3);">飼い主の元へ</span>
+          </h1>
+          <p class="hero-tagline">
+            大切な家族を、テクノロジーの力で必ず取り戻す。
+          </p>
+          <ul class="hero-features-list">
+            <li>
+              <i class="fas fa-circle-check" style="color: var(--lost);"></i>
+              <div><strong>AI捜索予測</strong>：ペットの習性や気候から、現在の移動・隠れ場所をAI予測</div>
+            </li>
+            <li>
+              <i class="fas fa-circle-check" style="color: var(--found);"></i>
+              <div><strong>自動マッチング</strong>：写真特徴タグから、迷子と保護報告を瞬時にスピード照合</div>
+            </li>
+            <li>
+              <i class="fas fa-circle-check" style="color: var(--witness);"></i>
+              <div><strong>リアルタイムマップ</strong>：近隣の迷子・保護情報や全国の行政収容データを一元化</div>
+            </li>
+            <li>
+              <i class="fas fa-circle-check" style="color: var(--gold);"></i>
+              <div><strong>匿名チャット機能</strong>：個人情報を開示せずに、発見者と安全・スムーズに連絡</div>
+            </li>
+          </ul>
+          <div class="hero-actions">
+            <a href="lost-register.html" class="btn btn-lost btn-lg">
+              <i class="fas fa-search"></i> 迷子を登録する
             </a>
-            <nav class="nav">
-                <ul class="nav-list">
-                    <li><a href="#about" class="nav-link">私たちについて</a></li>
-                    <li><a href="#activities" class="nav-link">活動内容</a></li>
-                    <li><a href="#foster" class="nav-link">里親募集</a></li>
-                    <li><a href="support.html" class="nav-link">ご支援</a></li>
-                    <li><a href="request.html" class="nav-link">保護依頼</a></li>
-                    <li style="margin-left: 15px;">
-                        <div id="google_translate_element"></div>
-                    </li>
-                </ul>
-                <div class="hamburger" id="hamburger-menu">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
+            <a href="found-register.html" class="btn btn-found btn-lg">
+              <i class="fas fa-hand-holding-heart"></i> 保護を報告する
+            </a>
+            <a href="map.html" class="btn btn-ghost btn-lg">
+              <i class="fas fa-map-marked-alt"></i> 捜索マップ
+            </a>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <div class="hero-stat-num" data-counter="812">0</div>
+              <div class="hero-stat-label">累計再会数</div>
+            </div>
+            <div>
+              <div class="hero-stat-num" data-counter="65">0</div>
+              <div class="hero-stat-label">発見率（%）</div>
+            </div>
+            <div>
+              <div class="hero-stat-num" data-counter="4732">0</div>
+              <div class="hero-stat-label">登録ユーザー数</div>
+            </div>
+          </div>
         </div>
-    </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-bg"></div>
-            <div class="hero-overlay"></div>
-            <div class="container hero-content">
-                <h1 class="hero-title">共に生きる、<br>未来をつくる</h1>
-                <p class="hero-subtitle">徳島から、すべての動物に愛と安全な場所を。</p>
-                <div class="hero-btns">
-                    <a href="#foster" class="btn btn-white-outline hero-btn-custom">家族を探している子たち</a>
-                    <a href="support.html" class="btn btn-white-outline hero-btn-custom">ご支援はこちら</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- News Section -->
-        <section id="news" class="section news">
-            <div class="container">
-                <div class="section-title-box">
-                    <p class="section-subtitle">News & Topics</p>
-                    <h2 class="section-title">お知らせ</h2>
-                </div>
-                <div id="news-list" class="news-list">
-                    <!-- JSON data will be loaded here -->
-                    <p style="text-align: center;">読み込み中...</p>
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://www.instagram.com/yonnanahogo/" target="_blank" class="btn btn-outline">もっと見る
-                        (Instagram)</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about" class="section about">
-            <div class="container">
-                <div class="about-grid">
-                    <div class="about-images hidden">
-                        <div class="about-img-large">
-                            <img src="assets/images/about_activity_v3.png" alt="保護犬と子供のふれあい">
-                        </div>
-                        <div class="about-img-small">
-                            <img src="assets/images/about_hrr_v3.png" alt="フリーマガジンHRR">
-                        </div>
-                    </div>
-                    <div class="about-text hidden">
-                        <div class="section-title-box" style="text-align: left;">
-                            <p class="section-subtitle">About Us</p>
-                            <h2 class="section-title">一匹でも多くの命を<br>救うために</h2>
-                        </div>
-                        <p>動物保護団体ヨンナナは、徳島県を拠点に活動しています。「殺処分ゼロ」を目標に掲げ、保健所からの引き出し、適切な医療、そして新しい家族へと繋ぐ架け橋となっています。</p>
-                        <p style="margin-top: 20px;">
-                            私たちは、単に保護するだけでなく、フリーマガジン「HRR」の発行やイベントを通じ、人と動物がより良く共生できる社会を目指した啓発活動にも注力しています。</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Activities Section -->
-        <section id="activities" class="section">
-            <div class="container text-center">
-                <div class="section-title-box">
-                    <p class="section-subtitle">Our Activities</p>
-                    <h2 class="section-title">私たちの活動</h2>
-                </div>
-                <div class="activities-grid">
-                    <a href="activity_protect.html" class="activity-card hidden">
-                        <div class="activity-icon-box"><i class="fas fa-paw"></i></div>
-                        <h3>保護・譲渡活動</h3>
-                        <p>保健所や困難な多頭飼育現場から犬猫をレスキューし、里親へと繋ぎます。</p>
-                    </a>
-                    <a href="activity_hrr.html" class="activity-card hidden">
-                        <div class="activity-icon-box"><i class="fas fa-book-open"></i></div>
-                        <h3>HRRの発行</h3>
-                        <p>保護動物の現状を伝えるフリーマガジンを制作・配布し、意識を変える活動です。</p>
-                    </a>
-                    <a href="activity_promote.html" class="activity-card hidden">
-                        <div class="activity-icon-box"><i class="fas fa-bullhorn"></i></div>
-                        <h3>啓発活動</h3>
-                        <p>SNSやイベントを通じ、適正飼養や殺処分の現状について広く伝えています。</p>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Reality (Anti-Culling) -->
-        <section id="reality" class="section reality">
-            <div class="container text-center">
-                <div class="section-title-box">
-                    <p class="section-subtitle">Message</p>
-                    <h2 class="section-title">殺処分の現状を知る</h2>
-                    <h3 style="margin-top: 15px; font-weight: 500;">「全国の殺処分を反対します」</h3>
-                </div>
-                <p style="max-width: 800px; margin: 0 auto;">
-                    知ってください、彼らの最期を。彼らはゴミではありません。私たちと同じ、温かい血の通った命です。この現実を終わらせるために、私たちは声を上げ続けます。</p>
-                <div class="reality-grid">
-                    <div class="reality-item hidden"><img src="assets/殺処分写真/スクリーンショット 2026-01-27 222955.png"
-                            alt="Reality"></div>
-                    <div class="reality-item hidden"><img src="assets/殺処分写真/スクリーンショット 2026-01-27 223157.png"
-                            alt="Reality"></div>
-                    <div class="reality-item hidden"><img src="assets/殺処分写真/スクリーンショット 2026-01-27 223217.png"
-                            alt="Reality"></div>
-                    <div class="reality-item hidden"><img src="assets/殺処分写真/スクリーンショット 2026-01-27 223236.png"
-                            alt="Reality"></div>
-                    <div class="reality-item hidden"><img src="assets/殺処分写真/スクリーンショット 2026-01-27 223317.png"
-                            alt="Reality"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Foster Section -->
-        <section id="foster" class="section">
-            <div class="container text-center">
-                <div class="section-title-box">
-                    <p class="section-subtitle">Foster Recruitment</p>
-                    <h2 class="section-title">里親募集</h2>
-                    <p>新しい家族との出会いを待っている子たちがいます。</p>
-                </div>
-
-                <div class="foster-grid" id="foster-grid">
-                    <!-- JS will load from content/dogs.json and cats.json -->
-                </div>
-
-                <div style="margin-top: 60px;">
-                    <a href="#" id="btnShowConditionsMain" class="btn btn-premium-dark"
-                        style="padding: 18px 60px; font-size: 1.1rem;">里親になりたい方へ</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Support Section -->
-        <section id="support" class="section" style="background-color: var(--color-primary-light);">
-            <div class="container text-center">
-                <h2 class="section-title">ご支援のお願い</h2>
-                <p style="margin-bottom: 30px;">ヨンナナの活動は、皆様からの温かいご寄付と、月額会員様によって支えられています。</p>
-                <a href="support.html" class="btn btn-primary">詳しく見る</a>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="section" style="background-color: var(--color-text); color: white; padding-bottom: 40px;">
-        <div class="container">
-            <div class="footer-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px;">
-                <div>
-                    <h3 style="color: white; font-size: 1.5rem; margin-bottom: 20px;">動物保護団体ヨンナナ</h3>
-                    <p style="opacity: 0.8;">徳島県を拠点とする非営利団体。</p>
-                    <div style="margin-top: 20px; display: flex; gap: 15px; font-size: 1.5rem;">
-                        <a href="https://www.instagram.com/yonnanahogo/" target="_blank"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="https://www.facebook.com/profile.php?id=100006322142767" target="_blank"><i
-                                class="fab fa-facebook"></i></a>
-                        <a href="https://www.youtube.com/@plusde24" target="_blank"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-                <div style="text-align: right;">
-                    <ul style="opacity: 0.8;">
-                        <li><a href="#about">私たちについて</a></li>
-                        <li><a href="#foster">里親募集</a></li>
-                        <li><a href="support.html">ご支援のお願い</a></li>
-                        <li><a href="request.html">保護依頼</a></li>
-                    </ul>
-                </div>
-            </div>
-            <p class="text-center" style="margin-top: 60px; opacity: 0.5; font-size: 0.8rem;">&copy; 2024 YonNana. All
-                rights reserved.</p>
+        <!-- Hero Map -->
+        <div class="hero-map-preview">
+          <div class="hero-map-overlay">
+            <div class="map-badge lost"><i class="fas fa-circle" style="font-size:6px;"></i> 迷子 56件</div>
+            <div class="map-badge found"><i class="fas fa-circle" style="font-size:6px;"></i> 保護中 23件</div>
+            <div class="map-badge govt"><i class="fas fa-circle" style="font-size:6px;"></i> 行政 1,204件</div>
+          </div>
+          <div id="heroMap"></div>
         </div>
-    </footer>
+      </div>
 
-    <!-- Animal Detail Modal -->
-    <div id="modalAnimal" class="modal" style="display:none;">
-        <div
-            style="background-color: var(--color-bg); margin: 5% auto; padding: 0; border-radius: 24px; max-width: 800px; width: 95%; max-height: 90vh; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 400px;">
-                <div id="modalAnimalImg" style="background-size: cover; background-position: center; height: 100%;">
-                </div>
-                <div style="padding: 40px; overflow-y: auto;">
-                    <span id="closeAnimalModal"
-                        style="position: absolute; right: 25px; top: 15px; font-size: 30px; cursor: pointer; color: var(--color-text); z-index: 10;">&times;</span>
-                    <div class="animal-detail-info">
-                        <span id="modalAnimalTag" class="detail-tag">募集中</span>
-                        <h2 id="modalAnimalName" style="font-size: 2.5rem; margin-bottom: 15px;">名前</h2>
-                        <p id="modalAnimalDetails" style="font-weight: 700; margin-bottom: 20px;">性別：？　年齢：？</p>
-                        <hr style="border: 0; border-top: 1px solid #E0DCD8; margin-bottom: 20px;">
-                        <p id="modalAnimalDesc" style="line-height: 1.8; color: var(--color-text-light);">紹介文</p>
-
-                        <div style="margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <a href="foster_inquiry.html" class="btn btn-outline"
-                                style="width: 100%; padding: 14px 10px; font-size: 0.9rem;">この子について問合わせる</a>
-                            <a href="foster_apply.html" class="btn btn-outline"
-                                style="width: 100%; padding: 14px 10px; font-size: 0.9rem;">里親を申し込む</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <!-- CTA Grid -->
+      <div class="cta-grid">
+        <a href="lost-register.html" class="cta-card lost-card scroll-fade">
+          <div class="cta-icon icon-lost"><i class="fas fa-search" style="color:var(--lost)"></i></div>
+          <h3 style="font-size:1.1rem;margin-bottom:var(--space-sm);">迷子を登録する</h3>
+          <p class="text-secondary text-sm">写真と特徴を入力するだけでAIが捜索を開始。近隣ユーザーへ通知が飛びます。</p>
+        </a>
+        <a href="found-register.html" class="cta-card found-card scroll-fade" style="transition-delay:0.1s">
+          <div class="cta-icon icon-found"><i class="fas fa-hand-holding-heart" style="color:var(--found)"></i></div>
+          <h3 style="font-size:1.1rem;margin-bottom:var(--space-sm);">保護・目撃を報告</h3>
+          <p class="text-secondary text-sm">見かけただけでもOK。写真1枚からAIが自動で特徴を読み取りマッチングします。</p>
+        </a>
+        <a href="map.html" class="cta-card witness-card scroll-fade" style="transition-delay:0.2s">
+          <div class="cta-icon icon-witness"><i class="fas fa-map-marked-alt" style="color:var(--witness)"></i></div>
+          <h3 style="font-size:1.1rem;margin-bottom:var(--space-sm);">捜索マップで探す</h3>
+          <p class="text-secondary text-sm">エリアの迷子・保護情報をマップ上で一目確認。行政収容情報とも連携。</p>
+        </a>
+      </div>
     </div>
+  </section>
 
-    <!-- Foster Conditions Modal -->
-    <div id="modalConditions" class="modal"
-        style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.7); backdrop-filter: blur(5px);">
-        <div
-            style="background-color: var(--color-bg); margin: 5% auto; padding: 40px; border-radius: 20px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: var(--shadow-lg);">
-            <span id="closeModal"
-                style="position: absolute; right: 25px; top: 15px; font-size: 30px; cursor: pointer; color: var(--color-text);">&times;</span>
-            <h2 style="margin-bottom: 25px; color: var(--color-text);">里親（譲渡）の条件</h2>
-            <div style="text-align: left; font-size: 0.95rem; line-height: 1.8;">
-                <p>譲渡するにあたって、ヨンナナの譲渡条件を簡単に説明します。</p>
-
-                <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-top: 20px; margin-bottom: 10px;">
-                    飼養環境について</h3>
-                <ul style="list-style: disc; padding-left: 20px; margin-bottom: 20px;">
-                    <li>
-                        <strong>室内飼い・外飼いについて</strong><br>
-                        ヨンナナ募集の子は室内飼いに限定していません。外飼いの場合、断熱、防風雨環境で十分な逃走防止対策がとれていれば大丈夫です。<br>
-                        ※直ぐに室内から確認出来る場所に設置してください。<br>
-                        ※ただし、台風や災害時、体調を崩した時には室内に入れる環境がある事が必須です。<br>
-                        <span style="color: #e74c3c;">【例外】仔犬譲渡の場合、または預かり時から室内飼養の犬の場合は室内飼養限定とします。</span><br>
-                        (仔犬譲渡では室内飼養で成犬になってもそのまま室内飼養でお願いします)
-                    </li>
-                    <li>ペット不可の借家等は不可。可でも引越し予定がある場合は不可。</li>
-                    <li>飼養環境確認のための自宅訪問可の方。</li>
-                    <li>近所トラブルがない事。</li>
-                </ul>
-
-                <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-top: 20px; margin-bottom: 10px;">
-                    応募者様の条件</h3>
-                <ul style="list-style: disc; padding-left: 20px; margin-bottom: 20px;">
-                    <li><strong>年齢制限</strong>：高齢者不可(65歳)。ただし後見人がいれば可。</li>
-                    <li><strong>単身者</strong>：不可。<br>
-                        ※単身でなくても、家族にアレルギーがある場合や、本人が入院等でお世話が出来無くなった場合に代わりにお世話・散歩出来る同居人がいない場合は不可。</li>
-                    <li><strong>同棲カップル</strong>：不可。</li>
-                    <li><strong>小さなお子様</strong>：生後5ヶ月以下のお子様がいる場合は不可。<br>
-                        ※生後6ヶ月以上の場合はアレルギー検査をお願いします。</li>
-                    <li>身分証明書を提示出来る方。</li>
-                    <li>家族全員の同意があること。</li>
-                </ul>
-
-                <h3 style="font-size: 1.1rem; color: var(--color-primary); margin-top: 20px; margin-bottom: 10px;">
-                    医療・契約について</h3>
-                <ul style="list-style: disc; padding-left: 20px; margin-bottom: 20px;">
-                    <li>適切な医療をかけてくれる方（年1回の狂犬病予防接種、ワクチン接種など）。</li>
-                    <li>譲渡時、正式譲渡契約書を発行します。契約書に同意の上、署名捺印していただきます。</li>
-                    <li>譲渡後、経過報告をしてくださる方。</li>
-                </ul>
-
-                <p style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">その後、自宅確認し、実際にあって話をして決めます。
-                </p>
-            </div>
-        </div>
+  <!-- ─── Stats Bar ─── -->
+  <div class="container-lg">
+    <div class="stats-bar scroll-fade">
+      <div>
+        <div class="stat-num" data-counter="1204">0</div>
+        <div class="stat-label">行政収容データ連携件数</div>
+      </div>
+      <div>
+        <div class="stat-num" data-counter="47">0</div>
+        <div class="stat-label">連携自治体数</div>
+      </div>
+      <div>
+        <div class="stat-num" data-counter="328">0</div>
+        <div class="stat-label">今月の保護・目撃報告</div>
+      </div>
+      <div>
+        <div class="stat-num" data-counter="24">0</div>
+        <div class="stat-label">平均発見までの日数</div>
+      </div>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'ja',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript"
-        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script src="js/script.js"></script>
-    <script src="js/news_loader.js"></script>
-    <script src="js/foster_loader.js"></script>
+  <!-- ─── Recent Lost ─── -->
+  <section class="recent-section">
+    <div class="container-lg">
+      <div class="section-top">
+        <div>
+          <div class="section-badge">RECENT REPORTS</div>
+          <h2>最新の迷子情報</h2>
+        </div>
+        <a href="map.html" class="btn btn-outline btn-sm">
+          <i class="fas fa-th-large"></i> すべて見る
+        </a>
+      </div>
+      <div class="pet-grid" id="lostGrid"></div>
+    </div>
+  </section>
+
+  <!-- ─── Matching Banner ─── -->
+  <section style="padding:0 0 var(--space-3xl);">
+    <div class="container-lg">
+      <div style="background:linear-gradient(135deg,rgba(155,89,182,0.1),rgba(26,92,58,0.1));border:1px solid rgba(155,89,182,0.25);border-radius:var(--radius-xl);padding:var(--space-2xl);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;">
+          <div>
+            <div class="section-badge" style="background:rgba(155,89,182,0.15);border-color:rgba(155,89,182,0.3);color:var(--match)">AI MATCHING</div>
+            <h2 style="margin-bottom:var(--space-md)">特徴タグ<br>自動マッチング</h2>
+            <p style="color:var(--text-secondary);margin-bottom:var(--space-lg)">
+              「黒猫・首輪あり（赤）・耳カット・鍵尻尾」など、特徴を細かくタグ化。
+              保護主が投稿した瞬間に条件一致の飼い主へアラートが飛びます。
+            </p>
+            <a href="match.html" class="btn btn-primary">
+              <i class="fas fa-random"></i> マッチング結果を見る
+            </a>
+          </div>
+          <div>
+            <div id="matchPreviewCards" style="display:flex;flex-direction:column;gap:var(--space-md);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ─── -->
+  <section style="padding: var(--space-3xl) 0;">
+    <div class="container-lg">
+      <div style="text-align:center;margin-bottom:var(--space-2xl);">
+        <div class="section-badge">HOW IT WORKS</div>
+        <h2>4ステップで始める<br>迷子捜索</h2>
+      </div>
+      <div class="steps-visual">
+        <div class="how-step scroll-fade" style="transition-delay:0.1s">
+          <div class="how-step-num">📋</div>
+          <h4 style="margin-bottom:var(--space-sm)">①情報を登録</h4>
+          <p class="text-sm text-secondary">写真と特徴タグを選ぶだけ。迷子ポスターも自動生成されます。</p>
+        </div>
+        <div class="how-step scroll-fade" style="transition-delay:0.2s">
+          <div class="how-step-num" style="border-color:var(--gold);">🤖</div>
+          <h4 style="margin-bottom:var(--space-sm)">②AIが予測</h4>
+          <p class="text-sm text-secondary">犬種・性格・天気・経過日数からAIが捜索エリアを自動予測。</p>
+        </div>
+        <div class="how-step scroll-fade" style="transition-delay:0.3s">
+          <div class="how-step-num" style="border-color:var(--match);">🎯</div>
+          <h4 style="margin-bottom:var(--space-sm)">③自動マッチング</h4>
+          <p class="text-sm text-secondary">特徴が一致する保護情報・行政データへアラートが届きます。</p>
+        </div>
+        <div class="how-step scroll-fade" style="transition-delay:0.4s">
+          <div class="how-step-num" style="border-color:var(--found);">💬</div>
+          <h4 style="margin-bottom:var(--space-sm)">④匿名で連絡</h4>
+          <p class="text-sm text-secondary">個人情報不要の匿名チャットで安全に飼い主と連絡が取れます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Govt Data Banner ─── -->
+  <div class="container-lg">
+    <div class="govt-banner scroll-fade">
+      <div>
+        <div class="section-badge">GOVERNMENT DATA</div>
+        <h3 style="margin-bottom:var(--space-md);">行政保護データと<br>自動照合</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:var(--space-lg);">
+          保健所・動物愛護センターの公開保護情報を自動収集。
+          登録中の迷子データとAIでマッチング。一致の可能性があれば即アラートをお届けします。
+        </p>
+        <a href="admin-data.html" class="btn btn-gold">
+          <i class="fas fa-landmark"></i> 行政データを確認する
+        </a>
+      </div>
+      <div style="flex:1">
+        <div class="partner-logos">
+          <div class="partner-logo-pill">🏛 東京都動物愛護センター</div>
+          <div class="partner-logo-pill">🏛 神奈川県保護センター</div>
+          <div class="partner-logo-pill">🏛 岩手県愛護センター</div>
+          <div class="partner-logo-pill">🏛 宮城県愛護センター</div>
+          <div class="partner-logo-pill">🏛 秋田県（ワンニャンピア）</div>
+          <div class="partner-logo-pill" style="color:var(--gold);">+ 42自治体</div>
+        </div>
+        <div style="margin-top:var(--space-lg);padding:var(--space-md);background:var(--bg-input);border-radius:var(--radius-md);font-size:0.8rem;color:var(--text-secondary);">
+          <i class="fas fa-info-circle" style="color:var(--gold);margin-right:6px;"></i>
+          行政HPの公開情報を自動収集・照合しています。行政への直接アクセスは不要です。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SNS / Poster Banner ─── -->
+  <section style="padding:var(--space-3xl) 0;">
+    <div class="container-lg">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
+        <div class="card scroll-fade" style="border-color:rgba(201,168,76,0.2);">
+          <div style="font-size:2.5rem;margin-bottom:var(--space-md);">📄</div>
+          <h3 style="margin-bottom:var(--space-sm);">迷子ポスター<br>ワンクリック生成</h3>
+          <p class="text-secondary text-sm" style="margin-bottom:var(--space-lg);">
+            登録情報から電柱貼り付け用のQRコード付きポスター（PDF）を自動生成。印刷してすぐ使えます。
+          </p>
+          <a href="poster.html" class="btn btn-gold btn-sm">
+            <i class="fas fa-file-pdf"></i> ポスターを作成
+          </a>
+        </div>
+        <div class="card scroll-fade" style="border-color:rgba(52,152,219,0.2); transition-delay:0.1s">
+          <div style="font-size:2.5rem;margin-bottom:var(--space-md);">📢</div>
+          <h3 style="margin-bottom:var(--space-sm);">SNS拡散<br>ワンタップ共有</h3>
+          <p class="text-secondary text-sm" style="margin-bottom:var(--space-lg);">
+            X（旧Twitter）・Instagram用のテキストとハッシュタグが自動生成。地域全体に一気に拡散できます。
+          </p>
+          <a href="poster.html#sns" class="btn btn-outline btn-sm" style="border-color:rgba(52,152,219,0.4);color:var(--witness);">
+            <i class="fab fa-x-twitter"></i> SNSで拡散する
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <div class="logo-name">
+              <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+              <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+          </p>
+        </div>
+
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<!-- ─── Floating Match Alert ─── -->
+<div class="floating-alert" id="floatingAlert">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+    <span style="font-size:1.2rem;">🎯</span>
+    <strong style="font-size:0.85rem;color:var(--match)">マッチングアラート</strong>
+    <button onclick="document.getElementById('floatingAlert').remove()" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;">✕</button>
+  </div>
+  <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px;">
+    「クロ」ちゃん（黒猫・耳カット）と一致する保護報告が投稿されました！
+  </p>
+  <a href="match.html" class="btn btn-sm" style="background:rgba(155,89,182,0.2);border:1px solid rgba(155,89,182,0.4);color:var(--match);width:100%;justify-content:center;">
+    詳細を確認する →
+  </a>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/mock-data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Lost grid & Map: Supabase から取得
+  async function loadIndexData() {
+    // Hero Map
+    const map = L.map('heroMap', { zoomControl: false, scrollWheelZoom: false, dragging: false }).setView([35.6895, 139.6917], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO'
+    }).addTo(map);
+
+    const [lostList, foundList] = await Promise.all([
+      window.api.fetchLostPets(10),
+      window.api.fetchFoundPets(10)
+    ]);
+
+    // マップにピンを立てる
+    (lostList || []).forEach(item => {
+      if (!item.lat || !item.lng) return;
+      L.circleMarker([item.lat, item.lng], {
+        radius: 10, fillColor: '#FF6B35', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+      }).addTo(map).bindPopup(`<b>迷子: ${item.pet_name}</b><br>${item.location}`);
+    });
+    (foundList || []).forEach(item => {
+      if (!item.lat || !item.lng) return;
+      L.circleMarker([item.lat, item.lng], {
+        radius: 10, fillColor: '#2ECC71', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+      }).addTo(map).bindPopup(`<b>保護中</b><br>${item.location}`);
+    });
+
+    // 迷子カード一覧（最大4件）
+    const lostGrid = document.getElementById('lostGrid');
+    if (lostGrid) {
+      lostGrid.innerHTML = '';
+      const items = (lostList || []).slice(0, 4);
+      if (items.length === 0) {
+        lostGrid.innerHTML = '<p style="color:var(--text-muted); text-align:center; grid-column:1/-1;">現在、迷子登録はありません。</p>';
+      }
+      items.forEach((item, i) => {
+        const features = (item.features || []).slice(0, 3).map(t => `<span class="pet-tag">${t}</span>`).join('');
+        const daysAgo = item.date_lost
+          ? Math.floor((Date.now() - new Date(item.date_lost)) / 86400000)
+          : 0;
+        const imgSrc = item.image_url || 'img/no-image.svg';
+        const div = document.createElement('div');
+        div.className = 'pet-card scroll-fade';
+        div.style.transitionDelay = `${i * 0.1}s`;
+        div.onclick = () => window.location.href = 'match.html';
+        div.innerHTML = `
+          <div class="pet-card-image">
+            <img src="${imgSrc}" alt="${item.pet_name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'400\\' height=\\'300\\' fill=\\'%23333\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23888\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${item.pet_name}</text></svg>'">
+            <span class="pet-card-badge badge-lost">迷子</span>
+            <span class="pet-card-days">${daysAgo}日前</span>
+          </div>
+          <div class="pet-card-body">
+            <div class="pet-card-name">${item.pet_name}</div>
+            <div class="pet-card-meta">${features}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);"><i class="fas fa-map-marker-alt"></i> ${item.location || '不明'}</div>
+          </div>
+        `;
+        lostGrid.appendChild(div);
+      });
+    }
+
+    // マッチングプレビュー（保護情報 最大2件）
+    const matchCards = document.getElementById('matchPreviewCards');
+    if (matchCards) {
+      matchCards.innerHTML = '';
+      const items = (foundList || []).slice(0, 2);
+      if (items.length === 0) {
+        matchCards.innerHTML = '<p style="color:var(--text-muted);">現在、マッチング候補はありません。</p>';
+      }
+      items.forEach((item, i) => {
+        const imgSrc = item.image_url || '';
+        const div = document.createElement('div');
+        div.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md);display:flex;gap:12px;align-items:center;';
+        div.innerHTML = `
+          <div style="width:60px;height:60px;border-radius:var(--radius-md);overflow:hidden;flex-shrink:0;background:var(--bg-deep);">
+            ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" alt="">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐾</div>'}
+          </div>
+          <div>
+            <div style="font-size:0.85rem;font-weight:600;margin-bottom:4px;">保護報告</div>
+            <div style="font-size:0.8rem;color:var(--text-secondary);">${item.location || ''}で保護</div>
+          </div>
+          <div style="margin-left:auto;background:rgba(155,89,182,0.15);color:var(--match);border:1px solid rgba(155,89,182,0.3);border-radius:var(--radius-full);padding:4px 12px;font-size:0.75rem;font-weight:700;">確認する</div>
+        `;
+        matchCards.appendChild(div);
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadIndexData);
+</script>
+
 </body>
-
 </html>

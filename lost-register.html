@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>迷子を登録 — AFC Pet Finder</title>
+  <meta name="description" content="迷子になったペットの情報を登録。AIが捜索エリアを予測し、特徴タグでマッチングします。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    .register-layout { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-xl); align-items: start; }
+    .register-sidebar-sticky { position: sticky; top: calc(var(--nav-height) + 20px); }
+    .step-panel { animation: fadeInUp 0.4s ease; }
+    .step-panel.hidden { display: none !important; }
+    .color-swatch { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+    .prediction-card { background: linear-gradient(135deg, rgba(26,92,58,0.2), rgba(201,168,76,0.08)); border: 1px solid rgba(26,92,58,0.4); border-radius: var(--radius-lg); padding: var(--space-lg); }
+    .ai-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid var(--gold); border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; margin-bottom: var(--space-sm); }
+    .map-container { height: 300px; border-radius: var(--radius-md); overflow: hidden; margin-top: var(--space-md); border: 1px solid var(--border); }
+    .color-badge { display:inline-flex; align-items:center; gap:6px; background:var(--bg-input); border:1px solid var(--border); border-radius: var(--radius-full); padding: 4px 12px; font-size:0.85rem; cursor:pointer; transition: all var(--transition-fast); }
+    .color-badge:hover { border-color: var(--gold); }
+    .color-badge.selected { border-color: var(--gold); background: rgba(201,168,76,0.15); color: var(--gold); }
+    .personality-opt { border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+    .personality-opt:hover { border-color: var(--gold); }
+    .personality-opt.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+    .personality-opt .emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+    @media (max-width: 900px) { .register-layout { grid-template-columns: 1fr; } .register-sidebar-sticky { position: static; } }
+  </style>
+  <script src="js/api.js" defer></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">ホーム</a>
+      <a href="map.html" class="nav-link">捜索マップ</a>
+      <a href="match.html" class="nav-link">マッチング</a>
+      <a href="admin-data.html" class="nav-link">行政データ</a>
+      <a href="chat.html" class="nav-link">チャット</a>
+      <a href="lost-register.html" class="btn nav-cta active">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="page-wrapper" style="padding-top: var(--space-2xl);">
+  <div class="container">
+    <div class="mb-xl">
+      <h1 style="font-size: 2rem; margin-bottom: var(--space-sm);">迷子情報の登録</h1>
+      <p class="text-secondary">情報を入力してください。AIが捜索予測エリアを算出し、近隣のユーザーに通知を送ります。</p>
+    </div>
+
+    <div class="register-layout">
+      <!-- Main Form -->
+      <div>
+        <!-- Step 1 -->
+        <div class="card step-panel" id="step1">
+          <div class="card-header">
+            <h2 style="font-size: 1.25rem;">Step 1: 基本情報</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">動物の種類 <span style="color:var(--lost)">*</span></label>
+              <div style="display:flex; gap:var(--space-md);">
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="selectAnimal('dog', this)"><i class="fas fa-dog"></i> 犬</button>
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="selectAnimal('cat', this)"><i class="fas fa-cat"></i> 猫</button>
+                <button type="button" class="btn btn-outline" style="flex:1;" onclick="selectAnimal('other', this)"><i class="fas fa-dove"></i> その他</button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">お名前 (ペット) <span style="color:var(--lost)">*</span></label>
+              <input type="text" class="form-control" placeholder="例: ポチ">
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap:var(--space-md);">
+              <div class="form-group">
+                <label class="form-label">性別</label>
+                <select class="form-control">
+                  <option>オス</option>
+                  <option>メス</option>
+                  <option>不明</option>
+                </select>
+              </div>
+              <div class="form-group" id="spayNeuterGroup">
+                <label class="form-label">去勢・避妊</label>
+                <select class="form-control">
+                  <option>済み</option>
+                  <option>未</option>
+                  <option>不明</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">写真 <span style="color:var(--lost)">*</span></label>
+              <div id="photoUploadArea" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: var(--space-xl); text-align: center; color: var(--text-muted); cursor:pointer; transition: border-color 0.2s, background 0.2s;" onclick="document.getElementById('photoInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--gold)'; this.style.background='rgba(201,168,76,0.05)';" ondragleave="this.style.borderColor=''; this.style.background='';" ondrop="handlePhotoDrop(event)">
+                <i class="fas fa-cloud-upload-alt" style="font-size:2rem; margin-bottom:var(--space-sm); color:var(--primary-light);"></i>
+                <p>クリックまたはドラッグ＆ドロップで写真をアップロード</p>
+                <p class="text-xs mt-sm">※全身が写っている写真がAI判定に最適です（複数枚可）</p>
+                <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoFiles(this.files)">
+              </div>
+              <div id="photoPreviewGrid" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:var(--space-md);"></div>
+            </div>
+
+            <div style="text-align:right;">
+              <button class="btn btn-primary" onclick="nextStep(2)">次へ（特徴・性格） <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card step-panel hidden" id="step2">
+          <div class="card-header" style="display:flex; align-items:center; gap:10px;">
+            <span id="step2AnimalIcon" style="font-size:1.5rem;">🐾</span>
+            <h2 style="font-size: 1.25rem;" id="step2Title">Step 2: 特徴・性格</h2>
+          </div>
+          <div class="card-body">
+
+            <!-- ===== 犬フォーム ===== -->
+            <div id="form-dog" class="hidden">
+              <div class="form-group">
+                <label class="form-label">毛色・模様 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;" id="dogColors">
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#1a1a1a;"></div>ブラック</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#f5f5f5; border-color:rgba(255,255,255,0.4);"></div>ホワイト</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#8B4513;"></div>ブラウン</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#C0392B;"></div>レッド</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#F5CBA7;"></div>アプリコット</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#D4AC0D;"></div>タン（黄褐色）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">バイカラー（2色）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">トライカラー（3色）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">タン・ポイント</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">ブリンドル（虎柄）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">マール（まだら）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">セーブル</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">その他の柄</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">毛質・コート <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <span class="color-badge" onclick="toggleBadge(this)">短毛</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">長毛</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">巻き毛（カール）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">剛毛（ワイヤー）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">ダブルコート</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">シングルコート</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">性格・特徴 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div class="personality-grid">
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🏃</span><div>活発・よく動く</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🤫</span><div>臆病・隠れがち</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🍖</span><div>食欲旺盛</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🔊</span><div>よく吠える</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🤝</span><div>人懐っこい</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">😴</span><div>おとなしい</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== 猫フォーム ===== -->
+            <div id="form-cat" class="hidden">
+              <div class="form-group">
+                <label class="form-label">毛色・模様 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#D48B2B,#fff);"></div>茶トラ</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#5D4037,#1a1a1a);"></div>キジトラ</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#888,#1a1a1a);"></div>サバトラ（グレートラ）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#1a1a1a;"></div>黒猫（全黒）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:#f5f5f5; border-color:rgba(255,255,255,0.4);"></div>白猫（全白）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#1a1a1a,#8B4513,#fff);"></div>三毛（ミケ）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#1a1a1a,#fff);"></div>ハチワレ</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#1a1a1a,#8B4513);"></div>サビ猫</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#F5E6C8,#8B6A3E);"></div>シャム系（ポイント）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#E0C9A0,#8B7355);"></div>茶白（茶＋白）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#888,#fff);"></div>グレー白</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">その他の柄</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">毛質 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <span class="color-badge" onclick="toggleBadge(this)">短毛</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">長毛（ペルシャ系など）</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">セミロング</span>
+                  <span class="color-badge" onclick="toggleBadge(this)">巻き毛（レックス系）</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">性格・特徴 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div class="personality-grid">
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🏃</span><div>活発・よく動く</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🤫</span><div>臆病・隠れがち</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🍖</span><div>食欲旺盛</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🗣️</span><div>よく鳴く</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🤝</span><div>人懐っこい</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">😺</span><div>マイペース</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== その他フォーム ===== -->
+            <div id="form-other" class="hidden">
+              <div class="form-group">
+                <label class="form-label">動物の種類（詳細）</label>
+                <input type="text" class="form-control" placeholder="例: ウサギ、インコ、亀 等">
+              </div>
+              <div class="form-group">
+                <label class="form-label">性格・特徴 <span class="text-xs text-muted">（複数選択可）</span></label>
+                <div class="personality-grid">
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🏃</span><div>活発・よく動く</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🤫</span><div>臆病・隠れがち</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🍖</span><div>食欲旺盛</div></div>
+                  <div class="personality-opt" onclick="this.classList.toggle('selected')"><span class="emoji">🗣️</span><div>よく鳴く・鳴らす</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== 共通フィールド ===== -->
+            <div id="form-common">
+              <div class="form-group" id="collarGroup">
+                <label class="form-label">首輪・マイクロチップ</label>
+                <input type="text" class="form-control" placeholder="例: 赤い革の首輪、鈴付き / マイクロチップ番号 等">
+              </div>
+              <div class="form-group">
+                <label class="form-label">その他の特徴</label>
+                <textarea class="form-control" rows="3" placeholder="例: 右耳の先が欠けている、尻尾が曲がっている、サクラカットあり 等"></textarea>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-top: var(--space-md);">
+              <button class="btn btn-outline" onclick="nextStep(1)"><i class="fas fa-arrow-left"></i> 戻る</button>
+              <button class="btn btn-primary" onclick="nextStep(3)">次へ（日時・場所） <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="card step-panel hidden" id="step3">
+          <div class="card-header">
+            <h2 style="font-size: 1.25rem;">Step 3: いなくなった日時・場所</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">いなくなった日時 <span style="color:var(--lost)">*</span></label>
+              <input type="datetime-local" class="form-control">
+            </div>
+
+            <div style="background:rgba(255,107,53,0.05); border:1px solid rgba(255,107,53,0.3); padding:var(--space-md); border-radius:var(--radius-md); margin-bottom:var(--space-md);">
+              <h4 style="color:var(--lost); margin-bottom:8px; font-size:0.95rem;"><i class="fas fa-university"></i> 行政データとの自動照合</h4>
+              <p class="text-xs text-secondary">
+                ここで選択した「都道府県」および「市区町村」を管轄する保健所や動物愛護センターの収容データと、AIが優先的に自動照合を行います。
+              </p>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap:var(--space-md);">
+              <div class="form-group">
+                <label class="form-label">都道府県 <span style="color:var(--lost)">*</span></label>
+                <select class="form-control">
+                  <option value="" disabled selected>選択してください</option>
+                  <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option><option>秋田県</option><option>山形県</option><option>福島県</option>
+                  <option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option><option>東京都</option><option>神奈川県</option>
+                  <option>新潟県</option><option>富山県</option><option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option><option>岐阜県</option><option>静岡県</option><option>愛知県</option>
+                  <option>三重県</option><option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option><option>奈良県</option><option>和歌山県</option>
+                  <option>鳥取県</option><option>島根県</option><option>岡山県</option><option>広島県</option><option>山口県</option>
+                  <option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option>
+                  <option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option><option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">市区町村 <span style="color:var(--lost)">*</span></label>
+                <input type="text" class="form-control" placeholder="例: 世田谷区">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">いなくなった場所 <span style="color:var(--lost)">*</span></label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="addressInput" class="form-control" placeholder="住所または施設名（例: 東京都世田谷区三軒茶屋）" onkeydown="if(event.key==='Enter'){geocodeAddress();}">
+                <button class="btn btn-outline" onclick="geocodeAddress()"><i class="fas fa-search"></i> 検索</button>
+              </div>
+              <div id="geocodeStatus" style="font-size:0.8rem; margin-top:6px; min-height:18px;"></div>
+              <div id="mapSelect" class="map-container"></div>
+              <p class="text-xs text-muted mt-sm">※地図上でピンを動かして正確な位置を指定できます。</p>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+              <button class="btn btn-outline" onclick="nextStep(2)"><i class="fas fa-arrow-left"></i> 戻る</button>
+              <button class="btn btn-primary" onclick="nextStep(4)">次へ（確認・完了） <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="card step-panel hidden" id="step4">
+          <div class="card-header">
+            <h2 style="font-size: 1.25rem;">Step 4: AI予測エリアと通知</h2>
+          </div>
+          <div class="card-body">
+            
+            <div class="prediction-card mb-lg">
+              <div class="ai-badge"><i class="fas fa-brain"></i> AI Prediction</div>
+              <h3 style="margin-bottom:var(--space-sm); font-size:1.1rem;">予測される移動範囲</h3>
+              <p class="text-sm text-secondary mb-md">
+                猫（メス・避妊済み）で「臆病」な性格の場合、最初の3日間は半径500m以内に身を潜めている可能性が <strong>85%</strong> あります。<br>
+                特に路地裏や室外機の下などの狭く暗い場所を重点的に探すことをお勧めします。
+              </p>
+              <div id="mapPrediction" class="map-container" style="height:200px; border-color:var(--gold);"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">連絡先（非公開） <span style="color:var(--lost)">*</span></label>
+              <input type="email" class="form-control" placeholder="メールアドレス">
+              <p class="text-xs text-muted mt-sm">※連絡先は一般公開されません。システム経由の匿名チャットで連絡が届きます。</p>
+            </div>
+
+            <div style="background:rgba(255,107,53,0.1); border:1px solid var(--lost); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
+              <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
+                <input type="checkbox" style="margin-top:4px;" checked>
+                <div>
+                  <div style="font-weight:600; margin-bottom:4px; color:#fff;">近隣ユーザーへのプッシュ通知</div>
+                  <div class="text-xs text-secondary">
+                    予測エリア内にいる「AFC Pet Finder」のアプリユーザー（協力者）に、捜索協力を呼びかける通知を送信します。
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+              <button class="btn btn-outline" onclick="nextStep(3)"><i class="fas fa-arrow-left"></i> 戻る</button>
+              <button class="btn btn-primary" onclick="submitForm()" style="background:var(--lost); border-color:var(--lost);"><i class="fas fa-bullhorn"></i> 迷子情報を登録する</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar -->
+      <div class="register-sidebar-sticky">
+        <div class="card mb-md">
+          <div class="card-body">
+            <h3 style="font-size:1rem; margin-bottom:var(--space-md);">登録の進捗</h3>
+            <ul style="list-style:none; padding:0; margin:0; font-size:0.9rem;" id="progressList">
+              <li data-label="1. 基本情報" style="margin-bottom:12px; color:var(--primary-light); font-weight:600;"><i class="fas fa-dot-circle" style="margin-right:8px;"></i> 1. 基本情報</li>
+              <li data-label="2. 特徴・性格" style="margin-bottom:12px; color:var(--text-muted);"><i class="far fa-circle" style="margin-right:8px;"></i> 2. 特徴・性格</li>
+              <li data-label="3. 日時・場所" style="margin-bottom:12px; color:var(--text-muted);"><i class="far fa-circle" style="margin-right:8px;"></i> 3. 日時・場所</li>
+              <li data-label="4. 予測・通知" style="color:var(--text-muted);"><i class="far fa-circle" style="margin-right:8px;"></i> 4. 予測・通知</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md); font-size:0.85rem; color:var(--text-secondary);">
+          <h4 style="color:#fff; margin-bottom:8px; font-size:0.9rem;"><i class="fas fa-info-circle"></i> 登録のポイント</h4>
+          <p style="margin-bottom:8px;">・写真は明るくピントが合ったものを選んでください。</p>
+          <p style="margin-bottom:8px;">・いなくなった時間は、最後に確実に見た時間を入力してください。</p>
+          <p>・些細な特徴（鳴き声が小さい等）でも、マッチングの手がかりになります。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="completeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+  <div class="card" style="max-width:500px; width:90%; text-align:center; animation:fadeInUp 0.3s ease;">
+    <div class="card-body" style="padding:var(--space-2xl) var(--space-xl);">
+      <div style="width:80px; height:80px; border-radius:50%; background:rgba(255,107,53,0.1); color:var(--lost); display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto var(--space-lg);">
+        <i class="fas fa-paper-plane"></i>
+      </div>
+      <h2 style="font-size:1.5rem; margin-bottom:var(--space-md);">登録が完了しました</h2>
+      <p class="text-secondary mb-md">
+        迷子情報を受け付けました。近隣のユーザーへのプッシュ通知と、
+        行政保護データとの照合（テスト動作）を開始しました。
+      </p>
+      <div style="background:rgba(255,255,255,0.05); padding:var(--space-md); border-radius:var(--radius-md); text-align:left; font-size:0.9rem; margin-bottom:var(--space-xl);">
+        <strong>今後のステップ:</strong>
+        <ul style="margin-top:8px; padding-left:20px; color:var(--text-secondary);">
+          <li>自動マッチングの結果はマイページでお知らせします。</li>
+          <li>目撃者からチャットで連絡が来る場合があります。</li>
+          <li>ポスター用のデータが生成されました。</li>
+        </ul>
+      </div>
+      <div style="display:flex; gap:var(--space-md); justify-content:center;">
+        <a href="match.html" class="btn btn-outline">マッチングを確認</a>
+        <a href="index.html" class="btn btn-primary">ホームへ戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <div class="logo-name">
+              <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+              <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+          </p>
+        </div>
+
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  function handlePhotoFiles(files) {
+    const grid = document.getElementById('photoPreviewGrid');
+    if (!grid) return;
+    [...files].forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const thumb = document.createElement('div');
+        thumb.style.cssText = 'position:relative; width:90px; height:90px; border-radius:8px; overflow:hidden; border:1px solid var(--border);';
+        thumb.innerHTML = `
+          <img src="${e.target.result}" alt="写真" style="width:100%; height:100%; object-fit:cover;">
+          <button onclick="this.parentElement.remove()" style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.7); color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+        `;
+        grid.appendChild(thumb);
+      };
+      reader.readAsDataURL(file);
+    });
+    // アップロード後にinputをリセット（同じファイルを再選択できるよう）
+    document.getElementById('photoInput').value = '';
+  }
+
+  function handlePhotoDrop(event) {
+    event.preventDefault();
+    const area = document.getElementById('photoUploadArea');
+    if (area) { area.style.borderColor = ''; area.style.background = ''; }
+    handlePhotoFiles(event.dataTransfer.files);
+  }
+
+  let map, mapPrediction, mapMarker;
+  let selectedAnimal = null; // 'dog' | 'cat' | 'other'
+
+  function setupHybridMap(mapInstance, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO'
+    });
+    
+    const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    function updateMapStyle() {
+      const zoom = mapInstance.getZoom();
+      if (zoom >= 15) {
+        if (mapInstance.hasLayer(darkTiles)) mapInstance.removeLayer(darkTiles);
+        if (!mapInstance.hasLayer(osmTiles)) mapInstance.addLayer(osmTiles);
+        container.classList.add('detailed-view');
+      } else {
+        if (mapInstance.hasLayer(osmTiles)) mapInstance.removeLayer(osmTiles);
+        if (!mapInstance.hasLayer(darkTiles)) mapInstance.addLayer(darkTiles);
+        container.classList.remove('detailed-view');
+      }
+    }
+
+    mapInstance.on('zoomend', updateMapStyle);
+    updateMapStyle();
+  }
+
+  function initMaps() {
+    if(!map) {
+      map = L.map('mapSelect').setView([35.6895, 139.6917], 13);
+      setupHybridMap(map, 'mapSelect');
+      mapMarker = L.marker([35.6895, 139.6917], {draggable:true}).addTo(map);
+      mapMarker.bindPopup('📍 ここをドラッグして正確な位置を指定').openPopup();
+    }
+  }
+
+  async function geocodeAddress() {
+    const input = document.getElementById('addressInput');
+    const status = document.getElementById('geocodeStatus');
+    const query = input ? input.value.trim() : '';
+    if (!query) {
+      if (status) { status.textContent = '⚠️ 住所を入力してください'; status.style.color = '#f0ad4e'; }
+      return;
+    }
+    if (status) { status.textContent = '🔍 検索中...'; status.style.color = 'var(--text-secondary)'; }
+
+    // マップが初期化されていなければ初期化
+    if (!map) { initMaps(); await new Promise(r => setTimeout(r, 300)); }
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&accept-language=ja&countrycodes=jp`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'ja' } });
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        const displayName = data[0].display_name;
+        map.setView([lat, lon], 16);
+        if (mapMarker) {
+          mapMarker.setLatLng([lat, lon]);
+        } else {
+          mapMarker = L.marker([lat, lon], {draggable:true}).addTo(map);
+        }
+        mapMarker.bindPopup(`📍 ${displayName}`).openPopup();
+        if (status) { status.innerHTML = '✅ <span style="color:#2ecc71">場所を特定しました。ピンをドラッグして微調整できます。</span>'; }
+      } else {
+        if (status) { status.innerHTML = '❌ <span style="color:#e74c3c">住所が見つかりませんでした。より具体的な住所で再検索してください。</span>'; }
+      }
+    } catch(e) {
+      if (status) { status.innerHTML = '❌ <span style="color:#e74c3c">検索エラーが発生しました。ネットワーク接続を確認してください。</span>'; }
+    }
+  }
+
+  function initPredictionMap() {
+    if(!mapPrediction) {
+      mapPrediction = L.map('mapPrediction', {zoomControl: false}).setView([35.6895, 139.6917], 15);
+      setupHybridMap(mapPrediction, 'mapPrediction');
+      L.marker([35.6895, 139.6917]).addTo(mapPrediction);
+      L.circle([35.6895, 139.6917], {
+        color: '#FF6B35',
+        fillColor: '#FF6B35',
+        fillOpacity: 0.2,
+        radius: 500
+      }).addTo(mapPrediction);
+    }
+  }
+
+  function selectAnimal(type, btn) {
+    selectedAnimal = type;
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.btn').forEach(b => { b.classList.remove('btn-primary'); b.classList.add('btn-outline'); });
+    btn.classList.remove('btn-outline');
+    btn.classList.add('btn-primary');
+
+    // その他が選ばれた場合は「去勢・避妊」を非表示にする
+    const spayNeuterGroup = document.getElementById('spayNeuterGroup');
+    if (spayNeuterGroup) {
+      spayNeuterGroup.style.display = type === 'other' ? 'none' : 'block';
+    }
+  }
+
+  function toggleBadge(el) {
+    el.classList.toggle('selected');
+  }
+
+  function switchAnimalForm(type) {
+    ['dog', 'cat', 'other'].forEach(t => {
+      const el = document.getElementById('form-' + t);
+      if (el) el.classList.add('hidden');
+    });
+    const target = document.getElementById('form-' + type);
+    if (target) target.classList.remove('hidden');
+
+    const iconMap = { dog: '🐕', cat: '🐈', other: '🐾' };
+    const titleMap = { dog: 'Step 2: 特徴・性格（犬）', cat: 'Step 2: 特徴・性格（猫）', other: 'Step 2: 特徴・性格（その他）' };
+    const icon = document.getElementById('step2AnimalIcon');
+    const title = document.getElementById('step2Title');
+    if (icon) icon.textContent = iconMap[type] || '🐾';
+    if (title) title.textContent = titleMap[type] || 'Step 2: 特徴・性格';
+
+    // その他が選ばれた場合は共通フィールドの「首輪・マイクロチップ」を非表示にする
+    const collarGroup = document.getElementById('collarGroup');
+    if (collarGroup) {
+      collarGroup.style.display = type === 'other' ? 'none' : 'block';
+    }
+  }
+
+  function nextStep(step) {
+    document.querySelectorAll('.step-panel').forEach(p => {
+      p.classList.add('hidden');
+      p.style.display = '';
+    });
+    const target = document.getElementById('step' + step);
+    if (target) target.classList.remove('hidden');
+
+    if (step === 2) {
+      switchAnimalForm(selectedAnimal || 'other');
+    }
+
+    const items = document.querySelectorAll('#progressList li');
+    items.forEach((item, index) => {
+      const i = index + 1;
+      const label = item.getAttribute('data-label');
+      if (i < step) {
+        item.style.color = 'var(--primary-light)';
+        item.style.fontWeight = '400';
+        item.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i> ${label}`;
+      } else if (i === step) {
+        item.style.color = 'var(--primary-light)';
+        item.style.fontWeight = '600';
+        item.innerHTML = `<i class="fas fa-dot-circle" style="margin-right:8px;"></i> ${label}`;
+      } else {
+        item.style.color = 'var(--text-muted)';
+        item.style.fontWeight = '400';
+        item.innerHTML = `<i class="far fa-circle" style="margin-right:8px;"></i> ${label}`;
+      }
+    });
+
+    if (step === 3) { setTimeout(() => { initMaps(); map.invalidateSize(); }, 100); }
+    if (step === 4) { setTimeout(() => { initPredictionMap(); mapPrediction.invalidateSize(); }, 100); }
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  async function submitForm() {
+    try {
+      const btn = document.querySelector('button[onclick="submitForm()"]');
+      if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+      
+      const petData = {
+        pet_name: document.getElementById('petName')?.value || '不明',
+        pet_type: selectedAnimal || 'other',
+        breed: document.getElementById('dogBreed')?.value || document.getElementById('catBreed')?.value || document.getElementById('otherType')?.value || '',
+        gender: document.getElementById('petGender')?.value || '不明',
+        features: Array.from(document.querySelectorAll('.tag-option.selected')).map(el => el.innerText),
+        date_lost: document.getElementById('lostDate')?.value || new Date().toISOString().split('T')[0],
+        location: document.getElementById('addressInput')?.value || '不明',
+        lat: parseFloat(document.getElementById('latInput')?.value || '0'),
+        lng: parseFloat(document.getElementById('lngInput')?.value || '0'),
+        owner_name: document.getElementById('ownerName')?.value || '',
+        email: document.getElementById('contactEmail')?.value || '',
+        phone: document.getElementById('contactPhone')?.value || '',
+        details: document.getElementById('featureDetails')?.value || ''
+      };
+      
+      const fileInput = document.getElementById('photoInput');
+      const imageFile = fileInput && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+      await window.api.registerLostPet(petData, imageFile);
+      
+      document.getElementById('completeModal').style.display = 'flex';
+      if (btn) btn.innerHTML = '登録する <i class="fas fa-paper-plane" style="margin-left:8px;"></i>';
+    } catch (e) {
+      alert('エラーが発生しました: ' + e.message);
+      console.error(e);
+      const btn = document.querySelector('button[onclick="submitForm()"]');
+      if (btn) btn.innerHTML = '登録する <i class="fas fa-paper-plane" style="margin-left:8px;"></i>';
+    }
+  }
+</script>
+<script>
+  // ナビゲーション初期化（app.js不要）
+  document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.querySelector('.nav');
+    const burger = document.querySelector('.nav-burger');
+    const links = document.querySelector('.nav-links');
+    if (nav) {
+      window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 20);
+      });
+    }
+    if (burger && links) {
+      burger.addEventListener('click', () => links.classList.toggle('open'));
+    }
+  });
+</script>
+
+</body>
+</html>

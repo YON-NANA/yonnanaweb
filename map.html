@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>捜索マップ — AFC Pet Finder</title>
+  <meta name="description" content="迷子・保護動物の情報を地図上で確認できます。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    .map-page-layout { display: flex; flex-direction: column; height: calc(100vh - var(--nav-height)); }
+    .map-controls { padding: var(--space-md) var(--space-lg); background: var(--bg-deep); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; }
+    #fullMap { flex: 1; width: 100%; background: #111; z-index: 1; }
+    .filter-btn { background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 6px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+    .filter-btn:hover, .filter-btn.active { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold); }
+  </style>
+  <script src="js/api.js" defer></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">ホーム</a>
+      <a href="map.html" class="nav-link active">捜索マップ</a>
+      <a href="match.html" class="nav-link">マッチング</a>
+      <a href="admin-data.html" class="nav-link">行政データ</a>
+      <a href="chat.html" class="nav-link">チャット</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="map-page-layout" style="margin-top: var(--nav-height);">
+  <div class="map-controls">
+    <strong style="font-size:0.9rem; margin-right:8px;">表示フィルター:</strong>
+    <button class="filter-btn active">すべて</button>
+    <button class="filter-btn"><span style="color:var(--lost)">●</span> 迷子</button>
+    <button class="filter-btn"><span style="color:var(--found)">●</span> 保護中</button>
+    <button class="filter-btn"><span style="color:var(--witness)">●</span> 目撃</button>
+    <div style="flex:1;"></div>
+    <div style="position:relative;">
+      <input type="text" class="form-control" placeholder="エリアを検索 (例: 渋谷区)" style="border-radius:20px; padding:6px 16px; width:250px; font-size:0.85rem;">
+      <i class="fas fa-search" style="position:absolute; right:12px; top:10px; color:var(--text-muted);"></i>
+    </div>
+  </div>
+  
+  <div id="fullMap"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = L.map('fullMap', { zoomControl: false }).setView([35.6895, 139.6917], 13);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    
+    const container = document.getElementById('fullMap');
+
+    const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CARTO'
+    });
+    
+    const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    function updateMapStyle() {
+      const zoom = map.getZoom();
+      if (zoom >= 15) {
+        if (map.hasLayer(darkTiles)) map.removeLayer(darkTiles);
+        if (!map.hasLayer(osmTiles)) map.addLayer(osmTiles);
+        container.classList.add('detailed-view');
+      } else {
+        if (map.hasLayer(osmTiles)) map.removeLayer(osmTiles);
+        if (!map.hasLayer(darkTiles)) map.addLayer(darkTiles);
+        container.classList.remove('detailed-view');
+      }
+    }
+
+    map.on('zoomend', updateMapStyle);
+    updateMapStyle(); // 初回実行
+
+
+  // Supabaseから迷子・保護データを取得してマップに表示
+  async function loadMapData() {
+    const [lostList, foundList] = await Promise.all([
+      window.api.fetchLostPets(200),
+      window.api.fetchFoundPets(200)
+    ]);
+
+    let allMarkers = [];
+
+    (lostList || []).forEach(item => {
+      if (!item.lat || !item.lng) return;
+      const m = L.circleMarker([item.lat, item.lng], {
+        radius: 9, fillColor: '#FF6B35', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+      }).addTo(map);
+      m.bindPopup(`<div style="color:#333"><b>🔴 迷子: ${item.pet_name}</b><br>${item.pet_type}・${item.gender || '不明'}<br>場所: ${item.location}<br>日時: ${item.date_lost}</div>`);
+      m._type = 'lost';
+      allMarkers.push(m);
+    });
+
+    (foundList || []).forEach(item => {
+      if (!item.lat || !item.lng) return;
+      const m = L.circleMarker([item.lat, item.lng], {
+        radius: 9, fillColor: '#2ECC71', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
+      }).addTo(map);
+      m.bindPopup(`<div style="color:#333"><b>🟢 保護中</b><br>場所: ${item.location}<br>日時: ${item.date_found}</div>`);
+      m._type = 'found';
+      allMarkers.push(m);
+    });
+
+    // フィルターボタンの動作
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const text = this.textContent.trim();
+        allMarkers.forEach(m => {
+          if (text === 'すべて') { map.addLayer(m); }
+          else if (text.includes('迷子')) { text.includes('迷子') && m._type === 'lost' ? map.addLayer(m) : map.removeLayer(m); }
+          else if (text.includes('保護中')) { m._type === 'found' ? map.addLayer(m) : map.removeLayer(m); }
+          else { map.addLayer(m); }
+        });
+      });
+    });
+
+    // データがある場合は最初のピンに地図を移動
+    if (allMarkers.length > 0) {
+      const group = L.featureGroup(allMarkers);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  }
+
+  loadMapData();
+});
+</script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

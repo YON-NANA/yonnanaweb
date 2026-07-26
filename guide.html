@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ご利用ガイド | AnimalFinderConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="js/api.js" defer></script>
+        <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  </head>
+<body>
+<nav class="nav">
+  <div class="container-lg nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="map.html" class="nav-link"><i class="fas fa-map-marked-alt"></i> マップ</a>
+      <a href="match.html" class="nav-link"><i class="fas fa-robot"></i> AIマッチング</a>
+      <a href="chat.html" class="nav-link"><i class="fas fa-comments"></i> チャット</a>
+      <a href="admin-data.html" class="nav-link"><i class="fas fa-building"></i> 行政データ</a>
+      <div class="nav-divider"></div>
+      <a href="found-register.html" class="btn btn-outline" style="color:var(--found); border-color:var(--found);">保護を報告</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<main class="page-wrapper" style="padding-top: var(--nav-height);">
+  <section class="section" style="max-width: 900px; margin: 0 auto; padding-top: var(--space-3xl);">
+    <div class="container-lg">
+      <h1 style="font-size: 2.2rem; margin-bottom: var(--space-xl); color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: var(--space-md);">
+        <i class="fas fa-book-open"></i> ご利用ガイド
+      </h1>
+      
+      <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-3xl); line-height: 1.8;">
+        AnimalFinderConnectは、迷子になったペットと飼い主を繋ぐための非営利プラットフォームです。AI予測やリアルタイムマップを活用して、スピーディーな解決をサポートします。
+      </p>
+
+      <div style="display: grid; gap: var(--space-2xl);">
+        
+        <!-- Step 1: 迷子登録 -->
+        <div class="card" style="padding: var(--space-xl); display: flex; gap: var(--space-xl); align-items: flex-start; flex-wrap: wrap;">
+          <div style="width: 80px; height: 80px; background: rgba(255,107,53,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--lost); flex-shrink: 0;">
+            1
+          </div>
+          <div style="flex: 1; min-width: 300px;">
+            <h3 style="color: var(--lost); margin-bottom: var(--space-sm); font-size: 1.4rem;">迷子になったらすぐに登録</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-md);">
+              「<a href="lost-register.html" style="color: var(--gold);">迷子を登録する</a>」から、ペットの写真、特徴、迷子になった場所を登録してください。
+              住所を入力するとマップにピンが立ち、より正確な情報を共有できます。
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-muted); background: var(--bg-dark); padding: var(--space-sm); border-left: 3px solid var(--lost);">
+              <i class="fas fa-magic"></i> 登録すると自動でポスターPDFが生成され、SNSで拡散しやすくなります。
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 2: 保護報告 -->
+        <div class="card" style="padding: var(--space-xl); display: flex; gap: var(--space-xl); align-items: flex-start; flex-wrap: wrap;">
+          <div style="width: 80px; height: 80px; background: rgba(46,204,113,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--found); flex-shrink: 0;">
+            2
+          </div>
+          <div style="flex: 1; min-width: 300px;">
+            <h3 style="color: var(--found); margin-bottom: var(--space-sm); font-size: 1.4rem;">迷子を見つけたら保護・目撃報告</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-md);">
+              迷子らしき動物を見かけた、または保護した方は、「<a href="found-register.html" style="color: var(--gold);">保護を報告する</a>」から情報を提供してください。
+              写真をアップロードすると、AIが自動で種類や毛色を判別し、飼い主の探しているペットと照合します。
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3: 自動マッチング -->
+        <div class="card" style="padding: var(--space-xl); display: flex; gap: var(--space-xl); align-items: flex-start; flex-wrap: wrap;">
+          <div style="width: 80px; height: 80px; background: rgba(201,168,76,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--gold); flex-shrink: 0;">
+            3
+          </div>
+          <div style="flex: 1; min-width: 300px;">
+            <h3 style="color: var(--gold); margin-bottom: var(--space-sm); font-size: 1.4rem;">自動マッチングとマップ検索</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-md);">
+              システムが「迷子情報」と「保護情報」を自動で照らし合わせます。「<a href="match.html" style="color: var(--gold);">AIマッチング</a>」ページで一致率の高い候補を確認できます。また、「<a href="map.html" style="color: var(--gold);">捜索マップ</a>」や「<a href="admin-data.html" style="color: var(--gold);">行政収容データ</a>」も併せて確認しましょう。
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4: 匿名チャット -->
+        <div class="card" style="padding: var(--space-xl); display: flex; gap: var(--space-xl); align-items: flex-start; flex-wrap: wrap;">
+          <div style="width: 80px; height: 80px; background: rgba(52,152,219,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #3498db; flex-shrink: 0;">
+            4
+          </div>
+          <div style="flex: 1; min-width: 300px;">
+            <h3 style="color: #3498db; margin-bottom: var(--space-sm); font-size: 1.4rem;">チャットで安全に連絡を取る</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-md);">
+              有力な情報が見つかったら、「<a href="chat.html" style="color: var(--gold);">匿名チャット窓口</a>」を通じて発見者や保護者と連絡を取ります。電話番号やSNSアカウントを公開しなくても、安全にやり取りが可能です。
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-3xl);">
+        <a href="index.html" class="btn btn-outline">ホームに戻る</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer style="margin-top: var(--space-3xl);">
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <div class="logo-name">
+              <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+              <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+          </p>
+        </div>
+
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+<script src="js/app.js"></script>
+
+</body>
+</html>
