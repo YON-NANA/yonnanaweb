@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>利用規約 | AnimalFinderConnect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="js/api.js" defer></script>
+        <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  </head>
+<body>
+<nav class="nav">
+  <div class="container-lg nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="map.html" class="nav-link"><i class="fas fa-map-marked-alt"></i> マップ</a>
+      <a href="match.html" class="nav-link"><i class="fas fa-robot"></i> AIマッチング</a>
+      <a href="chat.html" class="nav-link"><i class="fas fa-comments"></i> チャット</a>
+      <a href="admin-data.html" class="nav-link"><i class="fas fa-building"></i> 行政データ</a>
+      <div class="nav-divider"></div>
+      <a href="found-register.html" class="btn btn-outline" style="color:var(--found); border-color:var(--found);">保護を報告</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger" aria-label="メニュー">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<main class="page-wrapper" style="padding-top: var(--nav-height);">
+  <section class="section" style="max-width: 800px; margin: 0 auto; padding-top: var(--space-3xl);">
+    <div class="container-lg">
+      <h1 style="font-size: 2rem; margin-bottom: var(--space-2xl); color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: var(--space-md);">利用規約</h1>
+      
+      <div class="card" style="padding: var(--space-2xl); line-height: 1.8; color: var(--text-secondary);">
+        <p style="margin-bottom: var(--space-xl);">
+          本利用規約（以下「本規約」）は、一般社団法人 日本動物共助機構（AMAJ）（以下「当機構」）が提供する迷子動物捜索プラットフォーム「AnimalFinderConnect（AFC）」（以下「本サービス」）の利用条件を定めるものです。
+        </p>
+
+        <h3 style="color: var(--text-primary); margin: var(--space-xl) 0 var(--space-md);">第1条（目的）</h3>
+        <p>本サービスは、迷子になったペットの飼い主と、保護・目撃者をつなぐ非営利のプラットフォームです。動物たちの明るい未来のために、情報の共有とAIマッチングを通じて、迅速な再会を支援することを目的とします。</p>
+
+        <h3 style="color: var(--text-primary); margin: var(--space-xl) 0 var(--space-md);">第2条（利用資格と登録）</h3>
+        <ul style="padding-left: 20px;">
+          <li>利用者は、本規約に同意の上、本サービスをご利用いただけます。</li>
+          <li>登録された情報（写真、特徴、位置情報等）は、捜索目的においてのみサイト内で公開されます。</li>
+        </ul>
+
+        <h3 style="color: var(--text-primary); margin: var(--space-xl) 0 var(--space-md);">第3条（禁止事項）</h3>
+        <p>本サービスの利用にあたり、以下の行為を禁止します。</p>
+        <ul style="padding-left: 20px;">
+          <li>虚偽の迷子情報、または保護情報の登録</li>
+          <li>他の利用者、第三者、または当機構を誹謗中傷する行為</li>
+          <li>営利目的での利用、または宗教・政治活動への勧誘</li>
+          <li>その他、当機構が不適切と判断する行為</li>
+        </ul>
+
+        <h3 style="color: var(--text-primary); margin: var(--space-xl) 0 var(--space-md);">第4条（免責事項）</h3>
+        <ul style="padding-left: 20px;">
+          <li>当機構は、本サービスを利用して提供される情報の正確性、完全性について保証するものではありません。</li>
+          <li>利用者間で生じたトラブル（情報の行き違い、チャットでのトラブル等）について、当機構は一切の責任を負いません。当事者間で誠意をもって解決するものとします。</li>
+          <li>AIによるマッチングや予測結果は参考情報であり、確実な発見を保証するものではありません。</li>
+        </ul>
+
+        <h3 style="color: var(--text-primary); margin: var(--space-xl) 0 var(--space-md);">第5条（規約の変更）</h3>
+        <p>当機構は、必要と判断した場合には、利用者に事前の通知なく本規約を変更することができるものとします。変更後の規約は、本サービス上に掲示した時点から効力を生じます。</p>
+        
+        <p style="margin-top: var(--space-3xl); font-size: 0.85rem; text-align: right;">制定日：2026年7月19日</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ─── -->
+  <footer style="margin-top: var(--space-3xl);">
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <div class="logo-name">
+              <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+              <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+          </p>
+        </div>
+
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+<script src="js/app.js"></script>
+
+</body>
+</html>

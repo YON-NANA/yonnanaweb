@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIマッチング — AFC Pet Finder</title>
+  <meta name="description" content="AIが特徴タグを解析し、迷子と保護情報のマッチングスコアを算出します。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    .match-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+    }
+
+    .score-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      border: 8px solid var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto var(--space-lg);
+      position: relative;
+      box-shadow: 0 0 30px rgba(201, 168, 76, 0.2);
+    }
+
+    .score-circle::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 8px solid var(--gold);
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      transform: rotate(-45deg);
+    }
+
+    .score-val {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .match-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+
+    .compare-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      position: relative;
+    }
+
+    .compare-card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .compare-tag-match {
+      color: var(--found);
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .match-compare {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script src="js/api.js" defer></script>
+</head>
+
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+        <div class="logo-name">
+          <span class="logo-name-main">AnimalFinderConnect</span>
+          <span class="logo-name-sub">日本動物共助機構</span>
+        </div>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="nav-link">ホーム</a>
+        <a href="map.html" class="nav-link">捜索マップ</a>
+        <a href="match.html" class="nav-link active">マッチング</a>
+        <a href="admin-data.html" class="nav-link">行政データ</a>
+        <a href="chat.html" class="nav-link">チャット</a>
+        <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+      </div>
+      <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper" style="padding-top: var(--space-2xl);">
+    <div class="container-sm">
+
+      <div class="match-header scroll-fade">
+        <div class="ai-badge"
+          style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(201,168,76,0.15); color:var(--gold); border:1px solid var(--gold); border-radius:var(--radius-full); font-size:0.85rem; font-weight:700; margin-bottom:var(--space-md);">
+          <i class="fas fa-brain"></i> AI Matching Result</div>
+        <div class="score-circle">
+          <div class="score-val">85<span style="font-size:1.5rem">%</span></div>
+          <div class="text-xs text-muted">一致度</div>
+        </div>
+        <h1 style="font-size:2rem; margin-bottom:8px;">高い確率で同一の可能性があります</h1>
+        <p class="text-secondary">特徴タグ、エリア、日時のデータからAIが算出しました。</p>
+      </div>
+
+      <div class="match-compare scroll-fade" style="transition-delay:0.1s;">
+
+        <!-- Lost Data -->
+        <div class="compare-card">
+          <div
+            style="position:absolute; top:20px; left:20px; background:var(--lost); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
+            あなたの登録（迷子）</div>
+          <img src="img/demo-cat.jpg"
+            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
+          <h3 style="font-size:1.25rem; margin-bottom:12px;">タマ（猫・メス）</h3>
+          <table style="width:100%; font-size:0.9rem;">
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0; width:40%;">日時</td>
+              <td>7月10日 15:00</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0;">場所</td>
+              <td>世田谷区 〇〇公園付近</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0;">特徴</td>
+              <td>
+                <span class="badge" style="background:var(--bg-dark);border:1px solid var(--border)">キジトラ</span>
+                <span class="badge" style="background:var(--bg-dark);border:1px solid var(--border)">カギ尻尾</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Found Data -->
+        <div class="compare-card">
+          <div
+            style="position:absolute; top:20px; left:20px; background:var(--found); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
+            保護・目撃情報</div>
+          <img src="img/demo-cat.jpg" style="filter: brightness(0.9);"
+            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
+          <h3 style="font-size:1.25rem; margin-bottom:12px;">猫（性別不明）</h3>
+          <table style="width:100%; font-size:0.9rem;">
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0; width:40%;">日時</td>
+              <td>7月11日 08:30 <span class="compare-tag-match">(+17h)</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0;">場所</td>
+              <td>世田谷区 △△交差点 <span class="compare-tag-match">(400m)</span></td>
+            </tr>
+            <tr>
+              <td style="color:var(--text-muted); padding:4px 0;">特徴</td>
+              <td>
+                <span class="badge"
+                  style="background:var(--bg-dark);border:1px solid var(--found);color:var(--found)">キジトラ</span>
+                <span class="badge"
+                  style="background:var(--bg-dark);border:1px solid var(--found);color:var(--found)">カギ尻尾</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+      <div style="text-align:center; margin-top:var(--space-2xl); margin-bottom:var(--space-2xl);">
+        <p class="text-secondary mb-lg">この情報があなたのペットである可能性がある場合、<br>保護主と匿名でチャットを開始して確認してください。</p>
+        <a href="chat.html" class="btn btn-primary btn-lg"><i class="fas fa-comment-dots"></i> 保護主に連絡する（匿名）</a>
+      </div>
+
+    </div>
+
+    <!-- ─── Footer ─── -->
+    <footer>
+      <div class="container-lg">
+        <div class="footer-grid">
+          <!-- 組織情報 -->
+          <div>
+            <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+              <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+              <div class="logo-name">
+                <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+                <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+              </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+              すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+            </p>
+          </div>
+
+          <!-- サイトマップ 1 -->
+          <div class="footer-links">
+            <h4>迷子・保護情報</h4>
+            <a href="lost-register.html">迷子ペットを登録</a>
+            <a href="found-register.html">保護・目撃情報を報告</a>
+            <a href="map.html">捜索マップ</a>
+            <a href="match.html">自動マッチング</a>
+          </div>
+
+          <!-- サイトマップ 2 -->
+          <div class="footer-links">
+            <h4>コミュニティ</h4>
+            <a href="chat.html">匿名チャット窓口</a>
+            <a href="admin-data.html">行政収容データ連携</a>
+            <a href="guide.html">ご利用ガイド</a>
+          </div>
+
+          <!-- サイトマップ 3 -->
+          <div class="footer-links">
+            <h4>法的情報・その他</h4>
+            <a href="privacy.html">プライバシーポリシー</a>
+            <a href="terms.html">利用規約</a>
+            <a href="index.html">ホーム</a>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+          <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+          <div style="display: flex; gap: var(--space-md); align-items: center;">
+            <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+            <span style="color: var(--border);">|</span>
+            <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+            <span style="color: var(--border);">|</span>
+            <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>

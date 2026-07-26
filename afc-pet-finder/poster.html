@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>迷子ポスター生成 — AFC Pet Finder</title>
+  <meta name="description" content="QRコード付き迷子ポスターをワンクリックでPDF出力。SNS拡散用テキスト自動生成にも対応。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style>
+    .poster-page-layout {
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      gap: var(--space-2xl);
+      align-items: start;
+    }
+    .controls-sticky { position: sticky; top: calc(var(--nav-height) + 20px); }
+
+    /* ── 実際のポスター (PDF出力用) ── */
+    #posterExport {
+      background: white;
+      color: #1a1a1a;
+      width: 490px;
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .poster-top-bar {
+      background: linear-gradient(135deg, #0D3321, #1A5C3A);
+      padding: 16px 24px;
+      text-align: center;
+      color: white;
+    }
+    .poster-org { font-size: 10px; color: rgba(255,255,255,0.7); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+    .poster-title-text { font-size: 28px; font-weight: 900; letter-spacing: 0.05em; color: #FFD700; }
+    .poster-subtitle { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .poster-photo-area { position: relative; background: #f0f0f0; }
+    .poster-main-photo { width: 100%; height: 280px; object-fit: cover; display: block; }
+    .poster-animal-type { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .poster-days-elapsed { position: absolute; top: 12px; left: 12px; background: #FF6B35; color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+    .poster-body { padding: 20px 24px; }
+    .poster-pet-name { font-size: 32px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.02em; }
+    .poster-breed { font-size: 13px; color: #555; margin-top: 2px; }
+    .poster-divider { border: none; border-top: 2px solid #eee; margin: 14px 0; }
+    .poster-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .poster-info-item label { display: block; font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+    .poster-info-item span { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+    .poster-features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .poster-feature-tag { background: #f0f7f0; border: 1px solid #c8e6c9; color: #2e7d32; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .poster-message { background: #fff8e1; border-left: 3px solid #ffc107; padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 12px; color: #555; margin-bottom: 14px; line-height: 1.5; }
+    .poster-contact-bar { background: linear-gradient(135deg, #FF6B35, #e55a27); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .poster-contact-label { font-size: 10px; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
+    .poster-contact-tel { font-size: 22px; font-weight: 900; color: white; letter-spacing: 0.05em; }
+    .poster-qr-placeholder { width: 60px; height: 60px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #888; text-align: center; padding: 4px; }
+    .poster-footer { padding: 10px 24px; background: #f8f8f8; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #999; }
+
+    /* ── SNSセクション ── */
+    .template-tab { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-full); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    .template-tab.active { background: var(--primary-light); border-color: var(--primary-light); color: white; }
+    .sns-text-preview { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-md); font-size: 0.85rem; color: var(--text-secondary); white-space: pre-wrap; line-height: 1.7; min-height: 120px; }
+    .sns-action-btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--radius-md); border: 1px solid var(--border); background: transparent; color: var(--text-primary); cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; width: 100%; justify-content: center; margin-bottom: 8px; }
+    .sns-action-btn:hover { background: var(--bg-card-hover); }
+    .sns-action-btn.x-btn { border-color: rgba(29,155,240,0.4); color: #1d9bf0; }
+    .sns-action-btn.line-btn { border-color: rgba(0,185,0,0.4); color: #00b900; }
+    .sns-action-btn.copy-btn { border-color: var(--gold); color: var(--gold); }
+
+    /* ── pet card in selector ── */
+    .pet-selector-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
+    .pet-selector-card:hover, .pet-selector-card.selected { border-color: var(--primary-light); background: rgba(45,138,90,0.1); }
+    .pet-selector-photo { width: 52px; height: 52px; border-radius: var(--radius-sm); object-fit: cover; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .pet-selector-info .name { font-weight: 700; font-size: 0.95rem; }
+    .pet-selector-info .breed { font-size: 0.75rem; color: var(--text-muted); }
+
+    @media (max-width: 900px) { .poster-page-layout { grid-template-columns: 1fr; } .controls-sticky { position: static; } }
+  </style>
+  <script src="js/api.js" defer></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">ホーム</a>
+      <a href="map.html" class="nav-link">捜索マップ</a>
+      <a href="match.html" class="nav-link">マッチング</a>
+      <a href="admin-data.html" class="nav-link">行政データ</a>
+      <a href="chat.html" class="nav-link">チャット</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<main class="page-wrapper">
+  <div class="container-lg" style="padding-top:var(--space-2xl);padding-bottom:var(--space-3xl);">
+
+    <!-- ヘッダー -->
+    <div style="margin-bottom:var(--space-xl);">
+      <div class="section-badge">POSTER GENERATOR</div>
+      <h1 style="font-size:2rem;margin-top:var(--space-sm);">📄 迷子ポスター自動生成</h1>
+      <p class="text-secondary mt-sm">QRコード付きのA4ポスターをワンクリックで生成。印刷して電柱・掲示板貼り付けにすぐ使えます。</p>
+    </div>
+
+    <div class="poster-page-layout">
+
+      <!-- 左側：コントロール -->
+      <div>
+        <!-- ペット選択 -->
+        <div class="card mb-lg">
+          <h3 style="margin-bottom:var(--space-md);font-size:1rem;">登録済みの迷子から選択</h3>
+          <div id="petSelector" style="display:flex;flex-direction:column;gap:var(--space-sm);"></div>
+        </div>
+
+        <!-- カスタマイズ -->
+        <div class="card mb-lg">
+          <h3 style="margin-bottom:var(--space-md);font-size:1rem;">ポスターをカスタマイズ</h3>
+          <div class="form-group">
+            <label class="form-label">緊急連絡先（表示番号）</label>
+            <input type="tel" class="form-control" id="contactTel" value="090-XXXX-XXXX" oninput="updatePoster()">
+            <p class="text-xs text-muted mt-sm">
+              <i class="fas fa-shield-alt" style="color:var(--gold)"></i>
+              連絡先番号を非公開にしたい場合は、AFCの中継番号（AFC-XXXXXX）を使用できます。
+            </p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">掲載メッセージ（ポスター下部）</label>
+            <textarea class="form-control" id="customMessage" rows="2" oninput="updatePoster()">目撃情報のみでも大変助かります。お気軽にご連絡ください。</textarea>
+          </div>
+        </div>
+
+        <!-- PDF出力 -->
+        <div class="card mb-lg" style="border-color:rgba(255,107,53,0.3);">
+          <h3 style="margin-bottom:var(--space-sm);font-size:1rem;color:var(--lost);"><i class="fas fa-file-pdf"></i> PDF出力</h3>
+          <p class="text-sm text-secondary mb-md">A4サイズで出力されます。印刷後、電柱や掲示板への貼り付けをお勧めします。</p>
+          <button class="btn btn-primary" style="background:var(--lost);border-color:var(--lost);width:100%;" onclick="downloadPDF()">
+            <i class="fas fa-download"></i> ポスターをダウンロード（PDF）
+          </button>
+          <p class="text-xs text-muted mt-sm" style="text-align:center;">
+            ※ html2pdf.jsライブラリを使用。初回のみ読み込みに数秒かかります。
+          </p>
+        </div>
+
+        <!-- ── SNS拡散セクション ── -->
+        <div class="card" id="sns">
+          <h3 style="margin-bottom:var(--space-md);font-size:1rem;"><i class="fas fa-share-alt"></i> SNS拡散テキスト自動生成</h3>
+          <p class="text-sm text-secondary mb-md">X（旧Twitter）・LINEで拡散できるテキストを自動生成します。</p>
+
+          <!-- Xテンプレート -->
+          <div style="margin-bottom:var(--space-md);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm);">
+              <label class="form-label" style="margin:0;"><i class="fab fa-x-twitter"></i> X（旧Twitter）</label>
+              <div style="display:flex;gap:6px;">
+                <button class="template-tab active" onclick="setTemplate(this, 'urgent')">緊急</button>
+                <button class="template-tab" onclick="setTemplate(this, 'calm')">通常</button>
+                <button class="template-tab" onclick="setTemplate(this, 'reward')">お礼あり</button>
+              </div>
+            </div>
+            <div class="sns-text-preview" id="xTextPreview">ペットを選択してください</div>
+            <div style="display:flex;gap:8px;margin-top:var(--space-sm);">
+              <button class="sns-action-btn copy-btn" onclick="copyXText()" style="flex:1;">
+                <i class="fas fa-copy"></i> コピー
+              </button>
+              <button class="sns-action-btn x-btn" onclick="shareToX()" style="flex:1;">
+                <i class="fab fa-x-twitter"></i> Xで投稿
+              </button>
+            </div>
+          </div>
+
+          <!-- LINE -->
+          <div>
+            <label class="form-label"><i class="fab fa-line"></i> LINE</label>
+            <div class="sns-text-preview" id="igTextPreview">ペットを選択してください</div>
+            <button class="sns-action-btn copy-btn" onclick="copyIgText()" style="margin-top:var(--space-sm);">
+              <i class="fas fa-copy"></i> LINEテキストをコピー
+            </button>
+            <button class="sns-action-btn line-btn" onclick="shareLine()">
+              <i class="fab fa-line"></i> LINEで共有
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側：ポスタープレビュー -->
+      <div class="controls-sticky">
+        <div id="posterExport">
+          <!-- ヘッダーバー -->
+          <div class="poster-top-bar">
+            <div class="poster-org">ANIMAL FINDER CONNECT — 日本動物共助機構</div>
+            <div class="poster-title-text">⚠ 迷子のお知らせ ⚠</div>
+            <div class="poster-subtitle">目撃情報・保護情報をお寄せください</div>
+          </div>
+
+          <!-- 写真エリア -->
+          <div class="poster-photo-area">
+            <img id="posterPhoto" class="poster-main-photo" src="img/placeholder-pet.jpg" alt="ペットの写真" onerror="this.style.display='none'; document.getElementById('posterPhotoPlaceholder').style.display='flex'">
+            <div id="posterPhotoPlaceholder" style="display:none;width:100%;height:280px;background:#e8e8e8;align-items:center;justify-content:center;flex-direction:column;color:#aaa;">
+              <i class="fas fa-camera" style="font-size:3rem;margin-bottom:8px;"></i>
+              <span style="font-size:0.9rem;">写真が登録されていません</span>
+            </div>
+            <span class="poster-animal-type" id="posterAnimalType">猫・メス</span>
+            <span class="poster-days-elapsed" id="posterDaysElapsed">行方不明 3日目</span>
+          </div>
+
+          <!-- 本文 -->
+          <div class="poster-body">
+            <div class="poster-pet-name" id="posterName">クロ</div>
+            <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
+            <hr class="poster-divider">
+
+            <div class="poster-info-grid">
+              <div class="poster-info-item">
+                <label>いなくなった日時</label>
+                <span id="posterDate">2026年7月16日 夕方</span>
+              </div>
+              <div class="poster-info-item">
+                <label>いなくなった場所</label>
+                <span id="posterLocation">東京都世田谷区 付近</span>
+              </div>
+              <div class="poster-info-item">
+                <label>性別・年齢</label>
+                <span id="posterGender">メス・3歳</span>
+              </div>
+              <div class="poster-info-item">
+                <label>首輪・特徴</label>
+                <span id="posterCollar">赤い首輪・鈴付き</span>
+              </div>
+            </div>
+
+            <div class="poster-features" id="posterFeatures">
+              <span class="poster-feature-tag">黒猫</span>
+              <span class="poster-feature-tag">短毛</span>
+              <span class="poster-feature-tag">サクラ耳</span>
+              <span class="poster-feature-tag">臆病・隠れがち</span>
+            </div>
+
+            <div class="poster-message" id="posterMessage">
+              目撃情報のみでも大変助かります。お気軽にご連絡ください。
+            </div>
+          </div>
+
+          <!-- 連絡先バー -->
+          <div class="poster-contact-bar">
+            <div>
+              <div class="poster-contact-label">お心当たりの方はこちらへ（24時間受付）</div>
+              <div class="poster-contact-tel" id="posterTel">090-XXXX-XXXX</div>
+            </div>
+            <div class="poster-qr-placeholder" id="posterQR">
+              <div>
+                <i class="fas fa-qrcode" style="font-size:2rem;color:#333;display:block;text-align:center;"></i>
+                <div style="font-size:8px;margin-top:2px;">詳細ページ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- フッター -->
+          <div class="poster-footer">
+            <span>AFC Pet Finder｜AnimalFinderConnect</span>
+            <span id="posterIssueDate">発行日: 2026年7月19日</span>
+          </div>
+        </div>
+
+        <!-- アクションボタン（プレビュー下） -->
+        <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);">
+          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.print()">
+            <i class="fas fa-print"></i> 印刷
+          </button>
+          <button class="btn btn-primary btn-sm" style="flex:2;background:var(--lost);border-color:var(--lost);" onclick="downloadPDF()">
+            <i class="fas fa-file-pdf"></i> PDFダウンロード
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
+            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <div class="logo-name">
+              <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
+              <span class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2;">日本動物共助機構 (AMAJ)</span>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br>日本動物共助機構 (AMAJ) が提供する非営利プロジェクトです。
+          </p>
+        </div>
+
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="js/mock-data.js"></script>
+<script src="js/app.js"></script>
+<script>
+let currentPet = null;
+let xTemplate = 'urgent';
+
+// ── サンプルペットデータ（mock-dataが無い場合のフォールバック） ──
+const FALLBACK_PETS = [
+  {
+    id: 'demo-1',
+    name: 'クロ',
+    animal: 'cat',
+    breed: '雑種（日本猫）',
+    age: '推定3歳',
+    gender: 'メス',
+    colors: ['黒猫', '短毛'],
+    features: ['サクラ耳', '臆病・隠れがち'],
+    collar: '赤い首輪・鈴付き',
+    lostAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    location: { name: '東京都世田谷区' },
+    photo: null
+  },
+  {
+    id: 'demo-2',
+    name: 'ポチ',
+    animal: 'dog',
+    breed: '柴犬系',
+    age: '4歳',
+    gender: 'オス',
+    colors: ['茶色', '白'],
+    features: ['人懐っこい', 'よく吠える'],
+    collar: '青い首輪',
+    lostAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+    location: { name: '神奈川県横浜市' },
+    photo: null
+  }
+];
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function daysElapsed(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  return Math.max(1, Math.floor(diff / 86400000));
+}
+
+// ── ペット選択UIの初期化 ──
+function initPetSelector() {
+  const pets = (window.MOCK_DATA && window.MOCK_DATA.lost && window.MOCK_DATA.lost.length > 0)
+    ? window.MOCK_DATA.lost
+    : FALLBACK_PETS;
+
+  const sel = document.getElementById('petSelector');
+  sel.innerHTML = '';
+  pets.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'pet-selector-card' + (i === 0 ? ' selected' : '');
+    card.onclick = () => {
+      document.querySelectorAll('.pet-selector-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      currentPet = p;
+      updatePoster();
+      updateSNSTexts();
+    };
+    const icon = p.animal === 'cat' ? '🐈' : (p.animal === 'dog' ? '🐕' : '🐾');
+    card.innerHTML = `
+      <div class="pet-selector-photo">${icon}</div>
+      <div class="pet-selector-info">
+        <div class="name">${p.name}</div>
+        <div class="breed">${p.breed} ／ 行方不明${daysElapsed(p.lostAt)}日目</div>
+      </div>
+    `;
+    sel.appendChild(card);
+    if (i === 0) { currentPet = p; }
+  });
+
+  updatePoster();
+  updateSNSTexts();
+}
+
+// ── ポスターを更新 ──
+function updatePoster() {
+  if (!currentPet) return;
+  const p = currentPet;
+  const tel = document.getElementById('contactTel').value || '090-XXXX-XXXX';
+  const msg = document.getElementById('customMessage').value;
+
+  document.getElementById('posterName').textContent = p.name;
+  document.getElementById('posterBreed').textContent = `${p.breed}・${p.age || '年齢不明'}`;
+  document.getElementById('posterAnimalType').textContent = `${p.animal === 'cat' ? '猫' : p.animal === 'dog' ? '犬' : 'ペット'}・${p.gender || '性別不明'}`;
+  document.getElementById('posterDaysElapsed').textContent = `行方不明 ${daysElapsed(p.lostAt)}日目`;
+  document.getElementById('posterDate').textContent = formatDate(p.lostAt);
+  document.getElementById('posterLocation').textContent = (p.location && p.location.name) ? p.location.name + ' 付近' : '場所不明';
+  document.getElementById('posterGender').textContent = `${p.gender || '不明'}・${p.age || '不明'}`;
+  document.getElementById('posterCollar').textContent = p.collar || 'なし・不明';
+  document.getElementById('posterTel').textContent = tel;
+  document.getElementById('posterMessage').textContent = msg;
+
+  const feats = document.getElementById('posterFeatures');
+  const allTags = [...(p.colors || []), ...(p.features || [])];
+  feats.innerHTML = allTags.map(t => `<span class="poster-feature-tag">${t}</span>`).join('');
+
+  const today = new Date();
+  document.getElementById('posterIssueDate').textContent = `発行日: ${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+
+  if (p.photo) {
+    const img = document.getElementById('posterPhoto');
+    img.src = p.photo;
+    img.style.display = 'block';
+    document.getElementById('posterPhotoPlaceholder').style.display = 'none';
+  }
+}
+
+// ── SNSテキスト ──
+const X_TEMPLATES = {
+  urgent: (p) => `🚨【緊急・拡散希望】${p.animal === 'cat' ? '猫' : '犬'}の${p.name}が行方不明です！
+
+📍 ${(p.location && p.location.name) || '場所不明'} 付近
+📅 ${formatDate(p.lostAt)}から
+
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・')}
+
+目撃情報のみでも大変助かります！
+📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
+
+#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.location?.name||'').replace(/[都道府県市区町村]/g,'')} #拡散希望 #AFCPetFinder`,
+
+  calm: (p) => `【お知らせ】${p.name}（${p.breed}）を探しています。
+
+${formatDate(p.lostAt)}に${(p.location && p.location.name) || ''}付近で迷子になりました。
+
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('、')}
+
+ご連絡先：${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
+
+#迷子${p.animal === 'cat' ? '猫' : '犬'} #AFCPetFinder`,
+
+  reward: (p) => `🙏【拡散のお願い・お礼あり】${p.name}を探しています！
+
+${formatDate(p.lostAt)}より行方不明
+📍 ${(p.location && p.location.name) || '場所不明'} 周辺
+
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・')}
+
+情報提供者の方にはお礼をご用意しております。
+📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
+
+#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.location?.name||'').replace(/[都道府県市区町村]/g,'')} #拡散希望 #AFCPetFinder`
+};
+
+const LINE_TEXT = (p) => `【迷子のお知らせ】
+${p.name}（${p.breed}）が行方不明です。
+
+いなくなった日：${formatDate(p.lostAt)}
+場所：${(p.location && p.location.name) || '不明'}付近
+
+特徴：${[...(p.colors||[]), ...(p.features||[])].join('・')}
+
+目撃情報はこちらへ：
+📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
+
+情報共有にご協力をよろしくお願いいたします。`;
+
+function updateSNSTexts() {
+  if (!currentPet) return;
+  document.getElementById('xTextPreview').textContent = X_TEMPLATES[xTemplate](currentPet);
+  document.getElementById('igTextPreview').textContent = LINE_TEXT(currentPet);
+}
+
+function setTemplate(el, t) {
+  document.querySelectorAll('.template-tab').forEach(tab => tab.classList.remove('active'));
+  el.classList.add('active');
+  xTemplate = t;
+  updateSNSTexts();
+}
+
+function copyXText() {
+  const text = document.getElementById('xTextPreview').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Xのテキストをコピーしました！'));
+}
+function copyIgText() {
+  const text = document.getElementById('igTextPreview').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('LINEのテキストをコピーしました！'));
+}
+function shareToX() {
+  const text = document.getElementById('xTextPreview').textContent;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
+}
+function shareLine() {
+  if (!currentPet) return;
+  const text = LINE_TEXT(currentPet);
+  window.open(`https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function downloadPDF() {
+  if (typeof html2pdf === 'undefined') {
+    alert('PDFライブラリを読み込み中です。しばらくお待ちください。');
+    return;
+  }
+  const el = document.getElementById('posterExport');
+  const name = currentPet ? currentPet.name : 'ペット';
+  const opt = {
+    margin: 0,
+    filename: `迷子ポスター_${name}_AFC.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save().then(() => {
+    alert('PDFのダウンロードが完了しました！');
+  }).catch(err => {
+    alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
+    console.error(err);
+  });
+}
+
+// ── 初期化 ──
+document.addEventListener('DOMContentLoaded', () => {
+  initPetSelector();
+
+  // SNSアンカーで直接スクロール
+  if (window.location.hash === '#sns') {
+    setTimeout(() => {
+      document.getElementById('sns')?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+});
+</script>
+
+</body>
+</html>

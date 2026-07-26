@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>匿名チャット — AFC Pet Finder</title>
+  <meta name="description" content="保護主と飼い主が安全に連絡を取り合える完全匿名のチャットシステム。">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+              <!-- PWA & App Icon -->
+  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=6">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=6">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <style>
+    .chat-layout { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - var(--nav-height) - 40px); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-dark); margin-top: var(--space-md); }
+    .chat-sidebar { border-right: 1px solid var(--border); background: var(--bg-deep); display: flex; flex-direction: column; }
+    .chat-list { flex: 1; overflow-y: auto; }
+    .chat-room { padding: var(--space-md); border-bottom: 1px solid var(--glass-border); cursor: pointer; transition: background 0.2s; display: flex; gap: 12px; align-items: center; }
+    .chat-room:hover { background: rgba(255,255,255,0.02); }
+    .chat-room.active { background: rgba(201,168,76,0.1); border-left: 3px solid var(--gold); }
+    .room-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #333; }
+    .chat-main { display: flex; flex-direction: column; background: var(--bg-card); position: relative; }
+    .chat-header { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; }
+    .messages-area { flex: 1; padding: var(--space-lg); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-md); }
+    
+    .msg-bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; }
+    .msg-received .msg-bubble { background: rgba(255,255,255,0.1); border-bottom-left-radius: 4px; }
+    .msg-sent { align-self: flex-end; }
+    .msg-sent .msg-bubble { background: var(--primary-light); color: #fff; border-bottom-right-radius: 4px; }
+    
+    .chat-input-area { padding: var(--space-md); border-top: 1px solid var(--border); background: var(--bg-deep); display: flex; gap: 12px; align-items: flex-end; }
+    .chat-input { flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: #fff; border-radius: 24px; padding: 12px 20px; outline: none; font-family: inherit; resize: none; min-height: 48px; max-height: 120px; }
+    .chat-input:focus { border-color: var(--primary-light); }
+    .btn-send { width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: var(--bg-deep); border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .btn-send:hover { transform: scale(1.05); }
+
+    .privacy-notice { background: rgba(231,76,60,0.1); border: 1px solid var(--alert); padding: 10px 16px; font-size: 0.85rem; color: #fff; display: flex; align-items: flex-start; gap: 10px; margin: var(--space-sm) var(--space-lg); border-radius: var(--radius-md); }
+    
+    @media (max-width: 768px) {
+      .chat-layout { grid-template-columns: 1fr; }
+      .chat-sidebar { display: none; } /* On mobile, we would toggle this */
+    }
+  </style>
+  <script src="js/api.js" defer></script>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <div class="logo-name">
+        <span class="logo-name-main">AnimalFinderConnect</span>
+        <span class="logo-name-sub">日本動物共助機構</span>
+      </div>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">ホーム</a>
+      <a href="map.html" class="nav-link">捜索マップ</a>
+      <a href="match.html" class="nav-link">マッチング</a>
+      <a href="admin-data.html" class="nav-link">行政データ</a>
+      <a href="chat.html" class="nav-link active">チャット</a>
+      <a href="lost-register.html" class="btn nav-cta">迷子を登録</a>
+    </div>
+    <button class="nav-burger" id="navBurger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="container" style="padding-top: var(--space-2xl);">
+  <div class="chat-layout">
+    
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+      <div style="padding: var(--space-md); border-bottom: 1px solid var(--border);">
+        <h3 style="font-size:1.1rem;">メッセージ</h3>
+      </div>
+      <div class="chat-list">
+        <div class="chat-room active">
+          <img src="img/demo-cat.jpg" class="room-avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\'><rect width=\'48\' height=\'48\' fill=\'%23444\'/></svg>'">
+          <div style="flex:1; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <div style="font-weight:600; font-size:0.95rem;">保護主 Aさん</div>
+              <div class="text-xs text-muted">14:30</div>
+            </div>
+            <div class="text-xs text-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ありがとうございます。確認します。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="img/demo-cat.jpg" class="room-avatar" style="width:40px; height:40px;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'%23444\'/></svg>'">
+          <div>
+            <div style="font-weight:600;">保護主 Aさん</div>
+            <div class="text-xs text-found"><i class="fas fa-circle" style="font-size:8px;"></i> オンライン</div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm"><i class="fas fa-ellipsis-v"></i></button>
+      </div>
+      
+      <!-- Impostor Warning -->
+      <div class="privacy-notice">
+        <i class="fas fa-exclamation-triangle" style="color:var(--alert); font-size:1.2rem; margin-top:2px;"></i>
+        <div>
+          <strong style="color:var(--alert); display:block; margin-bottom:4px;">【なりすまし・引き取り詐欺にご注意ください】</strong>
+          完全匿名チャットです。相手が本当の飼い主か確認するため、お互いの本名・住所・電話番号を教える前に、必ず<b>「非公開の特徴（傷や模様など）」</b>や<b>「一緒に写っている写真・診察券」</b>を画像として送ってもらい確認してください。
+        </div>
+      </div>
+
+      <div class="messages-area" id="messagesArea">
+        <div class="msg-received">
+          <div class="text-xs text-muted" style="margin-bottom:4px; margin-left:12px;">保護主 Aさん • 14:15</div>
+          <div class="msg-bubble">はじめまして。AIマッチングで通知が来ました。私が保護している猫とそっくりなのですが、しっぽはどんな形ですか？</div>
+        </div>
+        
+        <div class="msg-sent">
+          <div class="text-xs text-muted" style="margin-bottom:4px; text-align:right; margin-right:12px;">あなた • 14:20</div>
+          <div class="msg-bubble">ご連絡ありがとうございます！しっぽは短めで、先端が少しカギ状に曲がっています。</div>
+        </div>
+
+        <div class="msg-received">
+          <div class="text-xs text-muted" style="margin-bottom:4px; margin-left:12px;">保護主 Aさん • 14:25</div>
+          <div class="msg-bubble">特徴が一致します！保護時にケガをしていないかも確認したいので、普段の様子がわかる写真か、病院の診察券の写真を送っていただけますか？（詐欺防止のためご協力をお願いします）</div>
+        </div>
+        
+        <div class="msg-sent">
+          <div class="text-xs text-muted" style="margin-bottom:4px; text-align:right; margin-right:12px;">あなた • 14:28</div>
+          <div class="msg-bubble">もちろんです。今写真を送ります。</div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <button class="btn btn-outline" style="border:none; padding:12px; border-radius:50%;"><i class="fas fa-image" style="font-size:1.2rem;"></i></button>
+        <textarea class="chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
+        <button class="btn-send"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>
