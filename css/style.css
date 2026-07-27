@@ -8,7 +8,7 @@
 /* ===================================================
    Custom Leaflet Dark Mode (High Contrast on Detailed View)
    =================================================== */
-.leaflet-container { background: #E5E9EC !important; }
+.leaflet-container { background: #DCEEFB !important; }
 
 /* 詳細マップ表示時のみ、反転フィルターを適用して道路や建物をはっきり見せる */
 
@@ -30,27 +30,27 @@
   --alert:   #DC2626;
   --match:   #9333EA;
 
-  /* Backgrounds (Richer Contrast Light-Medium Tone) */
-  --bg-deep:    #E2E8F0;
+  /* Backgrounds (Clear Sky Blue) */
+  --bg-deep:    #BAE6FD;
   --bg-dark:    #FFFFFF;
   --bg-card:    #FFFFFF;
-  --bg-card-hover: #F1F5F9;
-  --bg-input:   #F8FAFC;
+  --bg-card-hover: #E0F2FE;
+  --bg-input:   #F0F9FF;
   --bg-overlay: rgba(255, 255, 255, 0.95);
 
   /* Glass Effects */
   --glass-bg:     rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(15, 23, 42, 0.12);
+  --glass-border: rgba(2, 132, 199, 0.30);
   --glass-blur:   blur(12px);
 
-  /* Text Colors for Crisp High Contrast Legibility */
-  --text-primary:   #0F172A;
-  --text-secondary: #334155;
-  --text-muted:     #64748B;
-  --text-gold:      #B45309;
+  /* Text Colors for Maximum High Contrast Legibility */
+  --text-primary:   #0C1A2E;
+  --text-secondary: #1E293B;
+  --text-muted:     #374151;
+  --text-gold:      #92400E;
 
   /* Borders & Shadows (Clearer & Sharper) */
-  --border:       rgba(15, 23, 42, 0.12);
+  --border:       rgba(2, 132, 199, 0.28);
   --border-focus: rgba(22, 101, 52, 0.6);
 
   --shadow-sm: 0 2px 6px rgba(15,23,42,0.06);
@@ -107,9 +107,9 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(26,92,58,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(201,168,76,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(13,51,33,0.1) 0%, transparent 70%);
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(14, 165, 233, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(56, 189, 248, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(125, 211, 252, 0.25) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -243,7 +243,7 @@ h5 { font-size: 1rem; }
   font-size: 1rem;
   font-weight: 800;
   font-family: var(--font-en);
-  color: var(--text-primary);
+  color: #0369A1;
   white-space: nowrap;
 }
 
@@ -345,12 +345,12 @@ h5 { font-size: 1rem; }
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-md);
-  background: rgba(201,168,76,0.15);
-  border: 1px solid rgba(201,168,76,0.3);
+  background: rgba(146, 64, 14, 0.10);
+  border: 1px solid rgba(146, 64, 14, 0.25);
   border-radius: var(--radius-full);
   font-size: 0.8rem;
-  color: var(--gold);
-  font-weight: 600;
+  color: var(--text-gold);
+  font-weight: 700;
   margin-bottom: var(--space-lg);
   animation: fadeInUp 0.6s ease;
 }
@@ -1294,7 +1294,10 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 
 /* ─── Leaflet Overrides ─── */
-.leaflet-container { background: #E5E9EC !important; }
+.leaflet-container { background: #BFDBFE !important; }
+.leaflet-tile-pane {
+  filter: hue-rotate(195deg) saturate(1.5) contrast(0.93) brightness(1.05);
+}
 
 .leaflet-popup-content-wrapper {
   background: var(--bg-card) !important;
