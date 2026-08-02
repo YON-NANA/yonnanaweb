@@ -718,7 +718,7 @@
   async function loadIndexData() {
     // Hero Map
     const map = L.map('heroMap', { zoomControl: false, scrollWheelZoom: false, dragging: false }).setView([35.6895, 139.6917], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
       maxZoom: 19
     }).addTo(map);

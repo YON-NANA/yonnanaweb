@@ -3,7 +3,7 @@
    日本動物共助機構 迷子動物捜索アプリ
    =================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap');
 
 /* ===================================================
    Custom Leaflet Dark Mode (High Contrast on Detailed View)
@@ -15,49 +15,50 @@
 
 /* ─── CSS Variables ─── */
 :root {
-  /* Brand Colors */
-  --primary:       #166534;
-  --primary-light: #22C55E;
-  --primary-dark:  #14532D;
-  --gold:          #D97706;
-  --gold-light:    #F59E0B;
-  --gold-dark:     #B45309;
+  /* Brand Colors — Deep Navy/Steel Blue */
+  --primary:       #1E40AF;
+  --primary-light: #3B82F6;
+  --primary-dark:  #1E3A8A;
+  --gold:          #B45309;
+  --gold-light:    #D97706;
+  --gold-dark:     #92400E;
 
   /* Status Colors */
-  --lost:    #EA580C;
-  --found:   #16A34A;
-  --witness: #0284C7;
-  --alert:   #DC2626;
-  --match:   #9333EA;
+  --lost:    #DC2626;
+  --found:   #15803D;
+  --witness: #1D4ED8;
+  --alert:   #991B1B;
+  --match:   #7C3AED;
 
-  /* Backgrounds (Brighter Soft Sky Blue) */
-  --bg-deep:    #E0F2FE;
-  --bg-dark:    #FFFFFF;
+  /* Backgrounds — Structured Steel Blue-Gray */
+  --bg-deep:    #CBD5E1;
+  --bg-dark:    #F8FAFC;
   --bg-card:    #FFFFFF;
-  --bg-card-hover: #E0F2FE;
-  --bg-input:   #F0F9FF;
-  --bg-overlay: rgba(255, 255, 255, 0.95);
+  --bg-card-hover: #F1F5F9;
+  --bg-input:   #F8FAFC;
+  --bg-overlay: rgba(255, 255, 255, 0.98);
 
-  /* Glass Effects */
-  --glass-bg:     rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(2, 132, 199, 0.30);
-  --glass-blur:   blur(12px);
+  /* Glass Effects — Flat, No Blur */
+  --glass-bg:     rgba(255, 255, 255, 0.99);
+  --glass-border: rgba(15, 23, 42, 0.22);
+  --glass-blur:   blur(0px);
 
-  /* Text Colors for Maximum High Contrast Legibility */
-  --text-primary:   #0C1A2E;
+  /* Text Colors */
+  --text-primary:   #0F172A;
   --text-secondary: #1E293B;
-  --text-muted:     #374151;
+  --text-muted:     #475569;
   --text-gold:      #92400E;
 
-  /* Borders & Shadows (Clearer & Sharper) */
-  --border:       rgba(2, 132, 199, 0.28);
-  --border-focus: rgba(22, 101, 52, 0.6);
+  /* Borders — Visible, Sharp */
+  --border:       rgba(15, 23, 42, 0.18);
+  --border-focus: #1E40AF;
 
-  --shadow-sm: 0 2px 6px rgba(15,23,42,0.06);
-  --shadow-md: 0 8px 24px rgba(15,23,42,0.09);
-  --shadow-lg: 0 16px 40px rgba(15,23,42,0.14);
-  --shadow-gold: 0 0 20px rgba(217,119,6,0.20);
-  --shadow-green: 0 0 20px rgba(22,101,52,0.20);
+  /* Shadows — Hard Drop Shadow */
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.14), 0 1px 2px rgba(15,23,42,0.10);
+  --shadow-md: 0 4px 6px rgba(15,23,42,0.12), 0 2px 4px rgba(15,23,42,0.08);
+  --shadow-lg: 0 10px 15px rgba(15,23,42,0.14), 0 4px 6px rgba(15,23,42,0.08);
+  --shadow-gold: 0 2px 8px rgba(180,83,9,0.30);
+  --shadow-green: 0 2px 8px rgba(30,64,175,0.30);
 
   --space-xs:  0.25rem;
   --space-sm:  0.5rem;
@@ -67,20 +68,21 @@
   --space-2xl: 3rem;
   --space-3xl: 4rem;
 
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   20px;
-  --radius-xl:   32px;
+  /* Border Radius — Sharp & Angular */
+  --radius-sm:   3px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-xl:   10px;
   --radius-full: 9999px;
 
-  --transition-fast:   0.15s ease;
-  --transition-normal: 0.3s ease;
-  --transition-slow:   0.5s ease;
+  --transition-fast:   0.10s ease;
+  --transition-normal: 0.2s ease;
+  --transition-slow:   0.35s ease;
 
   --font-jp:   'Noto Sans JP', sans-serif;
-  --font-en:   'Outfit', sans-serif;
+  --font-en:   'IBM Plex Sans', sans-serif;
 
-  --nav-height: 72px;
+  --nav-height: 64px;
 }
 
 /* ─── Reset & Base ─── */
@@ -96,20 +98,17 @@ body {
   font-family: var(--font-jp);
   background-color: var(--bg-deep);
   color: var(--text-primary);
-  line-height: 1.7;
+  line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
 }
 
-/* Animated background */
+/* Background — flat, no glow */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(14, 165, 233, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(56, 189, 248, 0.30) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(125, 211, 252, 0.25) 0%, transparent 65%);
+  background: none;
   pointer-events: none;
   z-index: 0;
 }
@@ -126,7 +125,8 @@ ul, ol { list-style: none; }
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-en);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
@@ -1294,7 +1294,7 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 }
 
 /* ─── Leaflet Overrides ─── */
-.leaflet-container { background: #BFDBFE !important; }
+.leaflet-container { background: #E8ECF0 !important; }
 .leaflet-tile-pane {
   filter: hue-rotate(195deg) saturate(1.5) contrast(0.93) brightness(1.05);
 }
