@@ -13,7 +13,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ご利用ガイド | AnimalFinderConnect</title>
-  <link rel="stylesheet" href="css/style.css?v=21">
+  <link rel="stylesheet" href="css/style.css?v=22">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="js/api.js" defer></script>
         <!-- PWA & App Icon -->
@@ -30,13 +30,15 @@
 <body>
 <nav class="nav">
   <div class="container-lg nav-container">
-    <a href="index.html" class="nav-logo">
-      <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+    <div class="nav-logo">
+      <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+        <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img">
+      </a>
       <div class="logo-name">
-        <span class="logo-name-main">AnimalFinderConnect</span>
-        <span class="logo-name-sub">日本動物共助機構</span>
+        <a href="index.html" class="logo-name-main">AnimalFinderConnect</a>
+        <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub">日本動物共助機構 (AMAJ) ↗</a>
       </div>
-    </a>
+    </div>
     <div class="nav-links" id="navLinks">
       <a href="map.html" class="nav-link"><i class="fas fa-map-marked-alt"></i> マップ</a>
       <a href="match.html" class="nav-link"><i class="fas fa-robot"></i> AIマッチング</a>
