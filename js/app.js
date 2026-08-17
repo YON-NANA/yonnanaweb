@@ -22,22 +22,22 @@ const AFC = {
     }
 
     // PWA Install button creation dynamically
-    if (links) {
+    const navInner = document.querySelector('.nav-inner');
+    if (navInner && !document.getElementById('pwaInstallBtn')) {
       const installBtn = document.createElement('button');
       installBtn.id = 'pwaInstallBtn';
-      installBtn.className = 'btn btn-outline btn-sm';
-      installBtn.style.cssText = 'border-color: var(--gold); color: var(--gold); padding: 6px 12px; border-radius: var(--radius-full); margin-right: 12px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;';
-      installBtn.innerHTML = '<i class="fas fa-download"></i> アプリをインストール';
+      installBtn.className = 'btn pwa-install-btn';
+      installBtn.innerHTML = '<i class="fas fa-download"></i> <span class="pwa-btn-text">アプリをインストール</span>';
       
       // Hide button if already installed (standalone mode)
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
       if (isStandalone) {
-        installBtn.classList.add('hidden');
+        installBtn.style.display = 'none';
       }
 
       installBtn.addEventListener('click', async () => {
         if (!window.deferredPrompt) {
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 300));
         }
 
         if (window.deferredPrompt) {
@@ -46,7 +46,7 @@ const AFC = {
             const choiceResult = await window.deferredPrompt.userChoice;
             if (choiceResult && choiceResult.outcome === 'accepted') {
               window.deferredPrompt = null;
-              installBtn.classList.add('hidden');
+              installBtn.style.display = 'none';
             }
           } catch (err) {
             console.error('PWA install prompt error:', err);
@@ -54,15 +54,23 @@ const AFC = {
           }
         } else {
           if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            alert('すでにアプリはホーム画面にインストールされています！');
+            if (typeof AFC !== 'undefined' && AFC.showToast) {
+              AFC.showToast({ title: 'アプリ起動中', body: 'すでにホーム画面に追加されています！' }, 'info');
+            } else {
+              alert('すでにアプリはホーム画面にインストールされています！');
+            }
           } else {
             AFC.showPwaGuide();
           }
         }
       });
 
-      // Prepend to nav-links
-      links.insertBefore(installBtn, links.firstChild);
+      // Insert before burger menu or at the end of nav-inner
+      if (burger) {
+        navInner.insertBefore(installBtn, burger);
+      } else {
+        navInner.appendChild(installBtn);
+      }
     }
 
     // Set active nav link
@@ -555,13 +563,14 @@ const AFC = {
 };
 
 // Global PWA Install Event Handlers
-window.deferredPrompt = null;
+window.deferredPrompt = window.deferredPrompt || null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   window.deferredPrompt = e;
+  console.log('⚡ beforeinstallprompt captured!');
   const installBtn = document.getElementById('pwaInstallBtn');
   if (installBtn) {
-    installBtn.classList.remove('hidden');
+    installBtn.style.display = 'inline-flex';
   }
 });
 
@@ -569,7 +578,7 @@ window.addEventListener('appinstalled', (e) => {
   window.deferredPrompt = null;
   const installBtn = document.getElementById('pwaInstallBtn');
   if (installBtn) {
-    installBtn.classList.add('hidden');
+    installBtn.style.display = 'none';
   }
   if (typeof AFC !== 'undefined' && AFC.showToast) {
     AFC.showToast({ title: 'インストール完了', body: 'AFC Pet Finderがホーム画面に追加されました！' }, 'success');

@@ -1520,3 +1520,37 @@ textarea.form-control { resize: vertical; min-height: 120px; }
   margin-top: 2px;
 }
 
+/* PWA Install Button Header Style */
+.pwa-install-btn {
+  background: linear-gradient(135deg, rgba(201,168,76,0.2) 0%, rgba(201,168,76,0.08) 100%);
+  border: 1px solid var(--gold) !important;
+  color: var(--gold) !important;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(201,168,76,0.2);
+  margin-right: 8px;
+}
+
+.pwa-install-btn:hover {
+  background: var(--gold) !important;
+  color: #080F1A !important;
+  box-shadow: 0 4px 14px rgba(201,168,76,0.4);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .pwa-install-btn {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    margin-right: 4px;
+  }
+}
+

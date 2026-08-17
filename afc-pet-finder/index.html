@@ -14,21 +14,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AFC Pet Finder — 迷子動物捜索プラットフォーム | 日本動物共助機構</title>
   <meta name="description" content="AIによる捜索エリア予測・特徴タグ自動マッチング・匿名チャット。日本動物共助機構（AFC）が運営する迷子動物捜索の総合プラットフォーム。">
-  <link rel="stylesheet" href="css/style.css?v=17">
+  <link rel="stylesheet" href="css/style.css?v=21">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
               <!-- PWA & App Icon -->
-  <link rel="manifest" href="manifest.json?v=17">
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=9">
-  <link rel="shortcut icon" href="favicon.ico?v=9">
-  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=9">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=9">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=9">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=9">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=9">
+  <link rel="manifest" href="manifest.json?v=20">
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=19">
+  <link rel="shortcut icon" href="favicon.ico?v=19">
+  <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=19">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=19">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=19">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=19">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=19">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0B5394">
   <style>
     /* Home-specific styles */
     .hero-section {
@@ -299,7 +301,7 @@
 
     @media (max-width: 900px) {
       .hero-grid { grid-template-columns: 1fr; }
-      .hero-map-preview { height: 300px; }
+      .hero-map-preview { height: 260px; }
       .cta-grid { grid-template-columns: 1fr; }
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
       .steps-visual { grid-template-columns: repeat(2, 1fr); }
@@ -311,6 +313,12 @@
     @media (max-width: 600px) {
       .stats-bar { grid-template-columns: 1fr 1fr; padding: var(--space-lg); }
       .steps-visual { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+      .hero-stats { flex-wrap: wrap; gap: var(--space-md); }
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero-section { padding: var(--space-xl) 0; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
     }
 
     /* Hero Section Enhancements */
@@ -356,10 +364,10 @@
 <nav class="nav" id="mainNav">
   <div class="nav-inner">
     <a href="index.html" class="nav-logo">
-      <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img">
+      <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img">
       <div class="logo-name">
         <span class="logo-name-main">AnimalFinderConnect</span>
-        <span class="logo-name-sub">日本動物共助機構</span>
+        <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub" style="text-decoration:none;color:inherit;">日本動物共助機構 (AMAJ) ↗</a>
       </div>
     </a>
     <div class="nav-links" id="navLinks">
@@ -522,7 +530,7 @@
   <section style="padding:0 0 var(--space-3xl);">
     <div class="container-lg">
       <div style="background:linear-gradient(135deg,rgba(155,89,182,0.1),rgba(26,92,58,0.1));border:1px solid rgba(155,89,182,0.25);border-radius:var(--radius-xl);padding:var(--space-2xl);">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;">
+        <div class="responsive-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2xl);align-items:center;">
           <div>
             <div class="section-badge" style="background:rgba(155,89,182,0.15);border-color:rgba(155,89,182,0.3);color:var(--match)">AI MATCHING</div>
             <h2 style="margin-bottom:var(--space-md)">特徴タグ<br>自動マッチング</h2>
@@ -608,7 +616,7 @@
   <!-- ─── SNS / Poster Banner ─── -->
   <section style="padding:var(--space-3xl) 0;">
     <div class="container-lg">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
+      <div class="responsive-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
         <div class="card scroll-fade" style="border-color:rgba(201,168,76,0.2);">
           <div style="font-size:2.5rem;margin-bottom:var(--space-md);">📄</div>
           <h3 style="margin-bottom:var(--space-sm);">迷子ポスター<br>ワンクリック生成</h3>
@@ -640,7 +648,7 @@
         <!-- 組織情報 -->
         <div>
           <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
-            <img src="assets/afc-logo-full.png" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
+            <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
             <div class="logo-name">
               <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
               <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2; text-decoration: none;">日本動物共助機構 (AMAJ) ↗</a>

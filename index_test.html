@@ -1,11 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <script>
+  window.deferredPrompt = window.deferredPrompt || null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    console.log('⚡ Early beforeinstallprompt captured!');
+  });
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AFC Pet Finder 窶・霑ｷ蟄仙虚迚ｩ謐懃ｴ｢繝励Λ繝・ヨ繝輔か繝ｼ繝� | 譌･譛ｬ蜍慕黄蜈ｱ蜉ｩ讖滓ｧ・/title>
   <meta name="description" content="AI縺ｫ繧医ｋ謐懃ｴ｢繧ｨ繝ｪ繧｢莠域ｸｬ繝ｻ迚ｹ蠕ｴ繧ｿ繧ｰ閾ｪ蜍輔・繝・メ繝ｳ繧ｰ繝ｻ蛹ｿ蜷阪メ繝｣繝・ヨ縲よ律譛ｬ蜍慕黄蜈ｱ蜉ｩ讖滓ｧ具ｼ・FC・峨′驕句霧縺吶ｋ霑ｷ蟄仙虚迚ｩ謐懃ｴ｢縺ｮ邱丞粋繝励Λ繝・ヨ繝輔か繝ｼ繝�縲・>
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -322,7 +331,7 @@
   </style>
 
               <!-- PWA & App Icon -->
-  <link rel="manifest" href="manifest.json?v=6">
+  <link rel="manifest" href="manifest.json?v=14">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=6">
   <link rel="shortcut icon" href="favicon.ico?v=6">
   <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=6">

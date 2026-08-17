@@ -1,8 +1,8 @@
 /**
- * AFC Pet Finder - Service Worker v13 (Force Cache Refresh)
+ * AFC Pet Finder - Service Worker v14 (Force Cache Refresh)
  */
 
-const CACHE_NAME = 'afc-pet-finder-v13';
+const CACHE_NAME = 'afc-pet-finder-v14';
 
 // Force immediate takeover
 self.addEventListener('install', (event) => {

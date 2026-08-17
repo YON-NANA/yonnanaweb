@@ -2,6 +2,15 @@
 <html lang="ja">
 
 <head>
+  <script>
+  window.deferredPrompt = window.deferredPrompt || null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    console.log('⚡ Early beforeinstallprompt captured!');
+  });
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>活動詳細 - 動物保護団体ヨンナナ</title>
@@ -12,7 +21,7 @@
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=14">
     <title>保護・譲渡活動 - 動物保護団体ヨンナナ</title>
     <meta name="description" content="徳島県内での犬猫のレスキュー、シェルターでのケア、そして新しい家族へと繋ぐ譲渡活動についてのご紹介です。命のバトンを繋ぐ、ヨンナナの根幹となる活動です。">
 

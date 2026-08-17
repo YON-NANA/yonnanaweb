@@ -21,26 +21,25 @@ const AFC = {
       });
     }
 
-    // PWA Install button creation dynamically
-    const navInner = document.querySelector('.nav-inner');
-    if (navInner && !document.getElementById('pwaInstallBtn')) {
+    // PWA Install button — 画面右下に固定フローティングボタンとして配置
+    // (Animal Blood Connect と同じアプローチ：ナビバーに依存せずモバイルでも確実に表示)
+    if (!document.getElementById('pwaInstallBtn')) {
       const installBtn = document.createElement('button');
       installBtn.id = 'pwaInstallBtn';
-      installBtn.className = 'btn pwa-install-btn';
+      installBtn.className = 'pwa-install-btn-float';
+      installBtn.setAttribute('aria-label', 'アプリをインストール');
       installBtn.innerHTML = '<i class="fas fa-download"></i> <span class="pwa-btn-text">アプリをインストール</span>';
-      
-      // Hide button if already installed (standalone mode)
+
+      // すでにインストール済み（スタンドアロンモード）なら非表示
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
       if (isStandalone) {
         installBtn.style.display = 'none';
       }
+      // スタンドアロンでなければ常に表示（beforeinstallpromptが来なくてもガイドを表示できる）
 
       installBtn.addEventListener('click', async () => {
-        if (!window.deferredPrompt) {
-          await new Promise(r => setTimeout(r, 300));
-        }
-
         if (window.deferredPrompt) {
+          // Android Chrome など：ネイティブインストールプロンプトを表示
           try {
             await window.deferredPrompt.prompt();
             const choiceResult = await window.deferredPrompt.userChoice;
@@ -52,26 +51,23 @@ const AFC = {
             console.error('PWA install prompt error:', err);
             AFC.showPwaGuide();
           }
-        } else {
-          if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            if (typeof AFC !== 'undefined' && AFC.showToast) {
-              AFC.showToast({ title: 'アプリ起動中', body: 'すでにホーム画面に追加されています！' }, 'info');
-            } else {
-              alert('すでにアプリはホーム画面にインストールされています！');
-            }
+        } else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+          // すでにインストール済み
+          if (typeof AFC !== 'undefined' && AFC.showToast) {
+            AFC.showToast({ title: 'アプリ起動中', body: 'すでにホーム画面に追加されています！' }, 'info');
           } else {
-            AFC.showPwaGuide();
+            alert('すでにアプリはホーム画面にインストールされています！');
           }
+        } else {
+          // iOS Safari など beforeinstallprompt 非対応ブラウザ：インストール手順ガイドを表示
+          AFC.showPwaGuide();
         }
       });
 
-      // Insert before burger menu or at the end of nav-inner
-      if (burger) {
-        navInner.insertBefore(installBtn, burger);
-      } else {
-        navInner.appendChild(installBtn);
-      }
+      // body に直接追加（ナビバーから独立させてモバイルでも確実に表示）
+      document.body.appendChild(installBtn);
     }
+
 
     // Set active nav link
     const currentPage = location.pathname.split('/').pop() || 'index.html';
@@ -568,9 +564,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   window.deferredPrompt = e;
   console.log('⚡ beforeinstallprompt captured!');
+  window.dispatchEvent(new Event('pwa-prompt-ready'));
   const installBtn = document.getElementById('pwaInstallBtn');
   if (installBtn) {
-    installBtn.style.display = 'inline-flex';
+    installBtn.style.display = 'flex';
   }
 });
 
