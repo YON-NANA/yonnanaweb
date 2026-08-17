@@ -15,7 +15,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AIマッチング — AFC Pet Finder</title>
   <meta name="description" content="AIが特徴タグを解析し、迷子と保護情報のマッチングスコアを算出します。">
-  <link rel="stylesheet" href="css/style.css?v=22">
+  <link rel="stylesheet" href="css/style.css?v=23">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
               <!-- PWA & App Icon -->
   <link rel="manifest" href="manifest.json?v=20">
@@ -212,62 +212,64 @@
     </div>
 
     <!-- ─── Footer ─── -->
-    <footer>
-      <div class="container-lg">
-        <div class="footer-grid">
-          <!-- 組織情報 -->
-          <div>
-            <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex;">
-              <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img" style="height: 32px; width: auto; margin-right: 10px;">
-              <div class="logo-name">
-                <span class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2;">AnimalFinderConnect</span>
-                <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub" style="font-size: 0.75rem; color: var(--text-secondary); display: block; line-height: 1.2; text-decoration: none;">日本動物共助機構 (AMAJ) ↗</a>
-              </div>
+  <footer>
+    <div class="container-lg">
+      <div class="footer-grid">
+        <!-- 組織情報 -->
+        <div>
+          <div class="nav-logo" style="margin-bottom: var(--space-md); display: inline-flex; align-items: center;">
+            <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+              <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img" style="height: 36px; width: auto; margin-right: 10px;">
+            </a>
+            <div class="logo-name">
+              <a href="index.html" class="logo-name-main" style="font-size: 1.1rem; font-weight: 700; color: #fff; display: block; line-height: 1.2; text-decoration: none;">AnimalFinderConnect</a>
+              <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub" style="font-size: 0.8rem; color: #93C5FD; display: block; line-height: 1.2; text-decoration: underline;">日本動物共助機構 (AMAJ) ↗</a>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-              すべては動物たちの明るい未来のために。<br><a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">日本動物共助機構 (AMAJ)</a> が提供する非営利プロジェクトです。
-            </p>
           </div>
-
-          <!-- サイトマップ 1 -->
-          <div class="footer-links">
-            <h4>迷子・保護情報</h4>
-            <a href="lost-register.html">迷子ペットを登録</a>
-            <a href="found-register.html">保護・目撃情報を報告</a>
-            <a href="map.html">捜索マップ</a>
-            <a href="match.html">自動マッチング</a>
-          </div>
-
-          <!-- サイトマップ 2 -->
-          <div class="footer-links">
-            <h4>コミュニティ</h4>
-            <a href="chat.html">匿名チャット窓口</a>
-            <a href="admin-data.html">行政収容データ連携</a>
-            <a href="guide.html">ご利用ガイド</a>
-          </div>
-
-          <!-- サイトマップ 3 -->
-          <div class="footer-links">
-            <h4>法的情報・その他</h4>
-            <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer">日本動物共助機構 公式 ↗</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-            <a href="terms.html">利用規約</a>
-            <a href="index.html">ホーム</a>
-          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            すべては動物たちの明るい未来のために。<br><a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: #60A5FA; text-decoration: underline; font-weight: 600;">日本動物共助機構 (AMAJ) ↗</a> が提供する非営利プロジェクトです。
+          </p>
         </div>
 
-        <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
-          <div>&copy; 2026 一般社団法人 <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">日本動物共助機構 (AMAJ)</a>. All Rights Reserved.</div>
-          <div style="display: flex; gap: var(--space-md); align-items: center;">
-            <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
-            <span style="color: var(--border);">|</span>
-            <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
-            <span style="color: var(--border);">|</span>
-            <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
-          </div>
+        <!-- サイトマップ 1 -->
+        <div class="footer-links">
+          <h4>迷子・保護情報</h4>
+          <a href="lost-register.html">迷子ペットを登録</a>
+          <a href="found-register.html">保護・目撃情報を報告</a>
+          <a href="map.html">捜索マップ</a>
+          <a href="match.html">自動マッチング</a>
+        </div>
+
+        <!-- サイトマップ 2 -->
+        <div class="footer-links">
+          <h4>コミュニティ</h4>
+          <a href="chat.html">匿名チャット窓口</a>
+          <a href="admin-data.html">行政収容データ連携</a>
+          <a href="guide.html">ご利用ガイド</a>
+        </div>
+
+        <!-- サイトマップ 3 -->
+        <div class="footer-links">
+          <h4>法的情報・その他</h4>
+          <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: #60A5FA; font-weight: 600;">日本動物共助機構 公式 ↗</a>
+          <a href="privacy.html">プライバシーポリシー</a>
+          <a href="terms.html">利用規約</a>
+          <a href="index.html">ホーム</a>
         </div>
       </div>
-    </footer>
+
+      <div style="border-top: 1px solid var(--border); padding-top: var(--space-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-lg);">
+        <div>&copy; 2026 一般社団法人 <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" style="color: #93C5FD; text-decoration: underline;">日本動物共助機構 (AMAJ)</a>. All Rights Reserved.</div>
+        <div style="display: flex; gap: var(--space-md); align-items: center;">
+          <a href="mailto:AnimalFinderConnect@gmail.com" style="color: var(--text-muted); text-decoration: none;">📧 AnimalFinderConnect@gmail.com</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">Twitter (X)</a>
+          <span style="color: var(--border);">|</span>
+          <a href="#" style="color: var(--text-muted); text-decoration: none;">LINE公式</a>
+        </div>
+      </div>
+    </div>
+  </footer>
   </div>
 
   <script src="js/app.js"></script>
