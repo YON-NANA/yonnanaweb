@@ -31,10 +31,221 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <style>
     .map-page-layout { display: flex; flex-direction: column; height: calc(100vh - var(--nav-height)); }
-    .map-controls { padding: var(--space-md) var(--space-lg); background: var(--bg-deep); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap; }
-    #fullMap { flex: 1; width: 100%; background: #111; z-index: 1; }
-    .filter-btn { background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 6px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
-    .filter-btn:hover, .filter-btn.active { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold); }
+    .map-controls { padding: var(--space-md) var(--space-lg); background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; }
+    #fullMap { flex: 1; width: 100%; background: #DCEEFB; z-index: 1; }
+    .filter-btn {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .filter-btn:hover {
+      background: #EBF5FF;
+      border-color: var(--primary-light);
+      color: var(--primary);
+    }
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFFFFF !important;
+    }
+    .filter-btn.active span {
+      color: #FFFFFF !important;
+    }
+
+    /* ─── フォトマーカーピン（写真入りピン） ─── */
+    .pet-map-pin-wrapper {
+      background: transparent;
+      border: none;
+    }
+    .pet-map-pin {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .pet-map-pin:hover {
+      transform: scale(1.18) translateY(-4px);
+      z-index: 1000 !important;
+    }
+    .pet-map-pin .pin-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.22);
+      border: 3px solid #DC2626;
+    }
+    .pet-map-pin .pin-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pet-map-pin .pin-avatar .pin-fallback-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+    .pet-map-pin.pin-lost .pin-avatar {
+      border-color: #DC2626;
+      box-shadow: 0 3px 10px rgba(220, 38, 38, 0.35);
+    }
+    .pet-map-pin.pin-found .pin-avatar {
+      border-color: #15803D;
+      box-shadow: 0 3px 10px rgba(21, 128, 61, 0.35);
+    }
+    .pet-map-pin.pin-witness .pin-avatar {
+      border-color: #1D4ED8;
+      box-shadow: 0 3px 10px rgba(29, 78, 216, 0.35);
+    }
+    .pet-map-pin .pin-badge {
+      position: absolute;
+      top: -2px;
+      right: 0px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #FFFFFF;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+    .pet-map-pin.pin-lost .pin-badge { background: #DC2626; }
+    .pet-map-pin.pin-found .pin-badge { background: #15803D; }
+    .pet-map-pin.pin-witness .pin-badge { background: #1D4ED8; }
+    
+    .pet-map-pin::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 22px;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #DC2626;
+    }
+    .pet-map-pin.pin-lost::after { border-top-color: #DC2626; }
+    .pet-map-pin.pin-found::after { border-top-color: #15803D; }
+    .pet-map-pin.pin-witness::after { border-top-color: #1D4ED8; }
+
+    /* ─── リッチポップアップカード ─── */
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+    }
+    .leaflet-popup-content {
+      margin: 0;
+      line-height: 1.4;
+    }
+    .pet-popup-card {
+      width: 250px;
+      background: #FFFFFF;
+      font-family: var(--font-jp);
+    }
+    .pet-popup-img-wrapper {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      background: #F1F5F9;
+      overflow: hidden;
+    }
+    .pet-popup-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pet-popup-img-wrapper .no-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #94A3B8;
+      font-size: 2.2rem;
+    }
+    .pet-popup-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .pet-popup-badge.lost { background: #DC2626; }
+    .pet-popup-badge.found { background: #15803D; }
+    .pet-popup-badge.witness { background: #1D4ED8; }
+    .pet-popup-body {
+      padding: 12px 14px 14px;
+    }
+    .pet-popup-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pet-popup-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .pet-popup-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin: 6px 0;
+    }
+    .pet-popup-tag {
+      background: #F1F5F9;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.72rem;
+      color: #334155;
+    }
+    .pet-popup-action {
+      margin-top: 10px;
+      display: block;
+      text-align: center;
+      background: var(--primary);
+      color: #FFFFFF !important;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .pet-popup-action:hover {
+      opacity: 0.9;
+    }
   </style>
   <script src="js/api.js" defer></script>
 </head>
@@ -94,6 +305,36 @@
     }).addTo(map); // 初回実行
 
 
+  // エリア検索入力
+  const searchInput = document.querySelector('.map-controls input[type="text"]');
+  const searchIcon = document.querySelector('.map-controls .fa-search');
+
+  async function searchMapLocation(query) {
+    if (!query) return;
+    try {
+      const result = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(query) : null);
+      if (result && typeof result.lat === 'number' && typeof result.lng === 'number') {
+        map.setView([result.lat, result.lng], 15);
+      } else {
+        alert('指定されたエリアが見つかりませんでした。');
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchMapLocation(searchInput.value.trim());
+    });
+  }
+  if (searchIcon) {
+    searchIcon.style.cursor = 'pointer';
+    searchIcon.addEventListener('click', () => {
+      if (searchInput) searchMapLocation(searchInput.value.trim());
+    });
+  }
+
   // Supabaseから迷子・保護データを取得してマップに表示
   async function loadMapData() {
     const [lostList, foundList] = await Promise.all([
@@ -103,25 +344,158 @@
 
     let allMarkers = [];
 
-    (lostList || []).forEach(item => {
-      if (!item.lat || !item.lng) return;
-      const m = L.circleMarker([item.lat, item.lng], {
-        radius: 9, fillColor: '#FF6B35', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
-      }).addTo(map);
-      m.bindPopup(`<div style="color:#333"><b>🔴 迷子: ${item.pet_name}</b><br>${item.pet_type}・${item.gender || '不明'}<br>場所: ${item.location}<br>日時: ${item.date_lost}</div>`);
+    async function resolveItemCoords(item) {
+      const isDefaultTokyo = Math.abs((item.lat || 0) - 35.6895) < 0.001 && Math.abs((item.lng || 0) - 139.6917) < 0.001;
+      const isTokyoAddr = item.location && (item.location.includes('東京') || item.location.includes('新宿') || item.location.includes('渋谷') || item.location.includes('世田谷'));
+      const isInvalid = !item.lat || !item.lng || item.lat === 0 || item.lng === 0 || (isDefaultTokyo && !isTokyoAddr);
+
+      if (isInvalid && item.location && item.location !== '不明' && item.location !== '場所不明' && item.location !== 'test') {
+        try {
+          const geo = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(item.location) : null);
+          if (geo && typeof geo.lat === 'number' && typeof geo.lng === 'number') {
+            return { lat: geo.lat, lng: geo.lng };
+          }
+        } catch (e) {
+          console.warn('Geocode fallback error:', e);
+        }
+      }
+      return (typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0) 
+        ? { lat: item.lat, lng: item.lng } 
+        : null;
+    }
+
+    // 迷子マーカーの生成
+    for (const item of (lostList || [])) {
+      const coords = await resolveItemCoords(item);
+      if (!coords) continue;
+
+      const petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
+      const avatarHtml = item.image_url
+        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin pin-lost">
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">🔴</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = item.image_url
+        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      const tags = Array.isArray(item.features) && item.features.length > 0
+        ? `<div class="pet-popup-tags">${item.features.map(t => `<span class="pet-popup-tag">${t}</span>`).join('')}</div>`
+        : '';
+
+      const detailText = item.details ? `<div style="font-size:0.75rem; color:#64748B; margin-top:4px; line-height:1.4;">${item.details}</div>` : '';
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge lost">🔴 迷子</span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title">
+              <span>${item.pet_name || '名前不明'}</span>
+              <span style="font-size:0.8rem; font-weight:500; color:#64748B;">${item.pet_type === 'cat' ? '猫' : (item.pet_type === 'dog' ? '犬' : 'その他')}・${item.gender || '性別不明'}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:var(--lost); margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_lost || '日時不明'}</div>
+            </div>
+            ${tags}
+            ${detailText}
+            <a href="poster.html?id=${item.id}" class="pet-popup-action" style="background:var(--gold); color:#1a1a1a !important; margin-bottom:6px;">
+              <i class="fas fa-file-pdf"></i> ポスターを作成
+            </a>
+            <a href="match.html" class="pet-popup-action" style="background:var(--lost);">
+              <i class="fas fa-search"></i> 照合・詳細を確認
+            </a>
+          </div>
+        </div>
+      `);
       m._type = 'lost';
       allMarkers.push(m);
-    });
+    }
 
-    (foundList || []).forEach(item => {
-      if (!item.lat || !item.lng) return;
-      const m = L.circleMarker([item.lat, item.lng], {
-        radius: 9, fillColor: '#2ECC71', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
-      }).addTo(map);
-      m.bindPopup(`<div style="color:#333"><b>🟢 保護中</b><br>場所: ${item.location}<br>日時: ${item.date_found}</div>`);
-      m._type = 'found';
+    // 保護・目撃マーカーの生成
+    for (const item of (foundList || [])) {
+      const coords = await resolveItemCoords(item);
+      if (!coords) continue;
+      
+      const isWitness = (item.reporter_name && item.reporter_name.includes('目撃')) || (item.details && item.details.includes('目撃'));
+      const typeClass = isWitness ? 'pin-witness' : 'pin-found';
+      const badgeIcon = isWitness ? '🔵' : '🟢';
+      const label = isWitness ? '目撃情報' : '保護中';
+      const badgeClass = isWitness ? 'witness' : 'found';
+      const themeColor = isWitness ? '#1D4ED8' : '#15803D';
+
+      const isCat = item.details && item.details.includes('猫');
+      const isDog = item.details && item.details.includes('犬');
+      const petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
+
+      const avatarHtml = item.image_url
+        ? `<img src="${item.image_url}" alt="${label}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin ${typeClass}">
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">${badgeIcon}</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = item.image_url
+        ? `<img src="${item.image_url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      const formattedDetails = item.details
+        ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>`
+        : '';
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge ${badgeClass}">${badgeIcon} ${label}</span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title" style="color:${themeColor};">
+              <span>${label}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:${themeColor}; margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_found || '日時不明'}</div>
+            </div>
+            ${formattedDetails}
+            <a href="chat.html" class="pet-popup-action" style="background:${themeColor};">
+              <i class="fas fa-comments"></i> 投稿者とチャット
+            </a>
+          </div>
+        </div>
+      `);
+      m._type = isWitness ? 'witness' : 'found';
       allMarkers.push(m);
-    });
+    }
 
     // フィルターボタンの動作
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -130,10 +504,17 @@
         this.classList.add('active');
         const text = this.textContent.trim();
         allMarkers.forEach(m => {
-          if (text === 'すべて') { map.addLayer(m); }
-          else if (text.includes('迷子')) { text.includes('迷子') && m._type === 'lost' ? map.addLayer(m) : map.removeLayer(m); }
-          else if (text.includes('保護中')) { m._type === 'found' ? map.addLayer(m) : map.removeLayer(m); }
-          else { map.addLayer(m); }
+          if (text === 'すべて') {
+            map.addLayer(m);
+          } else if (text.includes('迷子')) {
+            m._type === 'lost' ? map.addLayer(m) : map.removeLayer(m);
+          } else if (text.includes('保護中')) {
+            m._type === 'found' ? map.addLayer(m) : map.removeLayer(m);
+          } else if (text.includes('目撃')) {
+            m._type === 'witness' ? map.addLayer(m) : map.removeLayer(m);
+          } else {
+            map.addLayer(m);
+          }
         });
       });
     });

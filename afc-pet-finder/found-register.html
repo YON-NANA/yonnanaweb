@@ -125,7 +125,7 @@
     </div>
   </nav>
 
-  <div class="page-wrapper" style="padding-top: var(--space-2xl);">
+  <div class="page-wrapper">
     <div class="container">
       <div class="mb-xl">
         <h1 style="font-size: 2rem; margin-bottom: var(--space-sm);">保護・目撃情報の登録</h1>
@@ -243,12 +243,12 @@
                   虐待目的のなりすまし（引き取り詐欺）を防ぐため、本当の飼い主しか知らないような特徴を入力してください。<br>
                   ※この項目は一般には公開されません。飼い主からの問い合わせがあった際の本人確認として利用します。
                 </p>
-                <textarea class="form-control" rows="3" placeholder="例：首輪の裏に書かれた文字、お腹にある傷跡、肉球の色が1つだけ違う、等"></textarea>
+                <textarea id="secretDetails" class="form-control" rows="3" placeholder="例：首輪の裏に書かれた文字、お腹にある傷跡、肉球の色が1つだけ違う、等"></textarea>
               </div>
 
               <div class="form-group">
                 <label class="form-label">首輪・装着物</label>
-                <input type="text" class="form-control" placeholder="例: 赤い革の首輪、迷子札あり">
+                <input type="text" id="collarFound" class="form-control" placeholder="例: 赤い革の首輪、迷子札あり">
               </div>
 
               <div style="display:flex; justify-content:space-between;">
@@ -267,25 +267,25 @@
             <div class="card-body">
               <div class="form-group">
                 <label class="form-label">見つけた/保護した日時 <span style="color:var(--found)">*</span></label>
-                <input type="datetime-local" class="form-control">
+                <input type="datetime-local" id="foundDate" class="form-control">
               </div>
 
               <div class="form-group">
                 <label class="form-label">見つけた場所 <span style="color:var(--found)">*</span></label>
                 <div style="display:flex; gap:8px;">
-                  <input type="text" id="foundAddressInput" class="form-control" placeholder="住所または施設名（例: 大阪市北区天神橋）"
-                    onkeydown="if(event.key==='Enter'){geocodeFoundAddress();}">
+                  <input type="text" id="foundAddressInput" class="form-control" placeholder="都道府県・市区町村・施設名等（例: 大阪市北区天神橋2丁目）"
+                    onkeydown="if(event.key==='Enter'){geocodeFoundAddress();}" onchange="autoGeocodeFoundAddress()">
                   <button class="btn btn-outline" style="border-color:var(--found); color:var(--found);"
                     onclick="geocodeFoundAddress()"><i class="fas fa-search"></i> 検索</button>
                 </div>
                 <div id="foundGeocodeStatus" style="font-size:0.8rem; margin-top:6px; min-height:18px;"></div>
                 <div id="mapFound" class="map-container"></div>
-                <p class="text-xs text-muted mt-sm">※地図上でピンを動かして正確な位置を指定できます。</p>
+                <p class="text-xs text-muted mt-sm">※住所入力で自動的に地図が移動します。ピンをドラッグして正確な位置を微調整できます。</p>
               </div>
 
               <div class="form-group">
                 <label class="form-label">あなたの連絡先（非公開） <span style="color:var(--found)">*</span></label>
-                <input type="email" class="form-control" placeholder="メールアドレス">
+                <input type="email" id="foundContactEmail" class="form-control" placeholder="メールアドレス">
                 <p class="text-xs text-muted mt-sm">※飼い主とマッチングした場合、匿名チャットで連絡ができます。本名やメールアドレスは相手に公開されません。</p>
               </div>
 
@@ -402,28 +402,43 @@
   </div>
 
   <script>
+    let foundMap, foundMapMarker;
+    let selectedAnimalFound = 'dog';
+    let selectedReportTypeVal = 'found';
+    let foundLat = 35.6895;
+    let foundLng = 139.6917;
+    let selectedFoundImageFile = null;
+
     function selectReportType(type) {
-      document.getElementById('typeFound').classList.remove('btn-primary');
-      document.getElementById('typeFound').classList.add('btn-outline');
-      document.getElementById('typeFound').style.background = 'transparent';
+      selectedReportTypeVal = type;
+      const btnFound = document.getElementById('typeFound');
+      const btnWitness = document.getElementById('typeWitness');
+      if (!btnFound || !btnWitness) return;
 
-      document.getElementById('typeWitness').classList.remove('btn-primary');
-      document.getElementById('typeWitness').classList.add('btn-outline');
-      document.getElementById('typeWitness').style.background = 'transparent';
-
-      const activeLabel = type === 'found' ? document.getElementById('typeFound') : document.getElementById('typeWitness');
-      activeLabel.classList.remove('btn-outline');
-      activeLabel.classList.add('btn-primary');
-      activeLabel.style.background = type === 'found' ? 'var(--found)' : 'var(--witness)';
-      activeLabel.style.borderColor = type === 'found' ? 'var(--found)' : 'var(--witness)';
+      if (type === 'found') {
+        btnFound.className = 'btn btn-primary';
+        btnFound.style.background = 'var(--found)';
+        btnFound.style.borderColor = 'var(--found)';
+        btnWitness.className = 'btn btn-outline';
+        btnWitness.style.background = '';
+        btnWitness.style.borderColor = '';
+      } else {
+        btnWitness.className = 'btn btn-primary';
+        btnWitness.style.background = 'var(--witness)';
+        btnWitness.style.borderColor = 'var(--witness)';
+        btnFound.className = 'btn btn-outline';
+        btnFound.style.background = '';
+        btnFound.style.borderColor = '';
+      }
     }
 
     function toggleAnimalFields(type, btn) {
+      selectedAnimalFound = type;
       const parent = btn.parentElement;
       parent.querySelectorAll('.btn').forEach(b => {
         b.classList.remove('btn-primary');
         b.classList.add('btn-outline');
-        b.style.background = 'transparent';
+        b.style.background = '';
         b.style.borderColor = '';
       });
       btn.classList.remove('btn-outline');
@@ -431,27 +446,23 @@
       btn.style.background = 'var(--found)';
       btn.style.borderColor = 'var(--found)';
 
-      document.getElementById('catTags').style.display = 'none';
-      document.getElementById('dogTags').style.display = 'none';
-      if (type === 'cat') document.getElementById('catTags').style.display = 'flex';
-      if (type === 'dog') document.getElementById('dogTags').style.display = 'flex';
+      const catTags = document.getElementById('catTags');
+      const dogTags = document.getElementById('dogTags');
+      if (catTags) catTags.style.display = type === 'cat' ? 'flex' : 'none';
+      if (dogTags) dogTags.style.display = type === 'dog' ? 'flex' : 'none';
     }
 
     function nextStep(step) {
-      // すべてのstep-panelを hidden クラスで隠す
       document.querySelectorAll('.step-panel').forEach(p => {
         p.classList.add('hidden');
         p.style.display = '';
       });
-      // 対象ステップを表示
       const target = document.getElementById('step' + step);
       if (target) {
         target.classList.remove('hidden');
-        // style="display:none;" が残っている場合があるので強制クリア
         target.style.display = 'block';
       }
 
-      // サイドバー進捗更新
       const items = document.querySelectorAll('#progressList li');
       items.forEach((item, index) => {
         const i = index + 1;
@@ -470,28 +481,29 @@
           item.innerHTML = `<i class="far fa-circle" style="margin-right:8px;"></i> ${label}`;
         }
       });
+
+      if (step === 3) {
+        setTimeout(() => {
+          initFoundMap();
+          foundMap && foundMap.invalidateSize();
+        }, 150);
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    function submitForm() {
-      document.getElementById('completeModal').style.display = 'flex';
-    }
-
-    // init
-    selectReportType('found');
 
     function handlePhotoFiles(files) {
       const grid = document.getElementById('photoPreviewGrid');
       if (!grid) return;
       [...files].forEach(file => {
         if (!file.type.startsWith('image/')) return;
+        if (!selectedFoundImageFile) selectedFoundImageFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
           const thumb = document.createElement('div');
           thumb.style.cssText = 'position:relative; width:90px; height:90px; border-radius:8px; overflow:hidden; border:1px solid var(--border);';
           thumb.innerHTML = `
           <img src="${e.target.result}" alt="写真" style="width:100%; height:100%; object-fit:cover;">
-          <button onclick="this.parentElement.remove()" style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.7); color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+          <button onclick="this.parentElement.remove(); selectedFoundImageFile=null;" style="position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.7); color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
         `;
           grid.appendChild(thumb);
         };
@@ -507,12 +519,11 @@
       handlePhotoFiles(event.dataTransfer.files);
     }
 
-    // ===== 住所マップ =====
-    let foundMap, foundMapMarker;
+    let isFoundMarkerManuallyMoved = false;
 
     function initFoundMap() {
       if (!foundMap) {
-        foundMap = L.map('mapFound').setView([35.6895, 139.6917], 13);
+        foundMap = L.map('mapFound').setView([foundLat, foundLng], 14);
         const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CARTO' });
         const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' });
         function updateStyle() {
@@ -530,49 +541,139 @@
         }
         foundMap.on('zoomend', updateStyle);
         updateStyle();
-        foundMapMarker = L.marker([35.6895, 139.6917], { draggable: true }).addTo(foundMap);
+        foundMapMarker = L.marker([foundLat, foundLng], { draggable: true }).addTo(foundMap);
         foundMapMarker.bindPopup('📍 ここをドラッグして正確な位置を指定').openPopup();
+
+        foundMapMarker.on('dragend', function(e) {
+          const pos = e.target.getLatLng();
+          foundLat = pos.lat;
+          foundLng = pos.lng;
+          isFoundMarkerManuallyMoved = true;
+        });
       }
+    }
+
+    async function autoGeocodeFoundAddress(force = false) {
+      if (isFoundMarkerManuallyMoved && !force) return;
+      const input = document.getElementById('foundAddressInput');
+      const query = input ? input.value.trim() : '';
+      if (!query) return;
+      await performFoundGeocode(query, false);
     }
 
     async function geocodeFoundAddress() {
       const input = document.getElementById('foundAddressInput');
-      const status = document.getElementById('foundGeocodeStatus');
       const query = input ? input.value.trim() : '';
+      const status = document.getElementById('foundGeocodeStatus');
       if (!query) {
         if (status) { status.textContent = '⚠️ 住所を入力してください'; status.style.color = '#f0ad4e'; }
         return;
       }
-      if (status) { status.textContent = '🔍 検索中...'; status.style.color = 'var(--text-secondary)'; }
-      if (!foundMap) { initFoundMap(); await new Promise(r => setTimeout(r, 300)); }
+      isFoundMarkerManuallyMoved = false;
+      await performFoundGeocode(query, true);
+    }
+
+    async function performFoundGeocode(query, isManualSearch = false) {
+      const status = document.getElementById('foundGeocodeStatus');
+      if (status && isManualSearch) { status.textContent = '🔍 住所を検索中...'; status.style.color = 'var(--text-secondary)'; }
+      if (!foundMap) { initFoundMap(); await new Promise(r => setTimeout(r, 200)); }
+
       try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&accept-language=ja&countrycodes=jp`;
-        const res = await fetch(url, { headers: { 'Accept-Language': 'ja' } });
-        const data = await res.json();
-        if (data && data.length > 0) {
-          const lat = parseFloat(data[0].lat);
-          const lon = parseFloat(data[0].lon);
-          foundMap.setView([lat, lon], 16);
-          if (foundMapMarker) { foundMapMarker.setLatLng([lat, lon]); }
-          else { foundMapMarker = L.marker([lat, lon], { draggable: true }).addTo(foundMap); }
-          foundMapMarker.bindPopup(`📍 ${data[0].display_name}`).openPopup();
-          if (status) { status.innerHTML = '✅ <span style="color:#2ecc71">場所を特定しました。ピンをドラッグして微調整できます。</span>'; }
+        const result = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(query) : null);
+        if (result && typeof result.lat === 'number' && typeof result.lng === 'number') {
+          foundLat = result.lat;
+          foundLng = result.lng;
+          foundMap.setView([foundLat, foundLng], 16);
+          if (foundMapMarker) {
+            foundMapMarker.setLatLng([foundLat, foundLng]);
+          } else {
+            foundMapMarker = L.marker([foundLat, foundLng], { draggable: true }).addTo(foundMap);
+            foundMapMarker.on('dragend', function(e) {
+              const pos = e.target.getLatLng();
+              foundLat = pos.lat;
+              foundLng = pos.lng;
+              isFoundMarkerManuallyMoved = true;
+            });
+          }
+          foundMapMarker.bindPopup(`📍 ${result.displayName || query}`).openPopup();
+          if (status) { status.innerHTML = '✅ <span style="color:#2ecc71">地図をこの場所に合わせました。ピンをドラッグして微調整できます。</span>'; }
+          return true;
         } else {
-          if (status) { status.innerHTML = '❌ <span style="color:#e74c3c">住所が見つかりませんでした。より具体的な住所で再検索してください。</span>'; }
+          if (status && isManualSearch) { status.innerHTML = '❌ <span style="color:#e74c3c">住所が見つかりませんでした。より具体的な住所で再検索してください。</span>'; }
+          return false;
         }
       } catch (e) {
-        if (status) { status.innerHTML = '❌ <span style="color:#e74c3c">検索エラー。ネットワーク接続を確認してください。</span>'; }
+        console.error('Geocode error:', e);
+        if (status && isManualSearch) { status.innerHTML = '❌ <span style="color:#e74c3c">検索エラーが発生しました。</span>'; }
+        return false;
       }
     }
 
-    // Step3に移動したときマップを初期化するパッチ
-    (function () {
-      const _orig = window.nextStep;
-      window.nextStep = function (step) {
-        _orig(step);
-        if (step === 3) { setTimeout(function () { initFoundMap(); foundMap && foundMap.invalidateSize(); }, 200); }
-      };
-    })();
+    async function submitForm() {
+      const btn = document.querySelector('button[onclick="submitForm()"]');
+      try {
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+
+        const addr = document.getElementById('foundAddressInput')?.value.trim() || '場所不明';
+
+        // 手動ピン移動がされておらず住所がある場合、送信直前にも確実に最新ジオコードを取得
+        if (!isFoundMarkerManuallyMoved && addr && addr !== '場所不明') {
+          try {
+            const res = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(addr) : null);
+            if (res && res.lat && res.lng) {
+              foundLat = res.lat;
+              foundLng = res.lng;
+            }
+          } catch (e) {
+            console.warn('Pre-submit found geocode fallback:', e);
+          }
+        }
+
+        const tagContainer = selectedAnimalFound === 'cat' ? document.getElementById('catTags') : document.getElementById('dogTags');
+        const tags = tagContainer ? Array.from(tagContainer.querySelectorAll('.badge.selected')).map(b => b.innerText.trim()) : [];
+
+        const friendliness = document.getElementById('friendliness')?.value || '';
+        const collar = document.getElementById('collarFound')?.value.trim() || '';
+        const secret = document.getElementById('secretDetails')?.value.trim() || '';
+
+        const typeLabel = selectedReportTypeVal === 'witness' ? '目撃情報' : '保護中';
+        const animalLabel = selectedAnimalFound === 'cat' ? '猫' : (selectedAnimalFound === 'dog' ? '犬' : 'その他');
+
+        const detailParts = [
+          `【種別】${typeLabel}`,
+          `【動物】${animalLabel}`,
+          tags.length > 0 ? `【特徴】${tags.join(', ')}` : '',
+          collar ? `【首輪】${collar}` : '',
+          friendliness ? `【人馴れ度】${friendliness}` : '',
+          secret ? `【飼い主確認用】${secret}` : ''
+        ].filter(Boolean).join('\n');
+
+        const petData = {
+          date_found: document.getElementById('foundDate')?.value ? document.getElementById('foundDate').value.split('T')[0] : new Date().toISOString().split('T')[0],
+          location: addr,
+          lat: foundLat,
+          lng: foundLng,
+          reporter_name: typeLabel,
+          email: document.getElementById('foundContactEmail')?.value.trim() || '',
+          phone: '',
+          details: detailParts
+        };
+
+        console.log('Registering found pet:', petData);
+        await window.api.registerFoundPet(petData, selectedFoundImageFile);
+
+        document.getElementById('completeModal').style.display = 'flex';
+        if (btn) btn.innerHTML = '<i class="fas fa-check"></i> 登録を完了する';
+      } catch (e) {
+        alert('登録中にエラーが発生しました: ' + e.message);
+        console.error(e);
+        if (btn) btn.innerHTML = '<i class="fas fa-check"></i> 登録を完了する';
+      }
+    }
+
+    // 初期化
+    selectReportType('found');
+    toggleAnimalFields('dog', document.querySelector('button[onclick*="toggleAnimalFields(\'dog\'"]'));
   </script>
   <script>
     // ナビゲーション初期化（app.js不要）

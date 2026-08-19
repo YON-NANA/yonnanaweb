@@ -738,19 +738,150 @@
       window.api.fetchFoundPets(10)
     ]);
 
-    // マップにピンを立てる
-    (lostList || []).forEach(item => {
-      if (!item.lat || !item.lng) return;
-      L.circleMarker([item.lat, item.lng], {
-        radius: 10, fillColor: '#FF6B35', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
-      }).addTo(map).bindPopup(`<b>迷子: ${item.pet_name}</b><br>${item.location}`);
-    });
-    (foundList || []).forEach(item => {
-      if (!item.lat || !item.lng) return;
-      L.circleMarker([item.lat, item.lng], {
-        radius: 10, fillColor: '#2ECC71', color: '#fff', weight: 2, opacity: 1, fillOpacity: 0.85
-      }).addTo(map).bindPopup(`<b>保護中</b><br>${item.location}`);
-    });
+    const markers = [];
+
+    async function resolveCoords(item) {
+      const isDefaultTokyo = Math.abs((item.lat || 0) - 35.6895) < 0.001 && Math.abs((item.lng || 0) - 139.6917) < 0.001;
+      const isTokyoAddr = item.location && (item.location.includes('東京') || item.location.includes('新宿') || item.location.includes('渋谷') || item.location.includes('世田谷'));
+      const isInvalid = !item.lat || !item.lng || item.lat === 0 || item.lng === 0 || (isDefaultTokyo && !isTokyoAddr);
+
+      if (isInvalid && item.location && item.location !== '不明' && item.location !== '場所不明' && item.location !== 'test') {
+        try {
+          const geo = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(item.location) : null);
+          if (geo && typeof geo.lat === 'number' && typeof geo.lng === 'number') {
+            return { lat: geo.lat, lng: geo.lng };
+          }
+        } catch (e) {
+          console.warn('Geocode fallback error:', e);
+        }
+      }
+      return (typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0) 
+        ? { lat: item.lat, lng: item.lng } 
+        : null;
+    }
+
+    // マップにピンを立てる (迷子)
+    for (const item of (lostList || [])) {
+      const coords = await resolveCoords(item);
+      if (!coords) continue;
+
+      const petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
+      const avatarHtml = item.image_url
+        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin pin-lost">
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">🔴</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = item.image_url
+        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge lost">🔴 迷子</span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title">
+              <span>${item.pet_name || '名前不明'}</span>
+              <span style="font-size:0.8rem; font-weight:500; color:#64748B;">${item.pet_type === 'cat' ? '猫' : (item.pet_type === 'dog' ? '犬' : 'その他')}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:var(--lost); margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_lost || '日時不明'}</div>
+            </div>
+            <a href="poster.html?id=${item.id}" class="pet-popup-action" style="background:var(--gold); color:#1a1a1a !important; margin-bottom:6px;">
+              <i class="fas fa-file-pdf"></i> ポスターを作成
+            </a>
+            <a href="match.html" class="pet-popup-action" style="background:var(--lost);">
+              <i class="fas fa-search"></i> 照合・詳細を確認
+            </a>
+          </div>
+        </div>
+      `);
+      markers.push(m);
+    }
+
+    // マップにピンを立てる (保護・目撃)
+    for (const item of (foundList || [])) {
+      const coords = await resolveCoords(item);
+      if (!coords) continue;
+
+      const isWitness = (item.reporter_name && item.reporter_name.includes('目撃')) || (item.details && item.details.includes('目撃'));
+      const typeClass = isWitness ? 'pin-witness' : 'pin-found';
+      const badgeIcon = isWitness ? '🔵' : '🟢';
+      const label = isWitness ? '目撃情報' : '保護中';
+      const badgeClass = isWitness ? 'witness' : 'found';
+      const themeColor = isWitness ? '#1D4ED8' : '#15803D';
+
+      const isCat = item.details && item.details.includes('猫');
+      const isDog = item.details && item.details.includes('犬');
+      const petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
+
+      const avatarHtml = item.image_url
+        ? `<img src="${item.image_url}" alt="${label}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin ${typeClass}">
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">${badgeIcon}</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = item.image_url
+        ? `<img src="${item.image_url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge ${badgeClass}">${badgeIcon} ${label}</span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title" style="color:${themeColor};">
+              <span>${label}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:${themeColor}; margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_found || '日時不明'}</div>
+            </div>
+            <a href="chat.html" class="pet-popup-action" style="background:${themeColor};">
+              <i class="fas fa-comments"></i> 投稿者とチャット
+            </a>
+          </div>
+        </div>
+      `);
+      markers.push(m);
+    }
+
+    if (markers.length > 0) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
 
     // 迷子カード一覧（最大4件）
     const lostGrid = document.getElementById('lostGrid');
