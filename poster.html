@@ -14,10 +14,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>迷子ポスター生成 — AFC Pet Finder</title>
   <meta name="description" content="QRコード付き迷子ポスターをワンクリックでPDF出力。SNS拡散用テキスト自動生成にも対応。">
-  <link rel="stylesheet" href="css/style.css?v=24">
+  <link rel="stylesheet" href="css/style.css?v=28">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
               <!-- PWA & App Icon -->
-  <link rel="manifest" href="manifest.json?v=20">
+  <link rel="manifest" href="manifest.json?v=28">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=19">
   <link rel="shortcut icon" href="favicon.ico?v=19">
   <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=19">
@@ -94,7 +94,7 @@
 
     @media (max-width: 900px) { .poster-page-layout { grid-template-columns: 1fr; } .controls-sticky { position: static; } }
   </style>
-  <script src="js/api.js" defer></script>
+  <script src="js/api.js?v=28" defer></script>
 </head>
 <body>
 
@@ -371,59 +371,134 @@
 let currentPet = null;
 let xTemplate = 'urgent';
 
-// ── サンプルペットデータ（mock-dataが無い場合のフォールバック） ──
+// ── サンプルペットデータ（Supabase未接続時のフォールバック） ──
 const FALLBACK_PETS = [
   {
     id: 'demo-1',
-    name: 'クロ',
-    animal: 'cat',
+    pet_name: 'クロ',
+    pet_type: 'cat',
     breed: '雑種（日本猫）',
-    age: '推定3歳',
     gender: 'メス',
-    colors: ['黒猫', '短毛'],
-    features: ['サクラ耳', '臆病・隠れがち'],
-    collar: '赤い首輪・鈴付き',
-    lostAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-    location: { name: '東京都世田谷区' },
-    photo: null
+    features: ['サクラ耳', '臆病・隠れがち', '黒猫', '短毛'],
+    date_lost: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
+    location: '東京都世田谷区',
+    image_url: null
   },
   {
     id: 'demo-2',
-    name: 'ポチ',
-    animal: 'dog',
+    pet_name: 'ポチ',
+    pet_type: 'dog',
     breed: '柴犬系',
-    age: '4歳',
     gender: 'オス',
-    colors: ['茶色', '白'],
-    features: ['人懐っこい', 'よく吠える'],
-    collar: '青い首輪',
-    lostAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-    location: { name: '神奈川県横浜市' },
-    photo: null
+    features: ['人懐っこい', 'よく吠える', '茶白'],
+    date_lost: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0],
+    location: '神奈川県横浜市',
+    image_url: null
   }
 ];
 
+function normalizePet(raw) {
+  if (!raw) return null;
+  const featuresArr = Array.isArray(raw.features) 
+    ? raw.features 
+    : (typeof raw.features === 'string' && raw.features ? [raw.features] : []);
+  
+  // 首輪情報の抽出
+  let collarStr = raw.collar || '';
+  if (!collarStr && featuresArr.length > 0) {
+    const collarTag = featuresArr.find(f => typeof f === 'string' && f.includes('首輪'));
+    if (collarTag) collarStr = collarTag.replace(/^首輪[:：]?\s*/, '');
+  }
+
+  // 避妊・去勢の抽出
+  let spayStr = '';
+  const spayTag = featuresArr.find(f => typeof f === 'string' && (f.includes('避妊') || f.includes('去勢')));
+  if (spayTag) spayStr = spayTag.replace(/^(避妊\/去勢|避妊・去勢)[:：]?\s*/, '');
+
+  const dateVal = raw.date_lost || raw.lostAt || raw.created_at || new Date().toISOString();
+  const locVal = typeof raw.location === 'object' && raw.location?.name ? raw.location.name : (raw.location || '場所不明');
+
+  return {
+    id: String(raw.id || ''),
+    name: raw.pet_name || raw.name || '不明',
+    animal: raw.pet_type || raw.animal || 'cat',
+    breed: raw.breed || (raw.pet_type === 'cat' ? '猫（雑種）' : (raw.pet_type === 'dog' ? '犬（雑種）' : 'ペット')),
+    gender: raw.gender || '不明',
+    spay: spayStr,
+    age: raw.age || '',
+    features: featuresArr,
+    colors: Array.isArray(raw.colors) ? raw.colors : [],
+    collar: collarStr || 'なし・不明',
+    lostAt: dateVal,
+    locationName: locVal,
+    photo: raw.image_url || raw.photo || null,
+    phone: raw.phone || '',
+    details: raw.details || ''
+  };
+}
+
 function formatDate(iso) {
+  if (!iso) return '日時不明';
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
   return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
 }
 
 function daysElapsed(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
+  if (!iso) return 1;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return 1;
+  const diff = Date.now() - d.getTime();
   return Math.max(1, Math.floor(diff / 86400000));
 }
 
 // ── ペット選択UIの初期化 ──
-function initPetSelector() {
-  const pets = (window.MOCK_DATA && window.MOCK_DATA.lost && window.MOCK_DATA.lost.length > 0)
-    ? window.MOCK_DATA.lost
-    : FALLBACK_PETS;
-
+async function initPetSelector() {
   const sel = document.getElementById('petSelector');
+  if (!sel) return;
+  sel.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:16px; font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> 迷子ペット一覧を読み込み中...</div>';
+
+  let rawPets = [];
+  try {
+    if (window.api && typeof window.api.fetchLostPets === 'function') {
+      rawPets = await window.api.fetchLostPets(50);
+    }
+  } catch (e) {
+    console.warn('Failed to fetch lost pets from Supabase:', e);
+  }
+
+  // 取得できない場合はモック・フォールバック
+  if (!rawPets || rawPets.length === 0) {
+    rawPets = (window.MOCK_DATA && window.MOCK_DATA.lost && window.MOCK_DATA.lost.length > 0)
+      ? window.MOCK_DATA.lost
+      : FALLBACK_PETS;
+  }
+
+  const pets = rawPets.map(normalizePet).filter(Boolean);
+
+  if (pets.length === 0) {
+    sel.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem; padding:8px;">現在登録されている迷子情報はありません。<br><a href="lost-register.html" style="color:var(--lost);">迷子登録はこちら</a></p>';
+    return;
+  }
+
+  // URLクエリパラメータで指定されたペットがあるかチェック
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetId = urlParams.get('id');
+  const targetName = urlParams.get('name');
+
+  let selectedIdx = 0;
+  if (targetId) {
+    const foundIdx = pets.findIndex(p => p.id === targetId);
+    if (foundIdx !== -1) selectedIdx = foundIdx;
+  } else if (targetName) {
+    const foundIdx = pets.findIndex(p => p.name === targetName);
+    if (foundIdx !== -1) selectedIdx = foundIdx;
+  }
+
   sel.innerHTML = '';
   pets.forEach((p, i) => {
     const card = document.createElement('div');
-    card.className = 'pet-selector-card' + (i === 0 ? ' selected' : '');
+    card.className = 'pet-selector-card' + (i === selectedIdx ? ' selected' : '');
     card.onclick = () => {
       document.querySelectorAll('.pet-selector-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
@@ -431,17 +506,29 @@ function initPetSelector() {
       updatePoster();
       updateSNSTexts();
     };
+
     const icon = p.animal === 'cat' ? '🐈' : (p.animal === 'dog' ? '🐕' : '🐾');
+    const photoThumb = p.photo
+      ? `<img src="${p.photo}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" onerror="this.outerHTML='<span>${icon}</span>'">`
+      : `<span>${icon}</span>`;
+
     card.innerHTML = `
-      <div class="pet-selector-photo">${icon}</div>
-      <div class="pet-selector-info">
-        <div class="name">${p.name}</div>
-        <div class="breed">${p.breed} ／ 行方不明${daysElapsed(p.lostAt)}日目</div>
+      <div class="pet-selector-photo">${photoThumb}</div>
+      <div class="pet-selector-info" style="flex:1; min-width:0;">
+        <div class="name" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+        <div class="breed" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.breed} ／ 行方不明${daysElapsed(p.lostAt)}日目</div>
       </div>
     `;
     sel.appendChild(card);
-    if (i === 0) { currentPet = p; }
   });
+
+  currentPet = pets[selectedIdx];
+  if (currentPet && currentPet.phone) {
+    const telInput = document.getElementById('contactTel');
+    if (telInput && !telInput.value || telInput.value === '090-XXXX-XXXX') {
+      telInput.value = currentPet.phone;
+    }
+  }
 
   updatePoster();
   updateSNSTexts();
@@ -451,32 +538,47 @@ function initPetSelector() {
 function updatePoster() {
   if (!currentPet) return;
   const p = currentPet;
-  const tel = document.getElementById('contactTel').value || '090-XXXX-XXXX';
-  const msg = document.getElementById('customMessage').value;
+  const tel = document.getElementById('contactTel')?.value || '090-XXXX-XXXX';
+  const msg = document.getElementById('customMessage')?.value || '目撃情報のみでも大変助かります。お気軽にご連絡ください。';
 
   document.getElementById('posterName').textContent = p.name;
-  document.getElementById('posterBreed').textContent = `${p.breed}・${p.age || '年齢不明'}`;
-  document.getElementById('posterAnimalType').textContent = `${p.animal === 'cat' ? '猫' : p.animal === 'dog' ? '犬' : 'ペット'}・${p.gender || '性別不明'}`;
+  document.getElementById('posterBreed').textContent = `${p.breed}${p.age ? '・' + p.age : ''}`;
+  document.getElementById('posterAnimalType').textContent = `${p.animal === 'cat' ? '猫' : p.animal === 'dog' ? '犬' : 'その他'}・${p.gender || '性別不明'}`;
   document.getElementById('posterDaysElapsed').textContent = `行方不明 ${daysElapsed(p.lostAt)}日目`;
   document.getElementById('posterDate').textContent = formatDate(p.lostAt);
-  document.getElementById('posterLocation').textContent = (p.location && p.location.name) ? p.location.name + ' 付近' : '場所不明';
-  document.getElementById('posterGender').textContent = `${p.gender || '不明'}・${p.age || '不明'}`;
+  document.getElementById('posterLocation').textContent = p.locationName ? (p.locationName.includes('付近') ? p.locationName : p.locationName + ' 付近') : '場所不明';
+  document.getElementById('posterGender').textContent = `${p.gender || '不明'}${p.spay ? '（' + p.spay + '）' : ''}`;
   document.getElementById('posterCollar').textContent = p.collar || 'なし・不明';
   document.getElementById('posterTel').textContent = tel;
   document.getElementById('posterMessage').textContent = msg;
 
   const feats = document.getElementById('posterFeatures');
-  const allTags = [...(p.colors || []), ...(p.features || [])];
-  feats.innerHTML = allTags.map(t => `<span class="poster-feature-tag">${t}</span>`).join('');
+  if (feats) {
+    const allTags = Array.from(new Set([...(p.colors || []), ...(p.features || [])]))
+      .filter(t => t && !t.includes('首輪') && !t.includes('避妊') && !t.includes('去勢'));
+    if (allTags.length > 0) {
+      feats.innerHTML = allTags.map(t => `<span class="poster-feature-tag">${t}</span>`).join('');
+      feats.style.display = 'flex';
+    } else {
+      feats.style.display = 'none';
+    }
+  }
 
   const today = new Date();
-  document.getElementById('posterIssueDate').textContent = `発行日: ${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+  const issueDateEl = document.getElementById('posterIssueDate');
+  if (issueDateEl) {
+    issueDateEl.textContent = `発行日: ${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+  }
 
+  const img = document.getElementById('posterPhoto');
+  const placeholder = document.getElementById('posterPhotoPlaceholder');
   if (p.photo) {
-    const img = document.getElementById('posterPhoto');
     img.src = p.photo;
     img.style.display = 'block';
-    document.getElementById('posterPhotoPlaceholder').style.display = 'none';
+    if (placeholder) placeholder.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'flex';
   }
 }
 
@@ -484,21 +586,21 @@ function updatePoster() {
 const X_TEMPLATES = {
   urgent: (p) => `🚨【緊急・拡散希望】${p.animal === 'cat' ? '猫' : '犬'}の${p.name}が行方不明です！
 
-📍 ${(p.location && p.location.name) || '場所不明'} 付近
+📍 ${p.locationName || '場所不明'} 付近
 📅 ${formatDate(p.lostAt)}から
 
-特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・')}
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・') || p.breed}
 
 目撃情報のみでも大変助かります！
 📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
 
-#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.location?.name||'').replace(/[都道府県市区町村]/g,'')} #拡散希望 #AFCPetFinder`,
+#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.locationName||'').replace(/[都道府県市区町村\s]/g,'')} #拡散希望 #AFCPetFinder`,
 
   calm: (p) => `【お知らせ】${p.name}（${p.breed}）を探しています。
 
-${formatDate(p.lostAt)}に${(p.location && p.location.name) || ''}付近で迷子になりました。
+${formatDate(p.lostAt)}に${p.locationName || ''}付近で迷子になりました。
 
-特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('、')}
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('、') || p.breed}
 
 ご連絡先：${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
 
@@ -507,23 +609,23 @@ ${formatDate(p.lostAt)}に${(p.location && p.location.name) || ''}付近で迷�
   reward: (p) => `🙏【拡散のお願い・お礼あり】${p.name}を探しています！
 
 ${formatDate(p.lostAt)}より行方不明
-📍 ${(p.location && p.location.name) || '場所不明'} 周辺
+📍 ${p.locationName || '場所不明'} 周辺
 
-特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・')}
+特徴：${[...(p.colors||[]), ...(p.features||[])].slice(0,3).join('・') || p.breed}
 
 情報提供者の方にはお礼をご用意しております。
 📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
 
-#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.location?.name||'').replace(/[都道府県市区町村]/g,'')} #拡散希望 #AFCPetFinder`
+#迷子${p.animal === 'cat' ? '猫' : '犬'} #${(p.locationName||'').replace(/[都道府県市区町村\s]/g,'')} #拡散希望 #AFCPetFinder`
 };
 
 const LINE_TEXT = (p) => `【迷子のお知らせ】
 ${p.name}（${p.breed}）が行方不明です。
 
 いなくなった日：${formatDate(p.lostAt)}
-場所：${(p.location && p.location.name) || '不明'}付近
+場所：${p.locationName || '不明'}付近
 
-特徴：${[...(p.colors||[]), ...(p.features||[])].join('・')}
+特徴：${[...(p.colors||[]), ...(p.features||[])].join('・') || 'なし'}
 
 目撃情報はこちらへ：
 📞 ${document.getElementById('contactTel')?.value || '090-XXXX-XXXX'}
@@ -532,8 +634,14 @@ ${p.name}（${p.breed}）が行方不明です。
 
 function updateSNSTexts() {
   if (!currentPet) return;
-  document.getElementById('xTextPreview').textContent = X_TEMPLATES[xTemplate](currentPet);
-  document.getElementById('igTextPreview').textContent = LINE_TEXT(currentPet);
+  const xEl = document.getElementById('xTextPreview');
+  const lineEl = document.getElementById('igTextPreview');
+  if (xEl && X_TEMPLATES[xTemplate]) {
+    xEl.textContent = X_TEMPLATES[xTemplate](currentPet);
+  }
+  if (lineEl) {
+    lineEl.textContent = LINE_TEXT(currentPet);
+  }
 }
 
 function setTemplate(el, t) {
@@ -544,15 +652,18 @@ function setTemplate(el, t) {
 }
 
 function copyXText() {
-  const text = document.getElementById('xTextPreview').textContent;
+  const text = document.getElementById('xTextPreview')?.textContent;
+  if (!text) return;
   navigator.clipboard.writeText(text).then(() => alert('Xのテキストをコピーしました！'));
 }
 function copyIgText() {
-  const text = document.getElementById('igTextPreview').textContent;
+  const text = document.getElementById('igTextPreview')?.textContent;
+  if (!text) return;
   navigator.clipboard.writeText(text).then(() => alert('LINEのテキストをコピーしました！'));
 }
 function shareToX() {
-  const text = document.getElementById('xTextPreview').textContent;
+  const text = document.getElementById('xTextPreview')?.textContent;
+  if (!text) return;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
 }
 function shareLine() {
