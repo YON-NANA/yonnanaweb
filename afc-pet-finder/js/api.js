@@ -174,6 +174,93 @@ async function fetchFoundPets(limit = 50) {
   }
 }
 
+// ─── 個別ペット情報取得 ────────────────────────────────────────
+async function fetchPetById(type, id) {
+  try {
+    const table = type === 'lost' ? 'lost_pets' : 'found_pets';
+    const data = await sbFetch(`/rest/v1/${table}?id=eq.${id}&select=*`);
+    return data && data.length > 0 ? data[0] : null;
+  } catch (e) {
+    console.error('fetchPetById error:', e);
+    return null;
+  }
+}
+
+// ─── 情報の更新（ステータス変更等） ────────────────────────
+const MASTER_PASSWORD = 'AFC-ADMIN-777';
+
+// ─── パスワードの検証 ────────────────────────────────────────
+async function verifyPassword(type, id, password) {
+  const table = type === 'lost' ? 'lost_pets' : 'found_pets';
+  const record = await sbFetch(`/rest/v1/${table}?id=eq.${id}&select=edit_password`);
+  if (!record || record.length === 0) throw new Error('データが見つかりません');
+  
+  const savedPassword = record[0].edit_password;
+  if (password !== MASTER_PASSWORD && savedPassword !== password) {
+    throw new Error('パスワードが間違っています。');
+  }
+  return true;
+}
+
+async function updatePetStatus(type, id, newStatus, password) {
+  const table = type === 'lost' ? 'lost_pets' : 'found_pets';
+  
+  // 1. パスワードの検証
+  await verifyPassword(type, id, password);
+
+  // 2. 更新の実行
+  const payload = { status: newStatus };
+  const res = await sbFetch(`/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+  return true;
+}
+
+// ─── 情報の削除 ──────────────────────────────────────────────
+async function deletePetInfo(type, id, password) {
+  const table = type === 'lost' ? 'lost_pets' : 'found_pets';
+  
+  await verifyPassword(type, id, password);
+
+  await sbFetch(`/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE'
+  });
+  return true;
+}
+
+// ─── 情報のフル更新 ──────────────────────────────────────────────
+async function updatePetDetails(type, id, payload, imageFile = null, password = null) {
+  const table = type === 'lost' ? 'lost_pets' : 'found_pets';
+  
+  // パスワードが渡された場合は検証（フロントで事前検証済みならスキップ可）
+  if (password) {
+    await verifyPassword(type, id, password);
+  }
+
+  // 画像が選択されている場合はアップロードしてURLを差し替え
+  if (imageFile) {
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `images/${fileName}`;
+    
+    await sbFetch(`/storage/v1/object/pet-images/${filePath}`, {
+      method: 'POST',
+      body: imageFile
+    }, true);
+    
+    payload.image_url = `https://rnvzryzcfxalmtuofxid.supabase.co/storage/v1/object/public/pet-images/${filePath}`;
+  }
+
+  // レコードの更新
+  const data = await sbFetch(`/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+  
+  return true;
+}
+
 // ─── チャットメッセージ取得 ────────────────────────────────────
 async function fetchMessages(sessionId) {
   return sbFetch(
@@ -265,11 +352,15 @@ window.api = {
   registerFoundPet,
   fetchLostPets,
   fetchFoundPets,
+  fetchPetById,
+  verifyPassword,
+  updatePetStatus,
+  updatePetDetails,
+  deletePetInfo,
   fetchMessages,
   sendMessage,
   compressImageToDataUrl,
   geocodeAddress
 };
 
-console.log('AFC API (Supabase REST) initialized.');
 

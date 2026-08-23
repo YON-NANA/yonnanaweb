@@ -247,7 +247,7 @@
       opacity: 0.9;
     }
   </style>
-  <script src="js/api.js?v=28"></script>
+  <script src="js/api.js?v=28" defer></script>
 </head>
 <body>
 
@@ -293,210 +293,246 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // api.js が読み込まれるまで待機するユーティリティ
-  function waitForApi(timeout) {
-    timeout = timeout || 10000;
-    return new Promise(function(resolve, reject) {
-      if (window.api) return resolve(window.api);
-      var t0 = Date.now();
-      var check = setInterval(function() {
-        if (window.api) { clearInterval(check); resolve(window.api); }
-        else if (Date.now() - t0 > timeout) { clearInterval(check); reject(new Error('window.api timeout')); }
-      }, 50);
-    });
-  }
-</script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var map = L.map('fullMap', { zoomControl: false }).setView([35.6895, 139.6917], 13);
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = L.map('fullMap', { zoomControl: false }).setView([35.6895, 139.6917], 13);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    
+    const container = document.getElementById('fullMap');
+
+    const brightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
       maxZoom: 19
-    }).addTo(map);
+    }).addTo(map); // 初回実行
 
-    // エリア検索
-    var searchInput = document.querySelector('.map-controls input[type="text"]');
-    var searchIcon = document.querySelector('.map-controls .fa-search');
-    function searchMapLocation(query) {
-      if (!query || !window.api) return;
-      window.api.geocodeAddress(query).then(function(result) {
-        if (result && typeof result.lat === 'number') { map.setView([result.lat, result.lng], 15); }
-        else { alert('指定されたエリアが見つかりませんでした。'); }
-      }).catch(function(e) { console.error(e); });
+
+  // エリア検索入力
+  const searchInput = document.querySelector('.map-controls input[type="text"]');
+  const searchIcon = document.querySelector('.map-controls .fa-search');
+
+  async function searchMapLocation(query) {
+    if (!query) return;
+    try {
+      const result = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(query) : null);
+      if (result && typeof result.lat === 'number' && typeof result.lng === 'number') {
+        map.setView([result.lat, result.lng], 15);
+      } else {
+        alert('指定されたエリアが見つかりませんでした。');
+      }
+    } catch(e) {
+      console.error(e);
     }
-    if (searchInput) { searchInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') searchMapLocation(searchInput.value.trim()); }); }
-    if (searchIcon) { searchIcon.style.cursor = 'pointer'; searchIcon.addEventListener('click', function() { if (searchInput) searchMapLocation(searchInput.value.trim()); }); }
+  }
 
-    function escHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+  if (searchInput) {
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchMapLocation(searchInput.value.trim());
+    });
+  }
+  if (searchIcon) {
+    searchIcon.style.cursor = 'pointer';
+    searchIcon.addEventListener('click', () => {
+      if (searchInput) searchMapLocation(searchInput.value.trim());
+    });
+  }
 
-    function safeImgUrl(url) {
-      if (!url) return null;
-      if (url.startsWith('data:') || url.startsWith('http')) return url;
-      return null;
-    }
+  // Supabaseから迷子・保護データを取得してマップに表示
+  async function loadMapData() {
+    const [lostList, foundList] = await Promise.all([
+      window.api.fetchLostPets(200),
+      window.api.fetchFoundPets(200)
+    ]);
 
-    function makePinIcon(pinClass, badgeEmoji, hasImage, petEmoji) {
-      var inner = hasImage
-        ? '<img class="pin-photo" alt="" style="width:100%;height:100%;object-fit:cover;">'
-        : '<span class="pin-fallback-icon">' + petEmoji + '</span>';
-      return L.divIcon({
-        className: 'pet-map-pin-wrapper',
-        html: '<div class="pet-map-pin ' + pinClass + '"><div class="pin-avatar">' + inner + '</div><div class="pin-badge">' + badgeEmoji + '</div></div>',
-        iconSize: [48, 52], iconAnchor: [24, 52], popupAnchor: [0, -48]
-      });
-    }
+    let allMarkers = [];
 
-    function injectPinImage(marker, imgUrl, petEmoji) {
-      marker.on('add', function() {
-        var el = marker.getElement();
-        if (!el) return;
-        var img = el.querySelector('.pin-photo');
-        if (img) {
-          img.src = imgUrl;
-          img.onerror = function() { img.parentElement.innerHTML = '<span class="pin-fallback-icon">' + petEmoji + '</span>'; };
-        }
-      });
-    }
+    async function resolveItemCoords(item) {
+      const isDefaultTokyo = Math.abs((item.lat || 0) - 35.6895) < 0.001 && Math.abs((item.lng || 0) - 139.6917) < 0.001;
+      const isTokyoAddr = item.location && (item.location.includes('東京') || item.location.includes('新宿') || item.location.includes('渋谷') || item.location.includes('世田谷'));
+      const isInvalid = !item.lat || !item.lng || item.lat === 0 || item.lng === 0 || (isDefaultTokyo && !isTokyoAddr);
 
-    function resolveCoords(item) {
-      var lat = item.lat, lng = item.lng;
-      var isDefaultTokyo = Math.abs((lat || 0) - 35.6895) < 0.001 && Math.abs((lng || 0) - 139.6917) < 0.001;
-      var isTokyoAddr = item.location && (item.location.includes('東京') || item.location.includes('新宿') || item.location.includes('渋谷') || item.location.includes('世田谷'));
-      var isInvalid = !lat || !lng || lat === 0 || lng === 0 || (isDefaultTokyo && !isTokyoAddr);
       if (isInvalid && item.location && item.location !== '不明' && item.location !== '場所不明' && item.location !== 'test') {
-        if (!window.api) return Promise.resolve(null);
-        return window.api.geocodeAddress(item.location).then(function(geo) {
-          if (geo && typeof geo.lat === 'number') return { lat: geo.lat, lng: geo.lng };
-          return (typeof lat === 'number' && lat !== 0) ? { lat: lat, lng: lng } : null;
-        }).catch(function() { return (typeof lat === 'number' && lat !== 0) ? { lat: lat, lng: lng } : null; });
+        try {
+          const geo = await (window.api && window.api.geocodeAddress ? window.api.geocodeAddress(item.location) : null);
+          if (geo && typeof geo.lat === 'number' && typeof geo.lng === 'number') {
+            return { lat: geo.lat, lng: geo.lng };
+          }
+        } catch (e) {
+          console.warn('Geocode fallback error:', e);
+        }
       }
-      return Promise.resolve((typeof lat === 'number' && lat !== 0 && typeof lng === 'number' && lng !== 0) ? { lat: lat, lng: lng } : null);
+      return (typeof item.lat === 'number' && typeof item.lng === 'number' && item.lat !== 0 && item.lng !== 0) 
+        ? { lat: item.lat, lng: item.lng } 
+        : null;
     }
 
-    function makeLostPopupEl(item) {
-      var petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
-      var imgUrl = safeImgUrl(item.image_url);
-      var tags = '';
-      if (Array.isArray(item.features) && item.features.length > 0) {
-        tags = '<div class="pet-popup-tags">' + item.features.map(function(t){ return '<span class="pet-popup-tag">' + escHtml(t) + '</span>'; }).join('') + '</div>';
-      }
-      var details = item.details ? '<div style="font-size:0.75rem;color:#64748B;margin-top:4px;line-height:1.4;">' + escHtml(item.details) + '</div>' : '';
-      var div = document.createElement('div');
-      div.className = 'pet-popup-card';
-      div.innerHTML =
-        '<div class="pet-popup-img-wrapper">' +
-          (imgUrl ? '<img class="popup-photo" alt="' + escHtml(item.pet_name || '迷子') + '" style="width:100%;height:140px;object-fit:cover;">' : '<div class="no-img-placeholder">' + petEmoji + '</div>') +
-          '<span class="pet-popup-badge lost">🔴 迷子</span>' +
-        '</div>' +
-        '<div class="pet-popup-body">' +
-          '<div class="pet-popup-title"><span>' + escHtml(item.pet_name || '名前不明') + '</span>' +
-          '<span style="font-size:0.8rem;font-weight:500;color:#64748B;">' + (item.pet_type === 'cat' ? '猫' : item.pet_type === 'dog' ? '犬' : 'その他') + '・' + escHtml(item.gender || '性別不明') + '</span></div>' +
-          '<div class="pet-popup-meta">' +
-            '<div><i class="fas fa-map-marker-alt" style="color:var(--lost);margin-right:4px;"></i>' + escHtml(item.location || '場所不明') + '</div>' +
-            '<div><i class="far fa-calendar-alt" style="color:#64748B;margin-right:4px;"></i>' + escHtml(item.date_lost || '日時不明') + '</div>' +
-          '</div>' + tags + details +
-          '<a href="poster.html?id=' + encodeURIComponent(item.id) + '" class="pet-popup-action" style="background:var(--gold);color:#1a1a1a!important;margin-bottom:6px;"><i class="fas fa-file-pdf"></i> ポスターを作成</a>' +
-          '<a href="match.html" class="pet-popup-action" style="background:var(--lost);"><i class="fas fa-search"></i> 照合・詳細を確認</a>' +
-        '</div>';
-      if (imgUrl) { var img = div.querySelector('.popup-photo'); if (img) img.src = imgUrl; }
-      return div;
+    // 迷子マーカーの生成
+    for (const item of (lostList || [])) {
+      const coords = await resolveItemCoords(item);
+      if (!coords) continue;
+
+      const petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
+      const imgSrc = item.image_url || item.photo;
+      const avatarHtml = imgSrc
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin pin-lost" ${item.status && item.status !== 'searching' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : (item.status === 'passed_away' ? '🌈' : '🔴')}</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = imgSrc
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      const tags = Array.isArray(item.features) && item.features.length > 0
+        ? `<div class="pet-popup-tags">${item.features.map(t => `<span class="pet-popup-tag">${t}</span>`).join('')}</div>`
+        : '';
+
+      const detailText = item.details ? `<div style="font-size:0.75rem; color:#64748B; margin-top:4px; line-height:1.4;">${item.details}</div>` : '';
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge lost" ${item.status && item.status !== 'searching' ? 'style="background:#555;"' : ''}>
+              ${item.status === 'resolved' ? '🎉 解決済' : (item.status === 'passed_away' ? '🌈 お空へ' : '🔴 迷子')}
+            </span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title">
+              <span>${item.pet_name || '名前不明'}</span>
+              <span style="font-size:0.8rem; font-weight:500; color:#64748B;">${item.pet_type === 'cat' ? '猫' : (item.pet_type === 'dog' ? '犬' : 'その他')}・${item.gender || '性別不明'}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:var(--lost); margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_lost || '日時不明'}</div>
+            </div>
+            ${tags}
+            ${detailText}
+            <a href="poster.html?id=${item.id}" class="pet-popup-action" style="background:var(--gold); color:#1a1a1a !important; margin-bottom:6px;">
+              <i class="fas fa-file-pdf"></i> ポスターを作成
+            </a>
+            <a href="match.html" class="pet-popup-action" style="background:var(--lost);">
+              <i class="fas fa-search"></i> 照合・詳細を確認
+            </a>
+          </div>
+        </div>
+      `);
+      m._type = 'lost';
+      allMarkers.push(m);
     }
 
-    function makeFoundPopupEl(item) {
-      var isCat = item.details && item.details.includes('猫');
-      var isDog = item.details && item.details.includes('犬');
-      var petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
-      var isWitness = (item.reporter_name && item.reporter_name.includes('目撃')) || (item.details && item.details.includes('目撃'));
-      var label = isWitness ? '目撃情報' : '保護中';
-      var badgeClass = isWitness ? 'witness' : 'found';
-      var badgeIcon = isWitness ? '🔵' : '🟢';
-      var themeColor = isWitness ? '#1D4ED8' : '#15803D';
-      var imgUrl = safeImgUrl(item.image_url);
-      var details = item.details ? '<div style="font-size:0.75rem;color:#475569;white-space:pre-line;margin-top:4px;line-height:1.4;max-height:80px;overflow-y:auto;">' + escHtml(item.details) + '</div>' : '';
-      var div = document.createElement('div');
-      div.className = 'pet-popup-card';
-      div.innerHTML =
-        '<div class="pet-popup-img-wrapper">' +
-          (imgUrl ? '<img class="popup-photo" alt="' + label + '" style="width:100%;height:140px;object-fit:cover;">' : '<div class="no-img-placeholder">' + petEmoji + '</div>') +
-          '<span class="pet-popup-badge ' + badgeClass + '">' + badgeIcon + ' ' + label + '</span>' +
-        '</div>' +
-        '<div class="pet-popup-body">' +
-          '<div class="pet-popup-title" style="color:' + themeColor + ';"><span>' + label + '</span></div>' +
-          '<div class="pet-popup-meta">' +
-            '<div><i class="fas fa-map-marker-alt" style="color:' + themeColor + ';margin-right:4px;"></i>' + escHtml(item.location || '場所不明') + '</div>' +
-            '<div><i class="far fa-calendar-alt" style="color:#64748B;margin-right:4px;"></i>' + escHtml(item.date_found || '日時不明') + '</div>' +
-          '</div>' + details +
-          '<a href="chat.html" class="pet-popup-action" style="background:' + themeColor + ';"><i class="fas fa-comments"></i> 投稿者とチャット</a>' +
-        '</div>';
-      if (imgUrl) { var img = div.querySelector('.popup-photo'); if (img) img.src = imgUrl; }
-      return div;
+    // 保護・目撃マーカーの生成
+    for (const item of (foundList || [])) {
+      const coords = await resolveItemCoords(item);
+      if (!coords) continue;
+      
+      const isWitness = (item.reporter_name && item.reporter_name.includes('目撃')) || (item.details && item.details.includes('目撃'));
+      const typeClass = isWitness ? 'pin-witness' : 'pin-found';
+      const badgeIcon = isWitness ? '🔵' : '🟢';
+      const label = isWitness ? '目撃情報' : '保護中';
+      const badgeClass = isWitness ? 'witness' : 'found';
+      const themeColor = isWitness ? '#1D4ED8' : '#15803D';
+
+      const isCat = item.details && item.details.includes('猫');
+      const isDog = item.details && item.details.includes('犬');
+      const petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
+      const imgSrc = item.image_url || item.photo;
+      const avatarHtml = imgSrc
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
+        : `<span class="pin-fallback-icon">${petEmoji}</span>`;
+
+      const customIcon = L.divIcon({
+        className: 'pet-map-pin-wrapper',
+        html: `
+          <div class="pet-map-pin ${typeClass}" ${item.status && item.status !== 'searching' && item.status !== 'protecting' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
+            <div class="pin-avatar">${avatarHtml}</div>
+            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : badgeIcon}</div>
+          </div>
+        `,
+        iconSize: [48, 52],
+        iconAnchor: [24, 52],
+        popupAnchor: [0, -48]
+      });
+
+      const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
+
+      const photoHeader = imgSrc
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
+        : `<div class="no-img-placeholder">${petEmoji}</div>`;
+
+      const formattedDetails = item.details
+        ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>`
+        : '';
+
+      m.bindPopup(`
+        <div class="pet-popup-card">
+          <div class="pet-popup-img-wrapper">
+            ${photoHeader}
+            <span class="pet-popup-badge ${badgeClass}" ${item.status === 'resolved' ? 'style="background:#555;"' : ''}>
+              ${item.status === 'resolved' ? '🎉 解決済' : badgeIcon + ' ' + label}
+            </span>
+          </div>
+          <div class="pet-popup-body">
+            <div class="pet-popup-title" style="color:${themeColor};">
+              <span>${label}</span>
+            </div>
+            <div class="pet-popup-meta">
+              <div><i class="fas fa-map-marker-alt" style="color:${themeColor}; margin-right:4px;"></i>${item.location || '場所不明'}</div>
+              <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_found || '日時不明'}</div>
+            </div>
+            ${formattedDetails}
+            <a href="chat.html" class="pet-popup-action" style="background:${themeColor};">
+              <i class="fas fa-comments"></i> 投稿者とチャット
+            </a>
+          </div>
+        </div>
+      `);
+      m._type = isWitness ? 'witness' : 'found';
+      allMarkers.push(m);
     }
 
-    async function loadMapData() {
-      await waitForApi();
-      var results = await Promise.all([window.api.fetchLostPets(200), window.api.fetchFoundPets(200)]);
-      var lostList = results[0] || [];
-      var foundList = results[1] || [];
-      var allMarkers = [];
-
-      for (var i = 0; i < lostList.length; i++) {
-        var item = lostList[i];
-        var coords = await resolveCoords(item);
-        if (!coords) continue;
-        var petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
-        var imgUrl = safeImgUrl(item.image_url);
-        var icon = makePinIcon('pin-lost', '🔴', !!imgUrl, petEmoji);
-        var marker = L.marker([coords.lat, coords.lng], { icon: icon }).addTo(map);
-        if (imgUrl) injectPinImage(marker, imgUrl, petEmoji);
-        marker.bindPopup(makeLostPopupEl(item), { maxWidth: 270 });
-        marker._type = 'lost';
-        allMarkers.push(marker);
-      }
-
-      for (var j = 0; j < foundList.length; j++) {
-        var fitem = foundList[j];
-        var fcoords = await resolveCoords(fitem);
-        if (!fcoords) continue;
-        var isCat = fitem.details && fitem.details.includes('猫');
-        var isDog = fitem.details && fitem.details.includes('犬');
-        var fEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
-        var isWitness = (fitem.reporter_name && fitem.reporter_name.includes('目撃')) || (fitem.details && fitem.details.includes('目撃'));
-        var fImgUrl = safeImgUrl(fitem.image_url);
-        var fIcon = makePinIcon(isWitness ? 'pin-witness' : 'pin-found', isWitness ? '🔵' : '🟢', !!fImgUrl, fEmoji);
-        var fMarker = L.marker([fcoords.lat, fcoords.lng], { icon: fIcon }).addTo(map);
-        if (fImgUrl) injectPinImage(fMarker, fImgUrl, fEmoji);
-        fMarker.bindPopup(makeFoundPopupEl(fitem), { maxWidth: 270 });
-        fMarker._type = isWitness ? 'witness' : 'found';
-        allMarkers.push(fMarker);
-      }
-
-      document.querySelectorAll('.filter-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          var text = this.textContent.trim();
-          allMarkers.forEach(function(m) {
-            if (text === 'すべて') { map.addLayer(m); }
-            else if (text.includes('迷子')) { m._type === 'lost' ? map.addLayer(m) : map.removeLayer(m); }
-            else if (text.includes('保護中')) { m._type === 'found' ? map.addLayer(m) : map.removeLayer(m); }
-            else if (text.includes('目撃')) { m._type === 'witness' ? map.addLayer(m) : map.removeLayer(m); }
-            else { map.addLayer(m); }
-          });
+    // フィルターボタンの動作
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const text = this.textContent.trim();
+        allMarkers.forEach(m => {
+          if (text === 'すべて') {
+            map.addLayer(m);
+          } else if (text.includes('迷子')) {
+            m._type === 'lost' ? map.addLayer(m) : map.removeLayer(m);
+          } else if (text.includes('保護中')) {
+            m._type === 'found' ? map.addLayer(m) : map.removeLayer(m);
+          } else if (text.includes('目撃')) {
+            m._type === 'witness' ? map.addLayer(m) : map.removeLayer(m);
+          } else {
+            map.addLayer(m);
+          }
         });
       });
+    });
 
-      if (allMarkers.length > 0) {
-        var group = L.featureGroup(allMarkers);
-        map.fitBounds(group.getBounds().pad(0.3));
-      }
+    // データがある場合は最初のピンに地図を移動
+    if (allMarkers.length > 0) {
+      const group = L.featureGroup(allMarkers);
+      map.fitBounds(group.getBounds().pad(0.3));
     }
+  }
 
-    loadMapData();
-  });
+  loadMapData();
+});
 </script>
 <script src="js/app.js"></script>
 

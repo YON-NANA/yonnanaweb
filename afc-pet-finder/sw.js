@@ -27,6 +27,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Network first strategy
   event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request))
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+        // キャッシュにもない場合は適切なエラーレスポンスを返す
+        return new Response('Not found or offline', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
+      });
+    })
   );
 });

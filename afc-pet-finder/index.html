@@ -766,16 +766,17 @@
       if (!coords) continue;
 
       const petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
-      const avatarHtml = item.image_url
-        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+      const imgSrc = item.image_url || item.photo;
+      const avatarHtml = imgSrc
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
         : `<span class="pin-fallback-icon">${petEmoji}</span>`;
 
       const customIcon = L.divIcon({
         className: 'pet-map-pin-wrapper',
         html: `
-          <div class="pet-map-pin pin-lost">
+          <div class="pet-map-pin pin-lost" ${item.status && item.status !== 'searching' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
             <div class="pin-avatar">${avatarHtml}</div>
-            <div class="pin-badge">🔴</div>
+            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : (item.status === 'passed_away' ? '🌈' : '🔴')}</div>
           </div>
         `,
         iconSize: [48, 52],
@@ -785,15 +786,17 @@
 
       const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
 
-      const photoHeader = item.image_url
-        ? `<img src="${item.image_url}" alt="${item.pet_name || '迷子'}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+      const photoHeader = imgSrc
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
         : `<div class="no-img-placeholder">${petEmoji}</div>`;
 
       m.bindPopup(`
         <div class="pet-popup-card">
           <div class="pet-popup-img-wrapper">
             ${photoHeader}
-            <span class="pet-popup-badge lost">🔴 迷子</span>
+            <span class="pet-popup-badge lost" ${item.status && item.status !== 'searching' ? 'style="background:#555;"' : ''}>
+              ${item.status === 'resolved' ? '🎉 解決済' : (item.status === 'passed_away' ? '🌈 お空へ' : '🔴 迷子')}
+            </span>
           </div>
           <div class="pet-popup-body">
             <div class="pet-popup-title">
@@ -831,17 +834,17 @@
       const isCat = item.details && item.details.includes('猫');
       const isDog = item.details && item.details.includes('犬');
       const petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
-
-      const avatarHtml = item.image_url
-        ? `<img src="${item.image_url}" alt="${label}" onerror="this.outerHTML='<span class=\\'pin-fallback-icon\\'>${petEmoji}</span>'">`
+      const imgSrc = item.image_url || item.photo;
+      const avatarHtml = imgSrc
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
         : `<span class="pin-fallback-icon">${petEmoji}</span>`;
 
       const customIcon = L.divIcon({
         className: 'pet-map-pin-wrapper',
         html: `
-          <div class="pet-map-pin ${typeClass}">
+          <div class="pet-map-pin ${typeClass}" ${item.status && item.status !== 'searching' && item.status !== 'protecting' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
             <div class="pin-avatar">${avatarHtml}</div>
-            <div class="pin-badge">${badgeIcon}</div>
+            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : badgeIcon}</div>
           </div>
         `,
         iconSize: [48, 52],
@@ -851,15 +854,17 @@
 
       const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
 
-      const photoHeader = item.image_url
-        ? `<img src="${item.image_url}" alt="${label}" onerror="this.parentElement.innerHTML='<div class=\\'no-img-placeholder\\'>${petEmoji}</div>'">`
+      const photoHeader = imgSrc
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
         : `<div class="no-img-placeholder">${petEmoji}</div>`;
 
       m.bindPopup(`
         <div class="pet-popup-card">
           <div class="pet-popup-img-wrapper">
             ${photoHeader}
-            <span class="pet-popup-badge ${badgeClass}">${badgeIcon} ${label}</span>
+            <span class="pet-popup-badge ${badgeClass}" ${item.status === 'resolved' ? 'style="background:#555;"' : ''}>
+              ${item.status === 'resolved' ? '🎉 解決済' : badgeIcon + ' ' + label}
+            </span>
           </div>
           <div class="pet-popup-body">
             <div class="pet-popup-title" style="color:${themeColor};">
@@ -904,7 +909,9 @@
         div.innerHTML = `
           <div class="pet-card-image">
             <img src="${imgSrc}" alt="${item.pet_name}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'400\\' height=\\'300\\'><rect width=\\'400\\' height=\\'300\\' fill=\\'%23333\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23888\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${item.pet_name}</text></svg>'">
-            <span class="pet-card-badge badge-lost">迷子</span>
+            <span class="pet-card-badge badge-lost" ${item.status && item.status !== 'searching' ? 'style="background:#555;"' : ''}>
+              ${item.status === 'resolved' ? '解決済' : (item.status === 'passed_away' ? 'お空へ' : '迷子')}
+            </span>
             <span class="pet-card-days">${daysAgo}日前</span>
           </div>
           <div class="pet-card-body">

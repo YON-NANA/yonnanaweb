@@ -547,12 +547,18 @@ const AFC = {
     AFC.initMultiStep();
     AFC.initChat();
 
-    // Register Service Worker for PWA
+    // Register Service Worker for PWA (Temporarily unregister to clear cache)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('ServiceWorker registered:', reg))
-          .catch(err => console.error('ServiceWorker registration failed:', err));
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('ServiceWorker unregistered successfully.');
+          }
+        });
+        // navigator.serviceWorker.register('./sw.js')
+        //   .then(reg => console.log('ServiceWorker registered:', reg))
+        //   .catch(err => console.error('ServiceWorker registration failed:', err));
       });
     }
   }

@@ -289,6 +289,14 @@
                 <p class="text-xs text-muted mt-sm">※飼い主とマッチングした場合、匿名チャットで連絡ができます。本名やメールアドレスは相手に公開されません。</p>
               </div>
 
+              <div class="form-group" style="background:#f8f9fa; border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
+                <label class="form-label" style="display:flex; align-items:center; gap:8px;">
+                  <i class="fas fa-lock" style="color:var(--text-muted);"></i> 編集用パスワード <span style="color:var(--found)">*</span>
+                </label>
+                <input type="password" id="editPasswordFound" class="form-control" placeholder="例: 1234" maxlength="20">
+                <p class="text-xs text-muted mt-sm">※後から情報を編集・解決済にするために必要です。4桁以上の英数字を設定してください。</p>
+              </div>
+
               <div style="display:flex; justify-content:space-between;">
                 <button class="btn btn-outline" onclick="nextStep(2)"><i class="fas fa-arrow-left"></i> 戻る</button>
                 <button class="btn btn-primary" onclick="submitForm()"
@@ -656,24 +664,103 @@
           reporter_name: typeLabel,
           email: document.getElementById('foundContactEmail')?.value.trim() || '',
           phone: '',
-          details: detailParts
+          details: detailParts,
+          edit_password: document.getElementById('editPasswordFound')?.value.trim() || '',
+          status: 'searching'
         };
 
-        console.log('Registering found pet:', petData);
-        await window.api.registerFoundPet(petData, selectedFoundImageFile);
+        console.log('Submitting found pet:', petData);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        const editPassword = sessionStorage.getItem('edit_password_' + editId);
+
+        if (editId && editPassword) {
+          // 編集モード
+          await window.api.updatePetDetails('found', editId, petData, selectedFoundImageFile, editPassword);
+          document.getElementById('completeModal').querySelector('h2').innerText = '編集が完了しました';
+          document.getElementById('completeModal').querySelector('p').innerText = '投稿内容の更新に成功しました。';
+        } else {
+          // 新規登録モード
+          await window.api.registerFoundPet(petData, selectedFoundImageFile);
+        }
 
         document.getElementById('completeModal').style.display = 'flex';
         if (btn) btn.innerHTML = '<i class="fas fa-check"></i> 登録を完了する';
       } catch (e) {
-        alert('登録中にエラーが発生しました: ' + e.message);
+        alert('エラーが発生しました: ' + e.message);
         console.error(e);
-        if (btn) btn.innerHTML = '<i class="fas fa-check"></i> 登録を完了する';
+        if (btn) btn.innerHTML = '<i class="fas fa-check"></i> 送信する';
       }
     }
 
-    // 初期化
-    selectReportType('found');
-    toggleAnimalFields('dog', document.querySelector('button[onclick*="toggleAnimalFields(\'dog\'"]'));
+    // 編集モードの初期化
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      document.querySelector('.hero-banner h1').innerText = '保護・目撃情報の編集';
+      document.querySelector('button[onclick="submitForm()"]').innerHTML = '<i class="fas fa-save"></i> 変更を保存する';
+      
+      const pwd = sessionStorage.getItem('edit_password_' + editId);
+      if (!pwd) {
+        alert('セッションが切れました。もう一度パスワードを入力してください。');
+        location.href = 'index.html';
+      } else {
+        const pwdWrapper = document.getElementById('editPasswordFound').closest('.form-group');
+        if (pwdWrapper) pwdWrapper.style.display = 'none';
+
+        window.api.fetchPetById('found', editId).then(pet => {
+          if (!pet) return;
+          
+          if (pet.reporter_name === '目撃情報') selectReportType('witness');
+          else selectReportType('found');
+
+          document.getElementById('foundContactEmail').value = pet.email || '';
+          
+          if (pet.date_found) {
+            document.getElementById('foundDate').value = pet.date_found.split('T')[0];
+          }
+
+          if (pet.image_url) {
+            const preview = document.getElementById('foundPhotoPreview');
+            const placeholder = document.getElementById('foundPhotoPlaceholder');
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            preview.querySelector('img').src = pet.image_url;
+          }
+          
+          if (pet.location) {
+            document.getElementById('foundAddressInput').value = pet.location;
+          }
+          
+          // details から特徴や動物種別を復元（簡易実装）
+          if (pet.details) {
+            if (pet.details.includes('【動物】猫')) selectFoundAnimal('cat');
+            else if (pet.details.includes('【動物】犬')) selectFoundAnimal('dog');
+            
+            const lines = pet.details.split('\n');
+            lines.forEach(line => {
+              if (line.startsWith('【首輪】')) document.getElementById('collarFound').value = line.replace('【首輪】', '').trim();
+              if (line.startsWith('【人馴れ度】')) document.getElementById('friendliness').value = line.replace('【人馴れ度】', '').trim();
+              if (line.startsWith('【飼い主確認用】')) document.getElementById('secretDetails').value = line.replace('【飼い主確認用】', '').trim();
+              if (line.startsWith('【特徴】')) {
+                const tags = line.replace('【特徴】', '').split(',').map(s => s.trim());
+                tags.forEach(t => {
+                  const b = Array.from(document.querySelectorAll('.badge')).find(el => el.innerText.trim() === t);
+                  if (b) toggleFoundBadge(b);
+                });
+              }
+            });
+          }
+        }).catch(err => {
+          console.error('Failed to load found pet details:', err);
+        });
+      }
+    } else {
+      // 新規登録時の初期化
+      selectReportType('found');
+      selectFoundAnimal('cat');
+    }
   </script>
   <script>
     // ナビゲーション初期化（app.js不要）

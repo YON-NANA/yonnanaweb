@@ -42,18 +42,12 @@ function renderAnimals(animals, container) {
         // Use placeholder if image is missing
         const imgSrc = animal.image || 'assets/images/placeholder.jpg';
 
-        // Determine tag class based on status
-        const status = animal.status || '募集中';
-        let tagClass = 'foster-tag';
-        if (status === '譲渡済') tagClass += ' foster-tag--adopted';
-        else if (status === '虹の橋') tagClass += ' foster-tag--rainbow';
-
         card.innerHTML = `
             <div class="foster-img-wrap">
                 <img src="${imgSrc}" alt="${animal.name}" onerror="this.src='assets/images/placeholder.jpg'">
             </div>
             <div class="foster-info">
-                <span class="${tagClass}">${status}</span>
+                <span class="foster-tag">${animal.status || '募集中'}</span>
                 <h3 class="foster-name">${animal.name}</h3>
                 <p class="foster-details">性別：${animal.gender}　年齢：${animal.age}</p>
                 <p class="foster-desc" style="font-size: 0.85rem; margin-top: 10px; color: var(--color-text-light); height: 3.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${animal.description || ''}</p>
@@ -82,15 +76,8 @@ function openAnimalModal(animal) {
     if (!modal) return;
 
     // Set content
-    const status = animal.status || '募集中';
-    let tagClass = 'foster-tag';
-    if (status === '譲渡済') tagClass += ' foster-tag--adopted';
-    else if (status === '虹の橋') tagClass += ' foster-tag--rainbow';
-
     document.getElementById('modalAnimalName').innerText = animal.name;
-    const tagEl = document.getElementById('modalAnimalTag');
-    tagEl.innerText = status;
-    tagEl.className = tagClass;
+    document.getElementById('modalAnimalTag').innerText = animal.status || '募集中';
     document.getElementById('modalAnimalDetails').innerText = `性別：${animal.gender}　年齢：${animal.age}`;
     document.getElementById('modalAnimalDesc').innerText = animal.description || '紹介文は現在準備中です。';
 
