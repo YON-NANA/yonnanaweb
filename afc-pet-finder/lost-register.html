@@ -352,14 +352,6 @@
               <p class="text-xs text-muted mt-sm">※連絡先は一般公開されません。システム経由の匿名チャットで連絡が届きます。</p>
             </div>
 
-            <div class="form-group" style="background:#f8f9fa; border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
-              <label class="form-label" style="display:flex; align-items:center; gap:8px;">
-                <i class="fas fa-lock" style="color:var(--text-muted);"></i> 編集用パスワード <span style="color:var(--lost)">*</span>
-              </label>
-              <input type="password" id="editPassword" class="form-control" placeholder="例: 1234" maxlength="20">
-              <p class="text-xs text-muted mt-sm">※後から情報を編集・解決済にするために必要です。4桁以上の英数字を設定してください。</p>
-            </div>
-
             <div style="background:rgba(255,107,53,0.08); border:1px solid var(--lost); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
               <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
                 <input type="checkbox" style="margin-top:4px;" checked>
@@ -814,43 +806,30 @@
         owner_name: '',
         email: document.getElementById('contactEmail')?.value.trim() || '',
         phone: '',
-        details: document.getElementById('featureDetails')?.value.trim() || '',
-        edit_password: document.getElementById('editPassword')?.value.trim() || ''
+        details: document.getElementById('featureDetails')?.value.trim() || ''
       };
 
-      console.log('Submitting lost pet:', petData);
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const editId = urlParams.get('edit');
-      const editPassword = sessionStorage.getItem('edit_password_' + editId);
+      console.log('Registering lost pet:', petData);
+      const registered = await window.api.registerLostPet(petData, selectedImageFile);
 
-      let registered;
-      if (editId && editPassword) {
-        // 編集モード
-        await window.api.updatePetDetails('lost', editId, petData, selectedImageFile, editPassword);
-        registered = { id: editId };
-        document.getElementById('completeModal').querySelector('h2').innerText = '編集が完了しました';
-        document.getElementById('completeModal').querySelector('p').innerText = '投稿内容の更新に成功しました。';
-      } else {
-        // 新規登録モード
-        registered = await window.api.registerLostPet(petData, selectedImageFile);
-      }
-
-      // モーダルのポスターボタンに登録ペットIDを付加
+      // モーダルのポスターボタンに登録ペットIDを付加、およびブラウザに投稿者IDを記憶
       const modalPosterBtn = document.getElementById('modalPosterBtn');
-      if (modalPosterBtn && registered) {
+      if (registered) {
         const petId = registered.id || (Array.isArray(registered) && registered[0]?.id);
-        modalPosterBtn.href = petId ? `poster.html?id=${petId}` : 'poster.html';
+        if (petId) {
+          if (modalPosterBtn) modalPosterBtn.href = `poster.html?id=${petId}`;
+          if (window.api && window.api.saveMyPostId) {
+            window.api.saveMyPostId('lost', petId);
+          }
+        }
       }
 
       document.getElementById('completeModal').style.display = 'flex';
       if (btn) btn.innerHTML = '<i class="fas fa-bullhorn"></i> 迷子情報を登録する';
     } catch (e) {
-      if (btn) btn.innerHTML = '<i class="fas fa-bullhorn"></i> 送信する';
-    } catch (e) {
-      alert('エラーが発生しました: ' + e.message);
+      alert('登録中にエラーが発生しました: ' + e.message);
       console.error(e);
-      if (btn) btn.innerHTML = '<i class="fas fa-bullhorn"></i> 送信する';
+      if (btn) btn.innerHTML = '<i class="fas fa-bullhorn"></i> 迷子情報を登録する';
     }
   }
 </script>
@@ -867,67 +846,6 @@
     }
     if (burger && links) {
       burger.addEventListener('click', () => links.classList.toggle('open'));
-    }
-
-    // 編集モードの初期化
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    if (editId) {
-      document.querySelector('.hero-banner h1').innerText = '迷子情報の編集';
-      document.querySelector('button[onclick="submitForm()"]').innerHTML = '<i class="fas fa-save"></i> 変更を保存する';
-      
-      const pwd = sessionStorage.getItem('edit_password_' + editId);
-      if (!pwd) {
-        alert('セッションが切れました。もう一度パスワードを入力してください。');
-        location.href = 'index.html';
-        return;
-      }
-      
-      // パスワード入力欄は非表示にするか、入力済みにする
-      const pwdWrapper = document.getElementById('editPassword').closest('.form-group');
-      if (pwdWrapper) pwdWrapper.style.display = 'none';
-
-      window.api.fetchPetById('lost', editId).then(pet => {
-        if (!pet) return;
-        document.getElementById('petName').value = pet.pet_name || '';
-        document.getElementById('petGender').value = pet.gender || '';
-        document.getElementById('contactEmail').value = pet.email || '';
-        document.getElementById('featureDetails').value = pet.details || '';
-        
-        if (pet.date_lost) {
-          document.getElementById('lostDate').value = pet.date_lost.split('T')[0];
-        }
-
-        if (pet.image_url) {
-          const preview = document.getElementById('photoPreview');
-          const placeholder = document.getElementById('photoPlaceholder');
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
-          preview.querySelector('img').src = pet.image_url;
-        }
-        
-        if (pet.location) {
-          const parts = pet.location.split(' ');
-          document.getElementById('prefInput').value = parts[0] || '';
-          document.getElementById('cityInput').value = parts[1] || '';
-          document.getElementById('addressInput').value = parts.slice(2).join(' ') || '';
-        }
-        
-        if (pet.pet_type) selectAnimal(pet.pet_type);
-        
-        if (pet.features && Array.isArray(pet.features)) {
-          pet.features.forEach(feat => {
-            if (feat.startsWith('首輪:')) document.getElementById('collarInput').value = feat.replace('首輪:', '').trim();
-            else if (feat.startsWith('避妊/去勢:')) document.getElementById('spayStatus').value = feat.replace('避妊/去勢:', '').trim();
-            else {
-              const b = Array.from(document.querySelectorAll('.color-badge, .personality-opt')).find(el => el.innerText.trim() === feat);
-              if (b) toggleSelect(b);
-            }
-          });
-        }
-      }).catch(err => {
-        console.error('Failed to load pet details for edit:', err);
-      });
     }
   });
 </script>

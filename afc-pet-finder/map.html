@@ -253,13 +253,13 @@
 
 <nav class="nav">
   <div class="nav-inner">
-    <div class="nav-logo">
-      <a href="index.html" style="display: flex; align-items: center; text-decoration: none;">
+    <div class="nav-logo" onclick="tryAdminMode()" style="cursor:pointer;">
+      <a href="index.html" style="display: flex; align-items: center; text-decoration: none;" onclick="event.stopPropagation();">
         <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img">
       </a>
       <div class="logo-name">
-        <a href="index.html" class="logo-name-main">AnimalFinderConnect</a>
-        <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub">日本動物共助機構 (AMAJ) ↗</a>
+        <a href="index.html" class="logo-name-main" onclick="event.stopPropagation();">AnimalFinderConnect</a>
+        <a href="https://amaj-official-portal.vercel.app/" target="_blank" rel="noopener noreferrer" class="logo-name-sub" onclick="event.stopPropagation();">日本動物共助機構 (AMAJ) ↗</a>
       </div>
     </div>
     <div class="nav-links" id="navLinks">
@@ -378,9 +378,9 @@
       const customIcon = L.divIcon({
         className: 'pet-map-pin-wrapper',
         html: `
-          <div class="pet-map-pin pin-lost" ${item.status && item.status !== 'searching' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
+          <div class="pet-map-pin pin-lost">
             <div class="pin-avatar">${avatarHtml}</div>
-            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : (item.status === 'passed_away' ? '🌈' : '🔴')}</div>
+            <div class="pin-badge">🔴</div>
           </div>
         `,
         iconSize: [48, 52],
@@ -399,14 +399,18 @@
         : '';
 
       const detailText = item.details ? `<div style="font-size:0.75rem; color:#64748B; margin-top:4px; line-height:1.4;">${item.details}</div>` : '';
+      
+      const isMine = (window.api && window.api.isMyPost) ? window.api.isMyPost('lost', item.id) : false;
+      const isAdmin = localStorage.getItem('admin_mode') === 'true';
+      const editBtnHtml = (isMine || isAdmin) 
+        ? `<button onclick="openEditModal('lost', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`
+        : '';
 
       m.bindPopup(`
         <div class="pet-popup-card">
           <div class="pet-popup-img-wrapper">
             ${photoHeader}
-            <span class="pet-popup-badge lost" ${item.status && item.status !== 'searching' ? 'style="background:#555;"' : ''}>
-              ${item.status === 'resolved' ? '🎉 解決済' : (item.status === 'passed_away' ? '🌈 お空へ' : '🔴 迷子')}
-            </span>
+            <span class="pet-popup-badge lost">🔴 迷子</span>
           </div>
           <div class="pet-popup-body">
             <div class="pet-popup-title">
@@ -419,6 +423,7 @@
             </div>
             ${tags}
             ${detailText}
+            ${editBtnHtml}
             <a href="poster.html?id=${item.id}" class="pet-popup-action" style="background:var(--gold); color:#1a1a1a !important; margin-bottom:6px;">
               <i class="fas fa-file-pdf"></i> ポスターを作成
             </a>
@@ -455,9 +460,9 @@
       const customIcon = L.divIcon({
         className: 'pet-map-pin-wrapper',
         html: `
-          <div class="pet-map-pin ${typeClass}" ${item.status && item.status !== 'searching' && item.status !== 'protecting' ? 'style="filter:grayscale(1); opacity:0.6;"' : ''}>
+          <div class="pet-map-pin ${typeClass}">
             <div class="pin-avatar">${avatarHtml}</div>
-            <div class="pin-badge">${item.status === 'resolved' ? '🎉' : badgeIcon}</div>
+            <div class="pin-badge">${badgeIcon}</div>
           </div>
         `,
         iconSize: [48, 52],
@@ -471,17 +476,19 @@
         ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
         : `<div class="no-img-placeholder">${petEmoji}</div>`;
 
-      const formattedDetails = item.details
-        ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>`
+      const detailText = item.details ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>` : '';
+      
+      const isMineFound = (window.api && window.api.isMyPost) ? window.api.isMyPost('found', item.id) : false;
+      const isAdminFound = localStorage.getItem('admin_mode') === 'true';
+      const editBtnFoundHtml = (isMineFound || isAdminFound) 
+        ? `<button onclick="openEditModal('found', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`
         : '';
 
       m.bindPopup(`
         <div class="pet-popup-card">
           <div class="pet-popup-img-wrapper">
             ${photoHeader}
-            <span class="pet-popup-badge ${badgeClass}" ${item.status === 'resolved' ? 'style="background:#555;"' : ''}>
-              ${item.status === 'resolved' ? '🎉 解決済' : badgeIcon + ' ' + label}
-            </span>
+            <span class="pet-popup-badge ${badgeClass}">${badgeIcon} ${label}</span>
           </div>
           <div class="pet-popup-body">
             <div class="pet-popup-title" style="color:${themeColor};">
@@ -491,7 +498,8 @@
               <div><i class="fas fa-map-marker-alt" style="color:${themeColor}; margin-right:4px;"></i>${item.location || '場所不明'}</div>
               <div><i class="far fa-calendar-alt" style="color:#64748B; margin-right:4px;"></i>${item.date_found || '日時不明'}</div>
             </div>
-            ${formattedDetails}
+            ${detailText}
+            ${editBtnFoundHtml}
             <a href="chat.html" class="pet-popup-action" style="background:${themeColor};">
               <i class="fas fa-comments"></i> 投稿者とチャット
             </a>
@@ -535,6 +543,97 @@
 });
 </script>
 <script src="js/app.js"></script>
+
+<!-- 編集モーダル -->
+<div id="editModal" class="modal-overlay" style="display:none; z-index:9999;">
+  <div class="modal-content" style="max-width:400px; width:90%;">
+    <button class="modal-close" onclick="document.getElementById('editModal').style.display='none'"><i class="fas fa-times"></i></button>
+    <h3 style="font-size:1.25rem; font-weight:700; margin-bottom:var(--space-md);">編集・ステータス変更</h3>
+    
+    <input type="hidden" id="editPostId">
+    <input type="hidden" id="editPostType">
+
+    <div class="form-group">
+      <label class="form-label">ステータス</label>
+      <select id="editStatus" class="form-control">
+        <option value="searching">捜索中 / 保護中</option>
+        <option value="resolved">解決済み（無事保護など）</option>
+        <option value="closed">解決済み（残念ながら…など）</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">詳細テキストの追加・修正</label>
+      <textarea id="editDetails" class="form-control" rows="4" placeholder="見つかった状況や追加の情報を入力してください"></textarea>
+    </div>
+
+    <button id="submitEditBtn" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="submitEdit()">
+      <i class="fas fa-save"></i> 変更を保存する
+    </button>
+  </div>
+</div>
+
+<script>
+  let editingItem = null;
+  
+  function openEditModal(type, id) {
+    const list = type === 'lost' ? window.lostList : window.foundList;
+    editingItem = list.find(item => item.id == id);
+    if (!editingItem) return;
+
+    document.getElementById('editPostId').value = id;
+    document.getElementById('editPostType').value = type;
+    document.getElementById('editStatus').value = editingItem.status || 'searching';
+    document.getElementById('editDetails').value = editingItem.details || '';
+
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  async function submitEdit() {
+    const btn = document.getElementById('submitEditBtn');
+    const type = document.getElementById('editPostType').value;
+    const id = document.getElementById('editPostId').value;
+    const status = document.getElementById('editStatus').value;
+    const details = document.getElementById('editDetails').value;
+
+    try {
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+      const payload = { status, details };
+
+      if (type === 'lost') {
+        await window.api.updateLostPet(id, payload);
+      } else {
+        await window.api.updateFoundPet(id, payload);
+      }
+      
+      alert('変更を保存しました！');
+      document.getElementById('editModal').style.display = 'none';
+      location.reload(); // リロードしてマップに反映
+    } catch (e) {
+      alert('エラーが発生しました: ' + e.message);
+      console.error(e);
+      btn.innerHTML = '<i class="fas fa-save"></i> 変更を保存する';
+    }
+  }
+  
+  // 管理者モード隠しコマンド (ロゴを5回クリック)
+  let adminClickCount = 0;
+  function tryAdminMode() {
+    adminClickCount++;
+    if (adminClickCount === 5) {
+      const pass = prompt('管理者パスワードを入力:');
+      if (pass === 'taiyou2023') {
+        localStorage.setItem('admin_mode', 'true');
+        alert('管理者モードが有効になりました。全ての投稿を編集できます。');
+        location.reload();
+      } else {
+        alert('パスワードが違います');
+      }
+      adminClickCount = 0;
+    }
+    setTimeout(() => { adminClickCount = 0; }, 3000);
+  }
+</script>
 
 </body>
 </html>
