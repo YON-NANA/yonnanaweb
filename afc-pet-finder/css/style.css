@@ -1939,3 +1939,7 @@ footer {
   }
 }
 
+/* ─── Map Filter (Mute Colors) ─── */
+.leaflet-tile-pane {
+  filter: grayscale(85%) sepia(10%) hue-rotate(5deg) contrast(1.05) brightness(1.05);
+}
