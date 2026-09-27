@@ -1,7 +1,7 @@
 // js/supabase-init.js
 
-const SUPABASE_URL = 'https://pjunvgbppdidkfxktkas.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_tJR5Iqp3zO5PBaHMVR8rOA_lBVRqeRj';
+const SUPABASE_URL = 'https://kdareahmdttflwmpacvd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_pGVY5gkpEPaNF84apAETzw_SuwuQY3V';
 
 // Supabase v2 CDN では window.supabase.createClient でアクセスする
 // （CDNが @supabase/supabase-js を window.supabase として公開する）

@@ -289,6 +289,12 @@
                 <p class="text-xs text-muted mt-sm">※飼い主とマッチングした場合、匿名チャットで連絡ができます。本名やメールアドレスは相手に公開されません。</p>
               </div>
 
+              <div class="form-group">
+                <label class="form-label">編集用パスワード（任意）</label>
+                <input type="password" id="editPassword" class="form-control" placeholder="後から投稿を編集・削除するためのパスワード">
+                <p class="text-xs text-muted mt-sm">※設定しない場合、同じ端末・ブラウザからのみ編集可能です。</p>
+              </div>
+
               <div style="display:flex; justify-content:space-between;">
                 <button class="btn btn-outline" onclick="nextStep(2)"><i class="fas fa-arrow-left"></i> 戻る</button>
                 <button class="btn btn-primary" onclick="submitForm()"
@@ -524,8 +530,8 @@
     function initFoundMap() {
       if (!foundMap) {
         foundMap = L.map('mapFound').setView([foundLat, foundLng], 14);
-        const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CARTO' });
-        const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' });
+        const darkTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
+        const osmTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Esri' });
         function updateStyle() {
           const z = foundMap.getZoom();
           const el = document.getElementById('mapFound');
@@ -656,7 +662,8 @@
           reporter_name: typeLabel,
           email: document.getElementById('foundContactEmail')?.value.trim() || '',
           phone: '',
-          details: detailParts
+          details: detailParts,
+          edit_password: document.getElementById('editPassword')?.value || ''
         };
 
         const registered = await window.api.registerFoundPet(petData, selectedFoundImageFile);

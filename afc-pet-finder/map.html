@@ -251,9 +251,9 @@
 </head>
 <body>
 
-<nav class="nav">
+<nav class="nav" onclick="tryAdminMode()">
   <div class="nav-inner">
-    <div class="nav-logo" onclick="tryAdminMode()" style="cursor:pointer;">
+    <div class="nav-logo">
       <a href="index.html" style="display: flex; align-items: center; text-decoration: none;" onclick="event.stopPropagation();">
         <img src="assets/afc-logo-full.png?v=21" alt="AFC" class="logo-img">
       </a>
@@ -299,8 +299,8 @@
     
     const container = document.getElementById('fullMap');
 
-    const brightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    const brightTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri',
       maxZoom: 19
     }).addTo(map); // 初回実行
 
@@ -400,11 +400,7 @@
 
       const detailText = item.details ? `<div style="font-size:0.75rem; color:#64748B; margin-top:4px; line-height:1.4;">${item.details}</div>` : '';
       
-      const isMine = (window.api && window.api.isMyPost) ? window.api.isMyPost('lost', item.id) : false;
-      const isAdmin = localStorage.getItem('admin_mode') === 'true';
-      const editBtnHtml = (isMine || isAdmin) 
-        ? `<button onclick="openEditModal('lost', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`
-        : '';
+      const editBtnHtml = `<button onclick="openEditModal('lost', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`;
 
       m.bindPopup(`
         <div class="pet-popup-card">
@@ -478,11 +474,7 @@
 
       const detailText = item.details ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>` : '';
       
-      const isMineFound = (window.api && window.api.isMyPost) ? window.api.isMyPost('found', item.id) : false;
-      const isAdminFound = localStorage.getItem('admin_mode') === 'true';
-      const editBtnFoundHtml = (isMineFound || isAdminFound) 
-        ? `<button onclick="openEditModal('found', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`
-        : '';
+      const editBtnFoundHtml = `<button onclick="openEditModal('found', '${item.id}')" class="pet-popup-action" style="background:#4B5563; color:#fff; margin-bottom:6px; border:none; width:100%;"><i class="fas fa-edit"></i> 編集・ステータス変更</button>`;
 
       m.bindPopup(`
         <div class="pet-popup-card">
@@ -580,6 +572,21 @@
     const list = type === 'lost' ? window.lostList : window.foundList;
     editingItem = list.find(item => item.id == id);
     if (!editingItem) return;
+
+    const isMine = (window.api && window.api.isMyPost) ? window.api.isMyPost(type, id) : false;
+    const isAdmin = localStorage.getItem('admin_mode') === 'true';
+
+    if (!isMine && !isAdmin) {
+      if (!editingItem.edit_password) {
+        alert('この投稿には編集用パスワードが設定されていません。編集・削除をご希望の場合は運営までお問い合わせください。');
+        return;
+      }
+      const pass = prompt('編集用パスワードを入力してください:');
+      if (pass !== editingItem.edit_password) {
+        if (pass !== null) alert('パスワードが一致しません。');
+        return;
+      }
+    }
 
     document.getElementById('editPostId').value = id;
     document.getElementById('editPostType').value = type;

@@ -1,8 +1,8 @@
 // js/api.js
 // Supabase REST API 直接呼び出し版（SDK不要）
 
-const SUPABASE_URL = 'https://pjunvgbppdidkfxktkas.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_tJR5Iqp3zO5PBaHMVR8rOA_lBVRqeRj';
+const SUPABASE_URL = 'https://kdareahmdttflwmpacvd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_pGVY5gkpEPaNF84apAETzw_SuwuQY3V';
 
 const HEADERS = {
   'apikey': SUPABASE_KEY,
@@ -118,7 +118,8 @@ async function registerLostPet(petData, imageFile) {
     phone: petData.phone || '',
     details: petData.details || '',
     image_url: imageUrl,
-    status: 'searching'
+    status: 'searching',
+    edit_password: petData.edit_password || null
   };
 
   const data = await sbFetch('/rest/v1/lost_pets', {
@@ -144,7 +145,8 @@ async function registerFoundPet(petData, imageFile) {
     email: petData.email || '',
     phone: petData.phone || '',
     details: petData.details || '',
-    image_url: imageUrl
+    image_url: imageUrl,
+    edit_password: petData.edit_password || null
   };
 
   const data = await sbFetch('/rest/v1/found_pets', {

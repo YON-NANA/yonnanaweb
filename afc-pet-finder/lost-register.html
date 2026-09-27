@@ -352,6 +352,12 @@
               <p class="text-xs text-muted mt-sm">※連絡先は一般公開されません。システム経由の匿名チャットで連絡が届きます。</p>
             </div>
 
+            <div class="form-group">
+              <label class="form-label">編集用パスワード（任意）</label>
+              <input type="password" id="editPassword" class="form-control" placeholder="後から投稿を編集・削除するためのパスワード">
+              <p class="text-xs text-muted mt-sm">※設定しない場合、同じ端末・ブラウザからのみ編集可能です。</p>
+            </div>
+
             <div style="background:rgba(255,107,53,0.08); border:1px solid var(--lost); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-lg);">
               <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer;">
                 <input type="checkbox" style="margin-top:4px;" checked>
@@ -548,12 +554,12 @@
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CARTO'
+    const darkTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri'
     });
     
-    const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+    const osmTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri'
     });
 
     function updateMapStyle() {
@@ -806,7 +812,8 @@
         owner_name: '',
         email: document.getElementById('contactEmail')?.value.trim() || '',
         phone: '',
-        details: document.getElementById('featureDetails')?.value.trim() || ''
+        details: document.getElementById('featureDetails')?.value.trim() || '',
+        edit_password: document.getElementById('editPassword')?.value || ''
       };
 
       console.log('Registering lost pet:', petData);
