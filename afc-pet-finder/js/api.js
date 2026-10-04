@@ -201,6 +201,23 @@ async function updateFoundPet(id, payload) {
   return Array.isArray(data) ? data[0] : data;
 }
 
+// ─── 投稿削除 ─────────────────────────────────────────────────
+async function deleteLostPet(id) {
+  const data = await sbFetch(`/rest/v1/lost_pets?id=eq.${id}`, {
+    method: 'DELETE'
+  });
+  removeMyPostId('lost', id);
+  return data;
+}
+
+async function deleteFoundPet(id) {
+  const data = await sbFetch(`/rest/v1/found_pets?id=eq.${id}`, {
+    method: 'DELETE'
+  });
+  removeMyPostId('found', id);
+  return data;
+}
+
 // ─── 迷子ペット一覧取得 ────────────────────────────────────────
 async function fetchLostPets(limit = 50) {
   try {
@@ -314,6 +331,8 @@ window.api = {
   fetchFoundPets,
   updateLostPet,
   updateFoundPet,
+  deleteLostPet,
+  deleteFoundPet,
   fetchMessages,
   sendMessage,
   compressImageToDataUrl,
