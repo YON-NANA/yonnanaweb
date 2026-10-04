@@ -95,9 +95,33 @@
     .pet-selector-info .name { font-weight: 700; font-size: 0.95rem; }
     .pet-selector-info .breed { font-size: 0.75rem; color: var(--text-muted); }
 
-    @media (max-width: 900px) { .poster-page-layout { grid-template-columns: 1fr; } .controls-sticky { position: static; } }
+    /* ── プレビューラッパー（スマホ対応） ── */
+    .poster-preview-wrapper {
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) { 
+      .poster-page-layout { grid-template-columns: 1fr; } 
+      .controls-sticky { position: static; }
+      #posterExport {
+        max-width: 100%;
+        transform-origin: top center;
+      }
+    }
+
+    @media (max-width: 520px) {
+      #posterExport {
+        width: 100% !important;
+        max-width: 490px;
+      }
+    }
   </style>
-  <script src="js/api.js?v=28" defer></script>
+  <script src="js/api.js?v=32" defer></script>
 </head>
 <body>
 
@@ -161,15 +185,20 @@
           </div>
         </div>
 
-        <!-- PDF出力 -->
+        <!-- PDF・画像出力 -->
         <div class="card mb-lg" style="border-color:rgba(255,107,53,0.3);">
-          <h3 style="margin-bottom:var(--space-sm);font-size:1rem;color:var(--lost);"><i class="fas fa-file-pdf"></i> PDF出力</h3>
-          <p class="text-sm text-secondary mb-md">A4サイズで出力されます。印刷後、電柱や掲示板への貼り付けをお勧めします。</p>
-          <button class="btn btn-primary" style="background:var(--lost);border-color:var(--lost);width:100%;" onclick="downloadPDF()">
-            <i class="fas fa-download"></i> ポスターをダウンロード（PDF）
-          </button>
+          <h3 style="margin-bottom:var(--space-sm);font-size:1rem;color:var(--lost);"><i class="fas fa-file-pdf"></i> ポスター出力・印刷</h3>
+          <p class="text-sm text-secondary mb-md">A4サイズで出力されます。スマホでの閲覧・直接印刷・写真アルバムへの保存も可能です。</p>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn btn-primary" style="background:var(--lost);border-color:var(--lost);width:100%;font-weight:700;" onclick="downloadPDF()">
+              <i class="fas fa-file-pdf"></i> ポスターをPDF出力・表示
+            </button>
+            <button class="btn btn-outline" style="width:100%;font-weight:600;" onclick="downloadPosterImage()">
+              <i class="fas fa-image"></i> 写真として保存（高画質画像 PNG）
+            </button>
+          </div>
           <p class="text-xs text-muted mt-sm" style="text-align:center;">
-            ※ html2pdf.jsライブラリを使用。初回のみ読み込みに数秒かかります。
+            ※ セブンイレブン・ファミマ・ローソンのコンビニネットプリントでもご利用いただけます。
           </p>
         </div>
 
@@ -215,95 +244,100 @@
 
       <!-- 右側：ポスタープレビュー -->
       <div class="controls-sticky">
-        <div id="posterExport">
-          <!-- ヘッダーバー -->
-          <div class="poster-top-bar">
-            <div class="poster-org">ANIMAL FINDER CONNECT — 日本動物共助機構</div>
-            <div class="poster-title-text">⚠ 迷子のお知らせ ⚠</div>
-            <div class="poster-subtitle">目撃情報・保護情報をお寄せください</div>
-          </div>
-
-          <!-- 写真エリア -->
-          <div class="poster-photo-area">
-            <div id="posterPhoto" class="poster-main-photo" style="background-image: url('img/placeholder-pet.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
-            <div id="posterPhotoPlaceholder" style="display:none;width:100%;height:200px;background:#e8e8e8;align-items:center;justify-content:center;flex-direction:column;color:#aaa;">
-              <i class="fas fa-camera" style="font-size:3rem;margin-bottom:8px;"></i>
-              <span style="font-size:0.9rem;">写真が登録されていません</span>
+        <div class="poster-preview-wrapper">
+          <div id="posterExport">
+            <!-- ヘッダーバー -->
+            <div class="poster-top-bar">
+              <div class="poster-org">ANIMAL FINDER CONNECT — 日本動物共助機構</div>
+              <div class="poster-title-text">⚠ 迷子のお知らせ ⚠</div>
+              <div class="poster-subtitle">目撃情報・保護情報をお寄せください</div>
             </div>
-            <span class="poster-animal-type" id="posterAnimalType">猫・メス</span>
-          </div>
 
-          <!-- 本文 -->
-          <div class="poster-body">
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <!-- 写真エリア -->
+            <div class="poster-photo-area" style="position:relative; width:100%; height:220px; background:#f0f0f0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+              <img id="posterPhoto" class="poster-main-photo" src="" alt="ペット写真" style="width:100%; height:100%; object-fit:contain; display:block;" crossorigin="anonymous">
+              <div id="posterPhotoPlaceholder" style="display:none; position:absolute; inset:0; background:#e8e8e8; align-items:center; justify-content:center; flex-direction:column; color:#aaa;">
+                <i class="fas fa-camera" style="font-size:3rem;margin-bottom:8px;"></i>
+                <span style="font-size:0.9rem;">写真が登録されていません</span>
+              </div>
+              <span class="poster-animal-type" id="posterAnimalType">猫・メス</span>
+            </div>
+
+            <!-- 本文 -->
+            <div class="poster-body">
+              <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                <div>
+                  <div class="poster-pet-name" id="posterName">クロ</div>
+                  <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
+                </div>
+                <div id="posterDetails" style="font-size:11px; color:#444; max-width:55%; text-align:right; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-height:1.4; word-break:break-word;">
+                </div>
+              </div>
+              <hr class="poster-divider">
+
+              <div class="poster-info-grid">
+                <div class="poster-info-item">
+                  <label>いなくなった日時</label>
+                  <span id="posterDate">2026年7月16日 夕方</span>
+                </div>
+                <div class="poster-info-item">
+                  <label>いなくなった場所</label>
+                  <span id="posterLocation">東京都世田谷区 付近</span>
+                </div>
+                <div class="poster-info-item">
+                  <label>性別・年齢</label>
+                  <span id="posterGender">メス・3歳</span>
+                </div>
+                <div class="poster-info-item">
+                  <label>首輪・特徴</label>
+                  <span id="posterCollar">赤い首輪・鈴付き</span>
+                </div>
+              </div>
+
+              <div class="poster-features" id="posterFeatures">
+                <span class="poster-feature-tag">黒猫</span>
+                <span class="poster-feature-tag">短毛</span>
+                <span class="poster-feature-tag">サクラ耳</span>
+                <span class="poster-feature-tag">臆病・隠れがち</span>
+              </div>
+
+              <div class="poster-message" id="posterMessage">
+                目撃情報のみでも大変助かります。お気軽にご連絡ください。
+              </div>
+            </div>
+
+            <!-- 連絡先バー -->
+            <div class="poster-contact-bar">
               <div>
-                <div class="poster-pet-name" id="posterName">クロ</div>
-                <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
+                <div class="poster-contact-label">お心当たりの方はこちらへ（24時間受付）</div>
+                <div class="poster-contact-tel" id="posterTel">090-XXXX-XXXX</div>
               </div>
-              <div id="posterDetails" style="font-size:11px; color:#444; max-width:55%; text-align:right; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-height:1.4; word-break:break-word;">
-              </div>
-            </div>
-            <hr class="poster-divider">
-
-            <div class="poster-info-grid">
-              <div class="poster-info-item">
-                <label>いなくなった日時</label>
-                <span id="posterDate">2026年7月16日 夕方</span>
-              </div>
-              <div class="poster-info-item">
-                <label>いなくなった場所</label>
-                <span id="posterLocation">東京都世田谷区 付近</span>
-              </div>
-              <div class="poster-info-item">
-                <label>性別・年齢</label>
-                <span id="posterGender">メス・3歳</span>
-              </div>
-              <div class="poster-info-item">
-                <label>首輪・特徴</label>
-                <span id="posterCollar">赤い首輪・鈴付き</span>
+              <div class="poster-qr-placeholder" id="posterQR">
+                <div>
+                  <i class="fas fa-qrcode" style="font-size:2rem;color:#333;display:block;text-align:center;"></i>
+                  <div style="font-size:8px;margin-top:2px;">詳細ページ</div>
+                </div>
               </div>
             </div>
 
-            <div class="poster-features" id="posterFeatures">
-              <span class="poster-feature-tag">黒猫</span>
-              <span class="poster-feature-tag">短毛</span>
-              <span class="poster-feature-tag">サクラ耳</span>
-              <span class="poster-feature-tag">臆病・隠れがち</span>
+            <!-- フッター -->
+            <div class="poster-footer">
+              <span>AFC Pet Finder｜AnimalFinderConnect</span>
+              <span id="posterIssueDate">発行日: 2026年7月19日</span>
             </div>
-
-            <div class="poster-message" id="posterMessage">
-              目撃情報のみでも大変助かります。お気軽にご連絡ください。
-            </div>
-          </div>
-
-          <!-- 連絡先バー -->
-          <div class="poster-contact-bar">
-            <div>
-              <div class="poster-contact-label">お心当たりの方はこちらへ（24時間受付）</div>
-              <div class="poster-contact-tel" id="posterTel">090-XXXX-XXXX</div>
-            </div>
-            <div class="poster-qr-placeholder" id="posterQR">
-              <div>
-                <i class="fas fa-qrcode" style="font-size:2rem;color:#333;display:block;text-align:center;"></i>
-                <div style="font-size:8px;margin-top:2px;">詳細ページ</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- フッター -->
-          <div class="poster-footer">
-            <span>AFC Pet Finder｜AnimalFinderConnect</span>
-            <span id="posterIssueDate">発行日: 2026年7月19日</span>
           </div>
         </div>
 
         <!-- アクションボタン（プレビュー下） -->
-        <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);">
-          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="window.print()">
+        <div style="margin-top:var(--space-md);display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" style="flex:1;min-width:100px;" onclick="window.print()">
             <i class="fas fa-print"></i> 印刷
           </button>
-          <button class="btn btn-primary btn-sm" style="flex:2;background:var(--lost);border-color:var(--lost);" onclick="downloadPDF()">
-            <i class="fas fa-file-pdf"></i> PDFダウンロード
+          <button class="btn btn-outline btn-sm" style="flex:1;min-width:130px;" onclick="downloadPosterImage()">
+            <i class="fas fa-image"></i> 写真保存(PNG)
+          </button>
+          <button class="btn btn-primary btn-sm" style="flex:2;min-width:150px;background:var(--lost);border-color:var(--lost);" onclick="downloadPDF()">
+            <i class="fas fa-file-pdf"></i> PDF出力・表示
           </button>
         </div>
       </div>
@@ -311,7 +345,31 @@
     </div>
   </div>
 
-  <!-- ─── Footer ─── -->
+  <!-- PDF / 画像完了モーダル -->
+  <div id="pdfSuccessModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:9999; align-items:center; justify-content:center; padding:16px; backdrop-filter:blur(4px);">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-xl); max-width:440px; width:100%; padding:24px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+      <div style="font-size:2.8rem; margin-bottom:12px;">📄✨</div>
+      <h3 style="font-size:1.35rem; font-weight:800; margin-bottom:8px; color:var(--text-primary);">ポスターが完成しました！</h3>
+      <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.5;">
+        スマートフォンでも直接PDFを表示・確認できます。<br>コンビニ印刷には写真（PNG画像）保存も便利です。
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+        <a id="btnOpenPdfTab" href="#" target="_blank" class="btn btn-primary btn-lg" style="background:var(--lost); border-color:var(--lost); font-weight:700; width:100%; justify-content:center;">
+          <i class="fas fa-external-link-alt"></i> PDFを別タブで開く・表示する
+        </a>
+        <button id="btnDownloadImageModal" class="btn btn-gold" style="font-weight:700; width:100%; justify-content:center;">
+          <i class="fas fa-image"></i> 写真として保存（高画質PNG）
+        </button>
+        <button onclick="window.print()" class="btn btn-outline" style="width:100%; justify-content:center;">
+          <i class="fas fa-print"></i> そのまま印刷する
+        </button>
+      </div>
+      <button onclick="document.getElementById('pdfSuccessModal').style.display='none'" class="btn btn-ghost btn-sm" style="color:var(--text-muted); width:100%;">
+        閉じる
+      </button>
+    </div>
+  </div>
+</main>
   <footer>
     <div class="container-lg">
       <div class="footer-grid">
@@ -582,9 +640,21 @@ function updatePoster() {
   const img = document.getElementById('posterPhoto');
   const placeholder = document.getElementById('posterPhotoPlaceholder');
   if (p.photo) {
-    img.style.backgroundImage = `url("${p.photo}")`;
+    img.src = p.photoDataUrl || p.photo;
     img.style.display = 'block';
     if (placeholder) placeholder.style.display = 'none';
+
+    // CORS白紙化を永久に防ぐため、バックグラウンドでBase64 DataURLに自動変換してキャッシュ
+    if (!p.photoDataUrl && !p.photo.startsWith('data:')) {
+      toDataURL(p.photo).then(dataUrl => {
+        if (dataUrl) {
+          p.photoDataUrl = dataUrl;
+          if (currentPet && currentPet.id === p.id && img) {
+            img.src = dataUrl;
+          }
+        }
+      });
+    }
   } else {
     img.style.display = 'none';
     if (placeholder) placeholder.style.display = 'flex';
@@ -681,7 +751,97 @@ function shareLine() {
   window.open(`https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(text)}`, '_blank');
 }
 
-function downloadPDF() {
+// ─── 外部画像URLをBase64 DataURLに安全変換（CORS/Taint完全防止） ───
+async function toDataURL(url) {
+  if (!url) return null;
+  if (url.startsWith('data:')) return url;
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error('Fetch failed');
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(url);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.warn('Could not convert image to DataURL, fallback to raw URL:', e);
+    return url;
+  }
+}
+
+let currentPdfBlobUrl = null;
+let currentImageDataUrl = null;
+
+// ─── 写真（高画質PNG画像）として直接保存 ────────────────────────
+async function downloadPosterImage() {
+  const el = document.getElementById('posterExport');
+  const name = currentPet ? currentPet.name : 'ペット';
+
+  // 写真DataURLの確認
+  if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
+    const dataUrl = await toDataURL(currentPet.photo);
+    if (dataUrl) {
+      currentPet.photoDataUrl = dataUrl;
+      const img = document.getElementById('posterPhoto');
+      if (img) img.src = dataUrl;
+    }
+  }
+
+  // スクロール等の準備
+  const origScroll = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+
+  const stickyParent = el.closest('.controls-sticky');
+  const origStickyPos = stickyParent ? stickyParent.style.position : '';
+  const origStickyTop = stickyParent ? stickyParent.style.top : '';
+  if (stickyParent) {
+    stickyParent.style.position = 'relative';
+    stickyParent.style.top = '0';
+  }
+
+  const origRadius = el.style.borderRadius;
+  const origShadow = el.style.boxShadow;
+  el.style.borderRadius = '0';
+  el.style.boxShadow = 'none';
+
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: false,
+      scrollY: 0,
+      scrollX: 0
+    });
+
+    const dataUrl = canvas.toDataURL('image/png');
+    currentImageDataUrl = dataUrl;
+
+    const link = document.createElement('a');
+    link.download = `迷子ポスター_${name}_AFC.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (err) {
+    console.error('Image capture error:', err);
+    alert('画像の生成に失敗しました。PDF出力をお試しください。');
+  } finally {
+    el.style.borderRadius = origRadius;
+    el.style.boxShadow = origShadow;
+    if (stickyParent) {
+      stickyParent.style.position = origStickyPos;
+      stickyParent.style.top = origStickyTop;
+    }
+    document.documentElement.style.scrollBehavior = origScroll;
+  }
+}
+
+// ─── PDF出力・ブラウザ表示 ───────────────────────────────────────
+async function downloadPDF() {
   if (typeof html2pdf === 'undefined') {
     alert('PDFライブラリを読み込み中です。しばらくお待ちください。');
     return;
@@ -691,6 +851,24 @@ function downloadPDF() {
   const name = currentPet ? currentPet.name : 'ペット';
   const w = 490;
   const h = 693;
+
+  // 写真が外部URLの場合、白紙化・Taint防止のため確実にBase64 DataURLへの変換を待つ
+  if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
+    const dataUrl = await toDataURL(currentPet.photo);
+    if (dataUrl) {
+      currentPet.photoDataUrl = dataUrl;
+      const img = document.getElementById('posterPhoto');
+      if (img) img.src = dataUrl;
+    }
+  }
+
+  // ボタンのローディング表示
+  const btns = document.querySelectorAll('button[onclick*="downloadPDF"]');
+  btns.forEach(b => {
+    b.dataset.origHtml = b.innerHTML;
+    b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PDF生成中...';
+    b.disabled = true;
+  });
 
   // 1. スクロールによる位置ズレや白紙化を防ぐため、スムーズスクロールを一時無効化して即時トップへ
   const origScrollBehavior = document.documentElement.style.scrollBehavior;
@@ -720,33 +898,79 @@ function downloadPDF() {
       stickyParent.style.top = origStickyTop;
     }
     document.documentElement.style.scrollBehavior = origScrollBehavior;
+    btns.forEach(b => {
+      if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+      b.disabled = false;
+    });
   };
+
+  const filename = `迷子ポスター_${name}_AFC.pdf`;
 
   const opt = {
     margin: 0,
-    filename: `迷子ポスター_${name}_AFC.pdf`,
+    filename: filename,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
       scale: 3, 
       useCORS: true, 
-      allowTaint: true,
+      allowTaint: false, // Taintは絶対許可しない（SecurityError・白紙防止）
       scrollY: 0,
       scrollX: 0
     },
     jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
   };
 
-  // ブラウザのレイアウト再計算が完了してから確実にキャプチャを実行
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      html2pdf().set(opt).from(el).save().then(() => {
-        cleanup();
-      }).catch(err => {
-        cleanup();
-        alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
-        console.error(err);
-      });
-    }, 50);
+  // ブラウザの再描画を待って確実にキャプチャを実行
+  requestAnimationFrame(async () => {
+    try {
+      // html2pdf のインスタンスを作成
+      const worker = html2pdf().set(opt).from(el);
+
+      // PDF Blob を生成してブラウザ表示用URLを取得
+      const pdfBlob = await worker.outputPdf('blob');
+      if (currentPdfBlobUrl) URL.revokeObjectURL(currentPdfBlobUrl);
+      currentPdfBlobUrl = URL.createObjectURL(pdfBlob);
+
+      // 同時に高解像度画像も生成
+      if (typeof html2canvas !== 'undefined') {
+        try {
+          const canvas = await html2canvas(el, { scale: 3, useCORS: true, allowTaint: false, scrollY: 0, scrollX: 0 });
+          currentImageDataUrl = canvas.toDataURL('image/png');
+        } catch(e) {}
+      }
+
+      // ファイルのダウンロードを実行
+      await worker.save();
+
+      cleanup();
+
+      // モーダルを表示してスマホでもワンタップで直接「PDFを開く」「画像保存」「印刷」ができるようにする
+      const modal = document.getElementById('pdfSuccessModal');
+      const btnOpenTab = document.getElementById('btnOpenPdfTab');
+      const btnImgModal = document.getElementById('btnDownloadImageModal');
+
+      if (btnOpenTab) btnOpenTab.href = currentPdfBlobUrl;
+      if (btnImgModal) {
+        btnImgModal.onclick = () => {
+          if (currentImageDataUrl) {
+            const a = document.createElement('a');
+            a.download = `迷子ポスター_${name}_AFC.png`;
+            a.href = currentImageDataUrl;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          } else {
+            downloadPosterImage();
+          }
+        };
+      }
+      if (modal) modal.style.display = 'flex';
+
+    } catch (err) {
+      cleanup();
+      console.error('PDF generation error:', err);
+      alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
+    }
   });
 }
 
