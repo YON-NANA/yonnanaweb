@@ -540,7 +540,7 @@
               「黒猫・首輪あり（赤）・耳カット・鍵尻尾」など、特徴を細かくタグ化。
               保護主が投稿した瞬間に条件一致の飼い主へアラートが飛びます。
             </p>
-            <a href="match.html" class="btn btn-primary">
+            <a href="match.html" class="btn btn-primary" id="btnMainMatch">
               <i class="fas fa-random"></i> マッチング結果を見る
             </a>
           </div>
@@ -706,16 +706,16 @@
 </main>
 
 <!-- ─── Floating Match Alert ─── -->
-<div class="floating-alert" id="floatingAlert">
+<div class="floating-alert" id="floatingAlert" style="display:none;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
     <span style="font-size:1.2rem;">🎯</span>
     <strong style="font-size:0.85rem;color:var(--match)">マッチングアラート</strong>
-    <button onclick="document.getElementById('floatingAlert').remove()" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;">✕</button>
+    <button onclick="document.getElementById('floatingAlert').remove()" style="margin-left:auto;color:var(--text-muted);font-size:0.8rem;background:none;border:none;cursor:pointer;">✕</button>
   </div>
-  <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px;">
-    「クロ」ちゃん（黒猫・耳カット）と一致する保護報告が投稿されました！
+  <p id="floatingAlertText" style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px;">
+    一致する保護報告が投稿されました！
   </p>
-  <a href="match.html" class="btn btn-sm" style="background:rgba(155,89,182,0.2);border:1px solid rgba(155,89,182,0.4);color:var(--match);width:100%;justify-content:center;">
+  <a id="floatingAlertLink" href="match.html" class="btn btn-sm" style="background:rgba(155,89,182,0.2);border:1px solid rgba(155,89,182,0.4);color:var(--match);width:100%;justify-content:center;">
     詳細を確認する →
   </a>
 </div>
@@ -918,6 +918,55 @@
       });
     }
 
+    // ─── AIマッチング連携 ───────────────────────────────────────
+    let bestMatchUrl = 'match.html';
+    let bestPair = null;
+
+    if (lostList && lostList.length > 0 && foundList && foundList.length > 0) {
+      let topScore = -1;
+      lostList.forEach(l => {
+        foundList.forEach(f => {
+          let s = 50;
+          if (l.pet_type && f.pet_type && l.pet_type.toLowerCase() === f.pet_type.toLowerCase()) s += 20;
+          const loc1 = l.location || '';
+          const loc2 = f.location || '';
+          if (loc1.includes('川内') && loc2.includes('川内')) s += 25;
+          else if (loc1.includes('徳島') && loc2.includes('徳島')) s += 15;
+          if (s > topScore) {
+            topScore = s;
+            bestPair = { lost: l, found: f, score: s };
+          }
+        });
+      });
+
+      if (bestPair) {
+        bestMatchUrl = `match.html?lost_id=${encodeURIComponent(bestPair.lost.id)}&found_id=${encodeURIComponent(bestPair.found.id)}`;
+      }
+    }
+
+    const btnMainMatch = document.getElementById('btnMainMatch');
+    if (btnMainMatch && bestPair) {
+      btnMainMatch.href = bestMatchUrl;
+    }
+
+    // マッチングアラート（左下ポップアップ）の動的表示
+    const floatingAlert = document.getElementById('floatingAlert');
+    const floatingAlertText = document.getElementById('floatingAlertText');
+    const floatingAlertLink = document.getElementById('floatingAlertLink');
+    if (floatingAlert) {
+      if (bestPair && bestPair.lost) {
+        const areaName = (bestPair.lost.location || '').split(/[\s　]+/)[1] || bestPair.lost.location || '';
+        floatingAlertText.textContent = `「${bestPair.lost.pet_name}」ちゃん（${areaName}）と一致する保護報告が投稿されました！`;
+        floatingAlertLink.href = bestMatchUrl;
+        floatingAlert.style.display = 'block';
+      } else if (foundList && foundList.length > 0) {
+        const latestFound = foundList[0];
+        floatingAlertText.textContent = `新しい保護報告（${latestFound.location || '近隣'}）が投稿されました！`;
+        floatingAlertLink.href = `match.html?found_id=${encodeURIComponent(latestFound.id)}`;
+        floatingAlert.style.display = 'block';
+      }
+    }
+
     // マッチングプレビュー（保護情報 最大2件）
     const matchCards = document.getElementById('matchPreviewCards');
     if (matchCards) {
@@ -928,17 +977,22 @@
       }
       items.forEach((item, i) => {
         const imgSrc = item.image_url || '';
+        const targetLostId = bestPair ? bestPair.lost.id : (lostList[0]?.id || '');
+        const targetUrl = `match.html?found_id=${encodeURIComponent(item.id)}&lost_id=${encodeURIComponent(targetLostId)}`;
         const div = document.createElement('div');
-        div.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md);display:flex;gap:12px;align-items:center;';
+        div.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-md);display:flex;gap:12px;align-items:center;cursor:pointer;transition:transform 0.2s, border-color 0.2s;';
+        div.onmouseover = () => { div.style.borderColor = 'var(--gold)'; div.style.transform = 'translateY(-2px)'; };
+        div.onmouseout = () => { div.style.borderColor = 'var(--border)'; div.style.transform = 'none'; };
+        div.onclick = () => window.location.href = targetUrl;
         div.innerHTML = `
           <div style="width:60px;height:60px;border-radius:var(--radius-md);overflow:hidden;flex-shrink:0;background:var(--bg-deep);">
             ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;" alt="">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🐾</div>'}
           </div>
-          <div>
+          <div style="flex:1;">
             <div style="font-size:0.85rem;font-weight:600;margin-bottom:4px;">保護報告</div>
             <div style="font-size:0.8rem;color:var(--text-secondary);">${item.location || ''}で保護</div>
           </div>
-          <div style="margin-left:auto;background:rgba(155,89,182,0.15);color:var(--match);border:1px solid rgba(155,89,182,0.3);border-radius:var(--radius-full);padding:4px 12px;font-size:0.75rem;font-weight:700;">確認する</div>
+          <a href="${targetUrl}" onclick="event.stopPropagation();" style="margin-left:auto;background:rgba(155,89,182,0.15);color:var(--match);border:1px solid rgba(155,89,182,0.3);border-radius:var(--radius-full);padding:4px 12px;font-size:0.75rem;font-weight:700;text-decoration:none;">確認する</a>
         `;
         matchCards.appendChild(div);
       });

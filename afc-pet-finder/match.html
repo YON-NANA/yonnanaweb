@@ -101,7 +101,7 @@
       }
     }
   </style>
-  <script src="js/api.js?v=28" defer></script>
+  <script src="js/api.js?v=32"></script>
 </head>
 
 <body>
@@ -132,81 +132,110 @@
   <div class="page-wrapper">
     <div class="container-sm">
 
-      <div class="match-header scroll-fade">
-        <div class="ai-badge"
-          style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(201,168,76,0.15); color:var(--gold); border:1px solid var(--gold); border-radius:var(--radius-full); font-size:0.85rem; font-weight:700; margin-bottom:var(--space-md);">
-          <i class="fas fa-brain"></i> AI Matching Result</div>
-        <div class="score-circle">
-          <div class="score-val">85<span style="font-size:1.5rem">%</span></div>
-          <div class="text-xs text-muted">一致度</div>
+      <!-- マッチング候補セレクター（複数候補がある場合） -->
+      <div id="matchCandidatesBar" style="display:none; margin-bottom:var(--space-xl); background:var(--bg-card); padding:12px 16px; border-radius:var(--radius-lg); border:1px solid var(--border);">
+        <div style="font-size:0.85rem; font-weight:700; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <i class="fas fa-list-check" style="color:var(--gold);"></i> 検出されたマッチング候補:
         </div>
-        <h1 style="font-size:2rem; margin-bottom:8px;">高い確率で同一の可能性があります</h1>
-        <p class="text-secondary">特徴タグ、エリア、日時のデータからAIが算出しました。</p>
+        <div id="matchCandidatesList" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
       </div>
 
-      <div class="match-compare scroll-fade" style="transition-delay:0.1s;">
-
-        <!-- Lost Data -->
-        <div class="compare-card">
-          <div
-            style="position:absolute; top:20px; left:20px; background:var(--lost); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
-            あなたの登録（迷子）</div>
-          <img src="img/demo-cat.jpg"
-            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
-          <h3 style="font-size:1.25rem; margin-bottom:12px;">タマ（猫・メス）</h3>
-          <table style="width:100%; font-size:0.9rem;">
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0; width:40%;">日時</td>
-              <td>7月10日 15:00</td>
-            </tr>
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0;">場所</td>
-              <td>世田谷区 〇〇公園付近</td>
-            </tr>
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0;">特徴</td>
-              <td>
-                <span class="badge" style="background:var(--bg-dark);border:1px solid var(--border)">キジトラ</span>
-                <span class="badge" style="background:var(--bg-dark);border:1px solid var(--border)">カギ尻尾</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- Found Data -->
-        <div class="compare-card">
-          <div
-            style="position:absolute; top:20px; left:20px; background:var(--found); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
-            保護・目撃情報</div>
-          <img src="img/demo-cat.jpg" style="filter: brightness(0.9);"
-            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
-          <h3 style="font-size:1.25rem; margin-bottom:12px;">猫（性別不明）</h3>
-          <table style="width:100%; font-size:0.9rem;">
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0; width:40%;">日時</td>
-              <td>7月11日 08:30 <span class="compare-tag-match">(+17h)</span></td>
-            </tr>
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0;">場所</td>
-              <td>世田谷区 △△交差点 <span class="compare-tag-match">(400m)</span></td>
-            </tr>
-            <tr>
-              <td style="color:var(--text-muted); padding:4px 0;">特徴</td>
-              <td>
-                <span class="badge"
-                  style="background:var(--bg-dark);border:1px solid var(--found);color:var(--found)">キジトラ</span>
-                <span class="badge"
-                  style="background:var(--bg-dark);border:1px solid var(--found);color:var(--found)">カギ尻尾</span>
-              </td>
-            </tr>
-          </table>
-        </div>
-
+      <!-- ローディング表示 -->
+      <div id="matchLoading" style="text-align:center; padding:60px 0;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size:2.5rem; color:var(--gold); margin-bottom:16px;"></i>
+        <p style="color:var(--text-secondary); font-size:1rem;">AIが迷子と保護報告のデータを照合しています...</p>
       </div>
 
-      <div style="text-align:center; margin-top:var(--space-2xl); margin-bottom:var(--space-2xl);">
-        <p class="text-secondary mb-lg">この情報があなたのペットである可能性がある場合、<br>保護主と匿名でチャットを開始して確認してください。</p>
-        <a href="chat.html" class="btn btn-primary btn-lg"><i class="fas fa-comment-dots"></i> 保護主に連絡する（匿名）</a>
+      <!-- 空ステート表示 -->
+      <div id="noMatchState" style="display:none; text-align:center; padding:60px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border);">
+        <div style="font-size:3.5rem; margin-bottom:16px;">🐾</div>
+        <h2 style="font-size:1.5rem; margin-bottom:12px;">現在照合できる報告がありません</h2>
+        <p style="color:var(--text-secondary); margin-bottom:24px; max-width:500px; margin-left:auto; margin-right:auto;">
+          登録されている迷子ペット情報と保護報告を自動照合します。まずは迷子登録、または保護報告を行ってください。
+        </p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <a href="lost-register.html" class="btn btn-primary"><i class="fas fa-bullhorn"></i> 迷子ペットを登録</a>
+          <a href="found-register.html" class="btn btn-secondary"><i class="fas fa-hand-holding-heart"></i> 保護を報告</a>
+          <a href="map.html" class="btn btn-outline"><i class="fas fa-map-marked-alt"></i> 捜索マップを見る</a>
+        </div>
+      </div>
+
+      <!-- マッチング結果本体 -->
+      <div id="matchResultContent" style="display:none;">
+
+        <div class="match-header scroll-fade">
+          <div class="ai-badge"
+            style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(201,168,76,0.15); color:var(--gold); border:1px solid var(--gold); border-radius:var(--radius-full); font-size:0.85rem; font-weight:700; margin-bottom:var(--space-md);">
+            <i class="fas fa-brain"></i> AI Matching Result</div>
+          <div class="score-circle" id="scoreCircle">
+            <div class="score-val"><span id="scoreVal">--</span><span style="font-size:1.5rem">%</span></div>
+            <div class="text-xs text-muted">一致度</div>
+          </div>
+          <h1 id="matchHeading" style="font-size:1.85rem; margin-bottom:8px;">高い確率で同一の可能性があります</h1>
+          <p id="matchSubheading" class="text-secondary" style="max-width:600px; margin:0 auto;">特徴タグ、エリア、日時のデータからAIが算出しました。</p>
+          <div id="matchTags" style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"></div>
+        </div>
+
+        <div class="match-compare scroll-fade" style="transition-delay:0.1s;">
+
+          <!-- Lost Data -->
+          <div class="compare-card" id="lostCard">
+            <div
+              style="position:absolute; top:20px; left:20px; background:var(--lost); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
+              迷子登録情報</div>
+            <img id="lostImage" src="" alt="迷子ペット"
+              onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
+            <h3 id="lostTitle" style="font-size:1.25rem; margin-bottom:12px;">--</h3>
+            <table style="width:100%; font-size:0.9rem;">
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0; width:35%;">迷子日時</td>
+                <td id="lostDate">--</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0;">場所</td>
+                <td id="lostLocation">--</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0; vertical-align:top;">特徴・詳細</td>
+                <td id="lostFeatures">--</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Found Data -->
+          <div class="compare-card" id="foundCard">
+            <div id="foundBadge"
+              style="position:absolute; top:20px; left:20px; background:var(--found); color:#fff; padding:4px 12px; border-radius:var(--radius-full); font-size:0.8rem; font-weight:700; z-index:10;">
+              保護・目撃情報</div>
+            <img id="foundImage" src="" alt="保護ペット"
+              onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'250\'><rect width=\'400\' height=\'250\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' text-anchor=\'middle\'>No Image</text></svg>'">
+            <h3 id="foundTitle" style="font-size:1.25rem; margin-bottom:12px;">--</h3>
+            <table style="width:100%; font-size:0.9rem;">
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0; width:35%;">報告日時</td>
+                <td id="foundDate">--</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0;">発見場所</td>
+                <td id="foundLocation">--</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-muted); padding:6px 0; vertical-align:top;">特徴・詳細</td>
+                <td id="foundFeatures">--</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+
+        <div style="text-align:center; margin-top:var(--space-2xl); margin-bottom:var(--space-2xl);">
+          <p class="text-secondary mb-lg">この情報があなたのペットである可能性がある場合、<br>保護主と匿名でチャットを開始して確認してください。</p>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a id="btnContactReporter" href="chat.html" class="btn btn-primary btn-lg"><i class="fas fa-comment-dots"></i> 保護主に連絡する（匿名チャット）</a>
+            <a id="btnViewOnMap" href="map.html" class="btn btn-outline btn-lg"><i class="fas fa-map-marker-alt"></i> 捜索マップで位置を確認</a>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -274,7 +303,404 @@
   </footer>
 
   <script src="js/app.js"></script>
+  <script>
+    // ─── 距離計算（ハバーサイン公式: km） ─────────────────────────
+    function calcDistance(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
 
+    // ─── AIマッチングスコア計算アルゴリズム ───────────────────────
+    function computeMatchPair(lost, found) {
+      let score = 45; // 基本ベース点
+      const matchReasons = [];
+      const matchTags = [];
+
+      // 1. 動物種別
+      const lType = (lost.pet_type || '').toLowerCase();
+      const fType = (found.pet_type || '').toLowerCase();
+      if (lType && fType) {
+        if (lType === fType) {
+          score += 25;
+          const typeName = lType === 'dog' ? '犬' : (lType === 'cat' ? '猫' : '動物種');
+          matchReasons.push(`${typeName}種が完全一致`);
+          matchTags.push(`🐾 ${typeName}種一致`);
+        } else {
+          score -= 35; // 犬 vs 猫などの不一致
+        }
+      }
+
+      // 2. 位置・距離
+      const dist = calcDistance(lost.lat, lost.lng, found.lat, found.lng);
+      if (dist !== null) {
+        if (dist <= 1.5) {
+          score += 25;
+          matchReasons.push(`距離が非常に近接（約${dist.toFixed(1)}km）`);
+          matchTags.push(`📍 約${dist.toFixed(1)}km`);
+        } else if (dist <= 4.0) {
+          score += 20;
+          matchReasons.push(`同一・近隣エリア内（約${dist.toFixed(1)}km）`);
+          matchTags.push(`📍 約${dist.toFixed(1)}km`);
+        } else if (dist <= 10.0) {
+          score += 12;
+          matchReasons.push(`捜索範囲内（約${dist.toFixed(1)}km）`);
+          matchTags.push(`📍 約${dist.toFixed(1)}km`);
+        } else if (dist <= 25.0) {
+          score += 5;
+          matchTags.push(`📍 約${dist.toFixed(1)}km`);
+        } else {
+          score -= 15;
+        }
+      } else {
+        // 住所文字列のマッチング
+        const lLoc = lost.location || '';
+        const fLoc = found.location || '';
+        if (lLoc && fLoc) {
+          if (lLoc.includes('川内') && fLoc.includes('川内')) {
+            score += 22;
+            matchReasons.push('川内町エリアが一致');
+            matchTags.push('📍 川内町エリア一致');
+          } else if (lLoc.includes('徳島') && fLoc.includes('徳島')) {
+            score += 15;
+            matchReasons.push('徳島市エリアが一致');
+            matchTags.push('📍 徳島エリア一致');
+          } else {
+            // 文字列の部分一致
+            const words = lLoc.split(/[\s,、・]+/);
+            let hasWord = false;
+            for (const w of words) {
+              if (w.length >= 2 && fLoc.includes(w)) {
+                hasWord = true;
+                break;
+              }
+            }
+            if (hasWord) {
+              score += 12;
+              matchReasons.push('地域名が一部一致');
+              matchTags.push('📍 地域一部一致');
+            }
+          }
+        }
+      }
+
+      // 3. 日時の整合性
+      const dLost = new Date(lost.date_lost || lost.created_at);
+      const dFound = new Date(found.date_found || found.date_lost || found.created_at);
+      let diffDays = null;
+      if (!isNaN(dLost.getTime()) && !isNaN(dFound.getTime())) {
+        diffDays = Math.round((dFound - dLost) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays <= 7) {
+          score += 15;
+          matchReasons.push('迷子発生から1週間以内の保護');
+          matchTags.push('📅 直後の保護');
+        } else if (diffDays >= 0 && diffDays <= 30) {
+          score += 10;
+          matchReasons.push('迷子発生から1ヶ月以内の保護');
+          matchTags.push('📅 1ヶ月以内の保護');
+        } else if (diffDays > 30) {
+          score += 5;
+          matchTags.push(`📅 迷子から${diffDays}日後`);
+        }
+      }
+
+      // 4. 特徴タグ・詳細文キーワード照合
+      const lostText = ((lost.features || []).join(' ') + ' ' + (lost.details || '') + ' ' + (lost.breed || '')).toLowerCase();
+      const foundText = ((found.features || []).join(' ') + ' ' + (found.details || '') + ' ' + (found.breed || '')).toLowerCase();
+
+      const testKeywords = [
+        { word: 'scared', label: '臆病/人見知り' },
+        { word: '臆病', label: '臆病' },
+        { word: '茶', label: '毛色（茶系）' },
+        { word: '白', label: '毛色（白系）' },
+        { word: '黒', label: '毛色（黒系）' },
+        { word: 'mix', label: 'MIX犬' },
+        { word: '雑種', label: '雑種' },
+        { word: '中型', label: '中型犬' },
+        { word: '小型', label: '小型犬' },
+        { word: '大型', label: '大型犬' },
+        { word: '首輪', label: '首輪' },
+        { word: '短毛', label: '短毛' },
+        { word: 'おとなしい', label: 'おとなしい' }
+      ];
+
+      const matchedKw = [];
+      testKeywords.forEach(kw => {
+        if (lostText.includes(kw.word) && foundText.includes(kw.word)) {
+          if (!matchedKw.some(m => m.label === kw.label)) {
+            matchedKw.push(kw);
+          }
+        }
+      });
+
+      if (matchedKw.length > 0) {
+        score += Math.min(matchedKw.length * 6, 18);
+        matchedKw.slice(0, 3).forEach(k => {
+          matchTags.push(`✨ ${k.label}`);
+        });
+        matchReasons.push(`特徴「${matchedKw.map(k => k.label).join(', ')}」が合致`);
+      }
+
+      // スコアの範囲正規化 (35% 〜 96%)
+      score = Math.max(35, Math.min(96, score));
+
+      return {
+        lost,
+        found,
+        score,
+        distanceKm: dist,
+        diffDays,
+        matchReasons,
+        matchTags
+      };
+    }
+
+    // ─── メイン初期化 ─────────────────────────────────────────────
+    let allMatches = [];
+    let currentPair = null;
+
+    async function initMatchingPage() {
+      const loadingEl = document.getElementById('matchLoading');
+      const contentEl = document.getElementById('matchResultContent');
+      const noMatchEl = document.getElementById('noMatchState');
+      const candidateBar = document.getElementById('matchCandidatesBar');
+      const candidateList = document.getElementById('matchCandidatesList');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetLostId = urlParams.get('lost_id');
+      const targetFoundId = urlParams.get('found_id');
+
+      try {
+        const [lostList, foundList] = await Promise.all([
+          window.api.fetchLostPets(50),
+          window.api.fetchFoundPets(50)
+        ]);
+
+        if (!lostList.length || !foundList.length) {
+          loadingEl.style.display = 'none';
+          noMatchEl.style.display = 'block';
+          return;
+        }
+
+        // 全ペアのマッチングスコアを計算
+        const pairs = [];
+        lostList.forEach(lost => {
+          foundList.forEach(found => {
+            const pair = computeMatchPair(lost, found);
+            pairs.push(pair);
+          });
+        });
+
+        // スコア降順にソート
+        pairs.sort((a, b) => b.score - a.score);
+        allMatches = pairs;
+
+        // 対象ペアの決定
+        let selectedPair = null;
+        if (targetLostId && targetFoundId) {
+          selectedPair = pairs.find(p => p.lost.id === targetLostId && p.found.id === targetFoundId);
+        } else if (targetFoundId) {
+          selectedPair = pairs.find(p => p.found.id === targetFoundId);
+        } else if (targetLostId) {
+          selectedPair = pairs.find(p => p.lost.id === targetLostId);
+        }
+
+        if (!selectedPair) {
+          selectedPair = pairs[0];
+        }
+
+        renderMatch(selectedPair);
+
+        // 複数候補がある場合、候補セレクターを表示
+        if (pairs.length > 1) {
+          candidateBar.style.display = 'block';
+          candidateList.innerHTML = '';
+          pairs.slice(0, 5).forEach((p, idx) => {
+            const btn = document.createElement('button');
+            const isSelected = p === selectedPair;
+            btn.className = `btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline'}`;
+            btn.style.cssText = 'white-space:nowrap; font-size:0.8rem; padding:6px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;';
+            btn.innerHTML = `
+              <strong>${p.score}%</strong>
+              <span>${p.lost.pet_name || '迷子'} × ${p.found.location || '保護'}</span>
+            `;
+            btn.onclick = () => {
+              // 選択ボタンのスタイル更新
+              Array.from(candidateList.children).forEach(c => {
+                c.className = 'btn btn-sm btn-outline';
+              });
+              btn.className = 'btn btn-sm btn-primary';
+              renderMatch(p);
+            };
+            candidateList.appendChild(btn);
+          });
+        }
+
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+      } catch (err) {
+        console.error('Matching initialization error:', err);
+        loadingEl.style.display = 'none';
+        noMatchEl.style.display = 'block';
+      }
+    }
+
+    // ─── マッチングペアのUI描画 ───────────────────────────────────
+    function renderMatch(pair) {
+      currentPair = pair;
+      const { lost, found, score, distanceKm, diffDays, matchReasons, matchTags } = pair;
+
+      // 1. スコア & サークル
+      document.getElementById('scoreVal').textContent = score;
+      const circle = document.getElementById('scoreCircle');
+      if (score >= 80) {
+        circle.style.boxShadow = '0 0 30px rgba(46, 204, 113, 0.3)';
+        document.getElementById('matchHeading').textContent = '高い確率で同一の可能性があります';
+        document.getElementById('matchHeading').style.color = '#fff';
+      } else if (score >= 60) {
+        circle.style.boxShadow = '0 0 30px rgba(201, 168, 76, 0.3)';
+        document.getElementById('matchHeading').textContent = '特徴やエリアの一致度が高い報告です';
+      } else {
+        circle.style.boxShadow = '0 0 20px rgba(100, 100, 100, 0.2)';
+        document.getElementById('matchHeading').textContent = '類似する特徴を持つ保護報告です';
+      }
+
+      // 説明文
+      if (matchReasons.length > 0) {
+        document.getElementById('matchSubheading').textContent = matchReasons.join('・') + ' からAIが算出しました。';
+      } else {
+        document.getElementById('matchSubheading').textContent = '特徴タグ、エリア、日時のデータからAIが算出しました。';
+      }
+
+      // タグバッジ
+      const tagsContainer = document.getElementById('matchTags');
+      tagsContainer.innerHTML = '';
+      matchTags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'badge';
+        span.style.cssText = 'background:rgba(201,168,76,0.15); border:1px solid var(--gold); color:var(--gold); font-size:0.8rem; padding:4px 10px; border-radius:12px;';
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+      });
+
+      // 2. 迷子ペット側カード
+      const lostTypeStr = lost.pet_type === 'dog' ? '犬' : (lost.pet_type === 'cat' ? '猫' : 'その他');
+      document.getElementById('lostTitle').textContent = `${lost.pet_name || '名前なし'}（${lostTypeStr}・${lost.gender || '性別不明'}）`;
+      
+      const lostImg = document.getElementById('lostImage');
+      if (lost.image_url) {
+        lostImg.src = lost.image_url;
+      } else {
+        lostImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250"><rect width="400" height="250" fill="%23222"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="middle">写真なし</text></svg>';
+      }
+
+      document.getElementById('lostDate').textContent = lost.date_lost || '不明';
+      document.getElementById('lostLocation').textContent = lost.location || '不明';
+      
+      // 特徴タグ
+      const lostFeaturesEl = document.getElementById('lostFeatures');
+      lostFeaturesEl.innerHTML = '';
+      const lostFeats = Array.isArray(lost.features) ? lost.features : [];
+      if (lostFeats.length === 0 && !lost.details) {
+        lostFeaturesEl.textContent = '特になし';
+      } else {
+        lostFeats.forEach(f => {
+          const b = document.createElement('span');
+          b.className = 'badge';
+          b.style.cssText = 'background:var(--bg-dark); border:1px solid var(--border); margin:2px 4px 2px 0; display:inline-block;';
+          b.textContent = f;
+          lostFeaturesEl.appendChild(b);
+        });
+        if (lost.details) {
+          const p = document.createElement('div');
+          p.style.cssText = 'font-size:0.8rem; color:var(--text-secondary); margin-top:6px; white-space:pre-wrap;';
+          p.textContent = lost.details;
+          lostFeaturesEl.appendChild(p);
+        }
+      }
+
+      // 3. 保護報告側カード
+      const foundTypeStr = found.pet_type === 'dog' ? '犬' : (found.pet_type === 'cat' ? '猫' : '動物');
+      const isWitness = found.status === 'witness';
+      document.getElementById('foundBadge').textContent = isWitness ? '目撃情報' : '保護情報';
+      document.getElementById('foundBadge').style.background = isWitness ? 'var(--witness, #f39c12)' : 'var(--found, #2ecc71)';
+
+      document.getElementById('foundTitle').textContent = `${isWitness ? '目撃報告' : '保護報告'}（${foundTypeStr}・${found.gender || '性別不明'}）`;
+
+      const foundImg = document.getElementById('foundImage');
+      if (found.image_url) {
+        foundImg.src = found.image_url;
+      } else {
+        foundImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250"><rect width="400" height="250" fill="%23222"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="middle">写真なし</text></svg>';
+      }
+
+      // 日時 (+差分表示)
+      let foundDateHtml = found.date_found || found.date_lost || '不明';
+      if (diffDays !== null) {
+        if (diffDays >= 0) {
+          foundDateHtml += ` <span class="compare-tag-match">(迷子から+${diffDays}日)</span>`;
+        } else {
+          foundDateHtml += ` <span style="color:var(--text-muted); font-size:0.8rem;">(${Math.abs(diffDays)}日前)</span>`;
+        }
+      }
+      document.getElementById('foundDate').innerHTML = foundDateHtml;
+
+      // 場所 (+距離表示)
+      let foundLocHtml = found.location || '不明';
+      if (distanceKm !== null) {
+        foundLocHtml += ` <span class="compare-tag-match">(距離 約${distanceKm.toFixed(1)}km)</span>`;
+      }
+      document.getElementById('foundLocation').innerHTML = foundLocHtml;
+
+      // 特徴タグ
+      const foundFeaturesEl = document.getElementById('foundFeatures');
+      foundFeaturesEl.innerHTML = '';
+      const foundFeats = Array.isArray(found.features) ? found.features : [];
+      if (foundFeats.length === 0 && !found.details) {
+        foundFeaturesEl.textContent = '特になし';
+      } else {
+        foundFeats.forEach(f => {
+          const b = document.createElement('span');
+          b.className = 'badge';
+          // 迷子側の特徴と一部一致するか
+          const isMatched = lostFeats.some(lf => lf.includes(f) || f.includes(lf));
+          if (isMatched) {
+            b.style.cssText = 'background:rgba(46,204,113,0.15); border:1px solid var(--found); color:var(--found); font-weight:700; margin:2px 4px 2px 0; display:inline-block;';
+          } else {
+            b.style.cssText = 'background:var(--bg-dark); border:1px solid var(--border); margin:2px 4px 2px 0; display:inline-block;';
+          }
+          b.textContent = f;
+          foundFeaturesEl.appendChild(b);
+        });
+        if (found.details) {
+          const p = document.createElement('div');
+          p.style.cssText = 'font-size:0.8rem; color:var(--text-secondary); margin-top:6px; white-space:pre-wrap;';
+          p.textContent = found.details;
+          foundFeaturesEl.appendChild(p);
+        }
+      }
+
+      // 4. アクションボタン
+      const btnContact = document.getElementById('btnContactReporter');
+      btnContact.href = `chat.html?target_id=${encodeURIComponent(found.id)}&type=found`;
+
+      const btnMap = document.getElementById('btnViewOnMap');
+      if (found.lat && found.lng) {
+        btnMap.href = `map.html?lat=${found.lat}&lng=${found.lng}&zoom=15`;
+      } else {
+        btnMap.href = 'map.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initMatchingPage);
+  </script>
 </body>
 
 </html>

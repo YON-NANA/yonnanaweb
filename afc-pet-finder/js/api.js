@@ -261,7 +261,8 @@ async function deleteFoundPet(id) {
 // ─── 迷子ペット一覧取得 ────────────────────────────────────────
 async function fetchLostPets(limit = 50) {
   try {
-    return await sbFetch(`/rest/v1/lost_pets?status=neq.protecting&status=neq.witness&select=*&order=created_at.desc&limit=${limit}`);
+    const data = await sbFetch(`/rest/v1/lost_pets?status=neq.protecting&status=neq.witness&pet_name=neq.RLS_test&select=*&order=created_at.desc&limit=${limit}`);
+    return (data || []).filter(item => item.pet_name !== 'RLS_test');
   } catch (e) {
     console.error('fetchLostPets error:', e);
     return [];
@@ -273,7 +274,7 @@ async function fetchFoundPets(limit = 50) {
   try {
     const [foundData, fallbackData] = await Promise.all([
       sbFetch(`/rest/v1/found_pets?select=*&order=created_at.desc&limit=${limit}`).catch(() => []),
-      sbFetch(`/rest/v1/lost_pets?status=in.(protecting,witness)&select=*&order=created_at.desc&limit=${limit}`).catch(() => [])
+      sbFetch(`/rest/v1/lost_pets?status=in.(protecting,witness)&pet_name=neq.RLS_test&select=*&order=created_at.desc&limit=${limit}`).catch(() => [])
     ]);
 
     const normalizedFallback = (fallbackData || []).map(item => ({
@@ -283,7 +284,7 @@ async function fetchFoundPets(limit = 50) {
       _source: 'lost_pets'
     }));
 
-    return [...(foundData || []), ...normalizedFallback];
+    return [...(foundData || []), ...normalizedFallback].filter(item => item.pet_name !== 'RLS_test');
   } catch (e) {
     console.error('fetchFoundPets error:', e);
     return [];
