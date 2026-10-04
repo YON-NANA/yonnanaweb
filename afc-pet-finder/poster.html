@@ -694,26 +694,16 @@ function downloadPDF() {
   const w = el.offsetWidth || 490;
   const h = el.offsetHeight || 693;
   
-  // GridやStickyによるズレを完全に回避するため、body直下に一時退避
-  const originalParent = el.parentElement;
-  const originalNextSibling = el.nextSibling;
-  
-  const originalStyle = {
-    position: el.style.position,
-    top: el.style.top,
-    left: el.style.left,
-    zIndex: el.style.zIndex,
-    margin: el.style.margin,
-    transform: el.style.transform
-  };
+  // Gridオフセットバグを回避するため、左側のフォーム領域を一時的に非表示にして
+  // ポスターを自然に左上(0,0)へ移動させる
+  const layout = document.querySelector('.poster-page-layout');
+  const formArea = layout ? layout.firstElementChild : null;
+  const origFormDisplay = formArea ? formArea.style.display : '';
+  if (formArea) formArea.style.display = 'none';
 
-  document.body.appendChild(el);
-  el.style.position = 'absolute';
-  el.style.top = '0';
-  el.style.left = '0';
-  el.style.zIndex = '9999';
-  el.style.margin = '0';
-  el.style.transform = 'none';
+  const parent = el.parentElement;
+  const origParentPos = parent ? parent.style.position : '';
+  if (parent) parent.style.position = 'static';
 
   const opt = {
     margin: 0,
@@ -738,16 +728,14 @@ function downloadPDF() {
     // 元に戻す
     el.style.borderRadius = originalRadius;
     el.style.boxShadow = originalShadow;
-    Object.assign(el.style, originalStyle);
-    if (originalParent) {
-      originalParent.insertBefore(el, originalNextSibling);
-    }
+    if (formArea) formArea.style.display = origFormDisplay;
+    if (parent) parent.style.position = origParentPos;
   }).catch(err => {
     // 元に戻す
-    Object.assign(el.style, originalStyle);
-    if (originalParent) {
-      originalParent.insertBefore(el, originalNextSibling);
-    }
+    el.style.borderRadius = originalRadius;
+    el.style.boxShadow = originalShadow;
+    if (formArea) formArea.style.display = origFormDisplay;
+    if (parent) parent.style.position = origParentPos;
     alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
     console.error(err);
   });
