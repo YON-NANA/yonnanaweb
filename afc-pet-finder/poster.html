@@ -230,13 +230,18 @@
               <span style="font-size:0.9rem;">写真が登録されていません</span>
             </div>
             <span class="poster-animal-type" id="posterAnimalType">猫・メス</span>
-            <span class="poster-days-elapsed" id="posterDaysElapsed">行方不明 3日目</span>
           </div>
 
           <!-- 本文 -->
           <div class="poster-body">
-            <div class="poster-pet-name" id="posterName">クロ</div>
-            <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <div class="poster-pet-name" id="posterName">クロ</div>
+                <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
+              </div>
+              <div id="posterDetails" style="font-size:11px; color:#444; max-width:55%; text-align:right; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-height:1.4; word-break:break-word;">
+              </div>
+            </div>
             <hr class="poster-divider">
 
             <div class="poster-info-grid">
@@ -544,9 +549,10 @@ function updatePoster() {
   const msg = document.getElementById('customMessage')?.value || '目撃情報のみでも大変助かります。お気軽にご連絡ください。';
 
   document.getElementById('posterName').textContent = p.name;
+  const detailsEl = document.getElementById('posterDetails');
+  if (detailsEl) detailsEl.textContent = p.details || '';
   document.getElementById('posterBreed').textContent = `${p.breed}${p.age ? '・' + p.age : ''}`;
   document.getElementById('posterAnimalType').textContent = `${p.animal === 'cat' ? '猫' : p.animal === 'dog' ? '犬' : 'その他'}・${p.gender || '性別不明'}`;
-  document.getElementById('posterDaysElapsed').textContent = `行方不明 ${daysElapsed(p.lostAt)}日目`;
   document.getElementById('posterDate').textContent = formatDate(p.lostAt);
   document.getElementById('posterLocation').textContent = p.locationName ? (p.locationName.includes('付近') ? p.locationName : p.locationName + ' 付近') : '場所不明';
   document.getElementById('posterGender').textContent = `${p.gender || '不明'}${p.spay ? '（' + p.spay + '）' : ''}`;
