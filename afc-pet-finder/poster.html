@@ -41,8 +41,9 @@
       background: white;
       color: #1a1a1a;
       width: 490px;
-      height: 693px;
-      overflow: hidden;
+      min-height: 693px;
+      display: flex;
+      flex-direction: column;
       font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
       border-radius: 16px;
       overflow: hidden;
@@ -58,7 +59,7 @@
     .poster-title-text { font-size: 28px; font-weight: 900; letter-spacing: 0.05em; color: #FFD700; }
     .poster-subtitle { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
     .poster-photo-area { position: relative; background: #f0f0f0; }
-    .poster-main-photo { width: 100%; height: 280px; object-fit: contain; display: block; }
+    .poster-main-photo { width: 100%; height: 250px; object-fit: contain; display: block; }
     .poster-animal-type { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
     .poster-days-elapsed { position: absolute; top: 12px; left: 12px; background: #FF6B35; color: white; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; }
     .poster-body { padding: 20px 24px; }
@@ -225,7 +226,7 @@
           <!-- 写真エリア -->
           <div class="poster-photo-area">
             <div id="posterPhoto" class="poster-main-photo" style="background-image: url('img/placeholder-pet.jpg'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
-            <div id="posterPhotoPlaceholder" style="display:none;width:100%;height:280px;background:#e8e8e8;align-items:center;justify-content:center;flex-direction:column;color:#aaa;">
+            <div id="posterPhotoPlaceholder" style="display:none;width:100%;height:250px;background:#e8e8e8;align-items:center;justify-content:center;flex-direction:column;color:#aaa;">
               <i class="fas fa-camera" style="font-size:3rem;margin-bottom:8px;"></i>
               <span style="font-size:0.9rem;">写真が登録されていません</span>
             </div>
@@ -697,6 +698,7 @@ function downloadPDF() {
     margin: 0,
     filename: `迷子ポスター_${name}_AFC.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
     html2canvas: { 
       scale: 3, 
       useCORS: true, 
