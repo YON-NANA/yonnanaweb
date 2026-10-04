@@ -709,12 +709,28 @@ function downloadPDF() {
   
   const originalRadius = el.style.borderRadius;
   const originalShadow = el.style.boxShadow;
+  const originalPosition = el.style.position;
+  const originalLeft = el.style.left;
+  const originalTop = el.style.top;
+  const originalTransform = el.style.transform;
+  const originalMargin = el.style.margin;
+
   el.style.borderRadius = '0';
   el.style.boxShadow = 'none';
+  el.style.position = 'absolute';
+  el.style.left = '0';
+  el.style.top = '0';
+  el.style.transform = 'none';
+  el.style.margin = '0';
 
   html2pdf().set(opt).from(el).save().then(() => {
     el.style.borderRadius = originalRadius;
     el.style.boxShadow = originalShadow;
+    el.style.position = originalPosition;
+    el.style.left = originalLeft;
+    el.style.top = originalTop;
+    el.style.transform = originalTransform;
+    el.style.margin = originalMargin;
   }).catch(err => {
     alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
     console.error(err);
