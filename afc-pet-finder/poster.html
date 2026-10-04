@@ -687,14 +687,34 @@ function downloadPDF() {
     return;
   }
   
-  // 画面がスクロールされていると白紙になることがあるためトップに戻す
   window.scrollTo(0, 0);
   
   const el = document.getElementById('posterExport');
   const name = currentPet ? currentPet.name : 'ペット';
   const w = el.offsetWidth || 490;
   const h = el.offsetHeight || 693;
-  const rect = el.getBoundingClientRect();
+  
+  // GridやStickyによるズレを完全に回避するため、body直下に一時退避
+  const originalParent = el.parentElement;
+  const originalNextSibling = el.nextSibling;
+  
+  const originalStyle = {
+    position: el.style.position,
+    top: el.style.top,
+    left: el.style.left,
+    zIndex: el.style.zIndex,
+    margin: el.style.margin,
+    transform: el.style.transform
+  };
+
+  document.body.appendChild(el);
+  el.style.position = 'absolute';
+  el.style.top = '0';
+  el.style.left = '0';
+  el.style.zIndex = '9999';
+  el.style.margin = '0';
+  el.style.transform = 'none';
+
   const opt = {
     margin: 0,
     filename: `迷子ポスター_${name}_AFC.pdf`,
@@ -704,9 +724,7 @@ function downloadPDF() {
       useCORS: true, 
       allowTaint: true,
       scrollY: 0,
-      scrollX: 0,
-      x: window.scrollX + rect.left + 2.5,
-      y: window.scrollY + rect.top
+      scrollX: 0
     },
     jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
   };
@@ -716,16 +734,20 @@ function downloadPDF() {
   el.style.borderRadius = '0';
   el.style.boxShadow = 'none';
 
-  // 親要素のstickyがキャプチャ位置をズレさせる原因になるため一時的に解除
-  const parent = el.parentElement;
-  const originalParentPosition = parent ? parent.style.position : '';
-  if (parent) parent.style.position = 'static';
-
   html2pdf().set(opt).from(el).save().then(() => {
+    // 元に戻す
     el.style.borderRadius = originalRadius;
     el.style.boxShadow = originalShadow;
-    if (parent) parent.style.position = originalParentPosition;
+    Object.assign(el.style, originalStyle);
+    if (originalParent) {
+      originalParent.insertBefore(el, originalNextSibling);
+    }
   }).catch(err => {
+    // 元に戻す
+    Object.assign(el.style, originalStyle);
+    if (originalParent) {
+      originalParent.insertBefore(el, originalNextSibling);
+    }
     alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
     console.error(err);
   });
