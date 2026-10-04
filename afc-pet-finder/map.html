@@ -172,7 +172,7 @@
     .pet-popup-img-wrapper img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
     .pet-popup-img-wrapper .no-img-placeholder {
       width: 100%;
@@ -372,7 +372,7 @@
       const petEmoji = item.pet_type === 'cat' ? '🐱' : (item.pet_type === 'dog' ? '🐶' : '🐾');
       const imgSrc = item.image_url || item.photo;
       const avatarHtml = imgSrc
-        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:contain;" onerror="this.style.opacity='0';"></div>`
         : `<span class="pin-fallback-icon">${petEmoji}</span>`;
 
       const customIcon = L.divIcon({
@@ -391,7 +391,7 @@
       const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
 
       const photoHeader = imgSrc
-        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${item.pet_name || '迷子'}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:contain;" onerror="this.style.opacity='0';">`
         : `<div class="no-img-placeholder">${petEmoji}</div>`;
 
       const tags = Array.isArray(item.features) && item.features.length > 0
@@ -450,7 +450,7 @@
       const petEmoji = isCat ? '🐱' : (isDog ? '🐶' : '🐾');
       const imgSrc = item.image_url || item.photo;
       const avatarHtml = imgSrc
-        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';"></div>`
+        ? `<div style="position:relative;width:100%;height:100%;"><span class="pin-fallback-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;">${petEmoji}</span><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:contain;" onerror="this.style.opacity='0';"></div>`
         : `<span class="pin-fallback-icon">${petEmoji}</span>`;
 
       const customIcon = L.divIcon({
@@ -469,7 +469,7 @@
       const m = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
 
       const photoHeader = imgSrc
-        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;" onerror="this.style.opacity='0';">`
+        ? `<div class="no-img-placeholder" style="position:absolute;inset:0;z-index:1;">${petEmoji}</div><img src="${imgSrc}" alt="${label}" style="position:relative;z-index:2;width:100%;height:100%;object-fit:contain;" onerror="this.style.opacity='0';">`
         : `<div class="no-img-placeholder">${petEmoji}</div>`;
 
       const detailText = item.details ? `<div style="font-size:0.75rem; color:#475569; white-space:pre-line; margin-top:4px; line-height:1.4; max-height:80px; overflow-y:auto;">${item.details}</div>` : '';
