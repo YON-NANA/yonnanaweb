@@ -59,7 +59,7 @@
     .poster-title-text { font-size: 24px; font-weight: 900; letter-spacing: 0.05em; color: #FFD700; }
     .poster-subtitle { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }
     .poster-photo-area { position: relative; background: #f0f0f0; }
-    .poster-main-photo { width: 100%; height: 180px; object-fit: contain; display: block; }
+    .poster-main-photo { width: 100%; height: 220px; object-fit: contain; display: block; }
     .poster-animal-type { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); color: white; padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; }
     .poster-days-elapsed { position: absolute; top: 12px; left: 12px; background: #FF6B35; color: white; padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; }
     .poster-body { padding: 8px 24px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
@@ -694,6 +694,7 @@ function downloadPDF() {
   const name = currentPet ? currentPet.name : 'ペット';
   const w = el.offsetWidth || 490;
   const h = el.offsetHeight || 693;
+  const rect = el.getBoundingClientRect();
   const opt = {
     margin: 0,
     filename: `迷子ポスター_${name}_AFC.pdf`,
@@ -703,7 +704,9 @@ function downloadPDF() {
       useCORS: true, 
       allowTaint: true,
       scrollY: 0,
-      scrollX: 0
+      scrollX: 0,
+      x: window.scrollX + rect.left + 2.5,
+      y: window.scrollY + rect.top
     },
     jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
   };
