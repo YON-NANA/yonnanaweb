@@ -687,23 +687,40 @@ function downloadPDF() {
     return;
   }
   
-  window.scrollTo(0, 0);
-  
   const el = document.getElementById('posterExport');
   const name = currentPet ? currentPet.name : 'ペット';
-  const w = el.offsetWidth || 490;
-  const h = el.offsetHeight || 693;
-  
-  // Gridオフセットバグを回避するため、左側のフォーム領域を一時的に非表示にして
-  // ポスターを自然に左上(0,0)へ移動させる
-  const layout = document.querySelector('.poster-page-layout');
-  const formArea = layout ? layout.firstElementChild : null;
-  const origFormDisplay = formArea ? formArea.style.display : '';
-  if (formArea) formArea.style.display = 'none';
+  const w = 490;
+  const h = 693;
 
-  const parent = el.parentElement;
-  const origParentPos = parent ? parent.style.position : '';
-  if (parent) parent.style.position = 'static';
+  // 1. スクロールによる位置ズレや白紙化を防ぐため、スムーズスクロールを一時無効化して即時トップへ
+  const origScrollBehavior = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+
+  // 2. html2canvasがposition:stickyやcalc()の計算でズレるバグを防ぐため一時的にrelativeへ
+  const stickyParent = el.closest('.controls-sticky');
+  const origStickyPos = stickyParent ? stickyParent.style.position : '';
+  const origStickyTop = stickyParent ? stickyParent.style.top : '';
+  if (stickyParent) {
+    stickyParent.style.position = 'relative';
+    stickyParent.style.top = '0';
+  }
+
+  // 3. 角丸・影を一時的に除去（PDFの端にゴミが出ないように）
+  const originalRadius = el.style.borderRadius;
+  const originalShadow = el.style.boxShadow;
+  el.style.borderRadius = '0';
+  el.style.boxShadow = 'none';
+
+  const cleanup = () => {
+    el.style.borderRadius = originalRadius;
+    el.style.boxShadow = originalShadow;
+    if (stickyParent) {
+      stickyParent.style.position = origStickyPos;
+      stickyParent.style.top = origStickyTop;
+    }
+    document.documentElement.style.scrollBehavior = origScrollBehavior;
+  };
 
   const opt = {
     margin: 0,
@@ -718,26 +735,18 @@ function downloadPDF() {
     },
     jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
   };
-  
-  const originalRadius = el.style.borderRadius;
-  const originalShadow = el.style.boxShadow;
-  el.style.borderRadius = '0';
-  el.style.boxShadow = 'none';
 
-  html2pdf().set(opt).from(el).save().then(() => {
-    // 元に戻す
-    el.style.borderRadius = originalRadius;
-    el.style.boxShadow = originalShadow;
-    if (formArea) formArea.style.display = origFormDisplay;
-    if (parent) parent.style.position = origParentPos;
-  }).catch(err => {
-    // 元に戻す
-    el.style.borderRadius = originalRadius;
-    el.style.boxShadow = originalShadow;
-    if (formArea) formArea.style.display = origFormDisplay;
-    if (parent) parent.style.position = origParentPos;
-    alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
-    console.error(err);
+  // ブラウザのレイアウト再計算が完了してから確実にキャプチャを実行
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      html2pdf().set(opt).from(el).save().then(() => {
+        cleanup();
+      }).catch(err => {
+        cleanup();
+        alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
+        console.error(err);
+      });
+    }, 50);
   });
 }
 
