@@ -704,7 +704,7 @@ function downloadPDF() {
       allowTaint: true,
       scrollY: 0
     },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
   };
   
   const originalRadius = el.style.borderRadius;
