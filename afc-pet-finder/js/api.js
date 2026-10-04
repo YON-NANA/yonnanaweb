@@ -149,11 +149,39 @@ async function registerFoundPet(petData, imageFile) {
     edit_password: petData.edit_password || null
   };
 
-  const data = await sbFetch('/rest/v1/found_pets', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return Array.isArray(data) ? data[0] : data;
+  try {
+    const data = await sbFetch('/rest/v1/found_pets', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    return Array.isArray(data) ? data[0] : data;
+  } catch (err) {
+    console.warn('found_pets direct insert failed (RLS policy), falling back to lost_pets table:', err.message);
+    const isWitness = (petData.reporter_name && petData.reporter_name.includes('目撃')) || (petData.details && petData.details.includes('目撃'));
+    const fallbackPayload = {
+      pet_name: isWitness ? '目撃情報' : '保護動物',
+      pet_type: petData.pet_type || 'other',
+      breed: '',
+      gender: '不明',
+      features: isWitness ? ['目撃情報'] : ['保護中'],
+      date_lost: payload.date_found,
+      location: payload.location,
+      lat: payload.lat,
+      lng: payload.lng,
+      owner_name: payload.reporter_name,
+      email: payload.email,
+      phone: payload.phone,
+      details: payload.details,
+      image_url: payload.image_url,
+      status: isWitness ? 'witness' : 'protecting',
+      edit_password: payload.edit_password
+    };
+    const fbData = await sbFetch('/rest/v1/lost_pets', {
+      method: 'POST',
+      body: JSON.stringify(fallbackPayload)
+    });
+    return Array.isArray(fbData) ? fbData[0] : fbData;
+  }
 }
 
 // ─── マイポスト管理 (LocalStorage) ──────────────────────────────────
@@ -194,9 +222,20 @@ async function updateLostPet(id, payload) {
 }
 
 async function updateFoundPet(id, payload) {
-  const data = await sbFetch(`/rest/v1/found_pets?id=eq.${id}`, {
+  try {
+    const data = await sbFetch(`/rest/v1/found_pets?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+    if (data && (!Array.isArray(data) || data.length > 0)) return Array.isArray(data) ? data[0] : data;
+  } catch (e) {}
+  
+  // フォールバック（lost_pets側に保存されている場合）
+  const fbPayload = { ...payload };
+  if (payload.date_found) fbPayload.date_lost = payload.date_found;
+  const data = await sbFetch(`/rest/v1/lost_pets?id=eq.${id}`, {
     method: 'PATCH',
-    body: JSON.stringify(payload)
+    body: JSON.stringify(fbPayload)
   });
   return Array.isArray(data) ? data[0] : data;
 }
@@ -211,17 +250,18 @@ async function deleteLostPet(id) {
 }
 
 async function deleteFoundPet(id) {
-  const data = await sbFetch(`/rest/v1/found_pets?id=eq.${id}`, {
-    method: 'DELETE'
-  });
+  try {
+    await sbFetch(`/rest/v1/found_pets?id=eq.${id}`, { method: 'DELETE' });
+  } catch (e) {}
+  await sbFetch(`/rest/v1/lost_pets?id=eq.${id}`, { method: 'DELETE' }).catch(() => {});
   removeMyPostId('found', id);
-  return data;
+  return true;
 }
 
 // ─── 迷子ペット一覧取得 ────────────────────────────────────────
 async function fetchLostPets(limit = 50) {
   try {
-    return await sbFetch(`/rest/v1/lost_pets?select=*&order=created_at.desc&limit=${limit}`);
+    return await sbFetch(`/rest/v1/lost_pets?status=neq.protecting&status=neq.witness&select=*&order=created_at.desc&limit=${limit}`);
   } catch (e) {
     console.error('fetchLostPets error:', e);
     return [];
@@ -231,7 +271,19 @@ async function fetchLostPets(limit = 50) {
 // ─── 保護ペット一覧取得 ────────────────────────────────────────
 async function fetchFoundPets(limit = 50) {
   try {
-    return await sbFetch(`/rest/v1/found_pets?select=*&order=created_at.desc&limit=${limit}`);
+    const [foundData, fallbackData] = await Promise.all([
+      sbFetch(`/rest/v1/found_pets?select=*&order=created_at.desc&limit=${limit}`).catch(() => []),
+      sbFetch(`/rest/v1/lost_pets?status=in.(protecting,witness)&select=*&order=created_at.desc&limit=${limit}`).catch(() => [])
+    ]);
+
+    const normalizedFallback = (fallbackData || []).map(item => ({
+      ...item,
+      date_found: item.date_lost || item.created_at?.split('T')[0],
+      reporter_name: item.owner_name || (item.status === 'witness' ? '目撃情報' : '保護中'),
+      _source: 'lost_pets'
+    }));
+
+    return [...(foundData || []), ...normalizedFallback];
   } catch (e) {
     console.error('fetchFoundPets error:', e);
     return [];

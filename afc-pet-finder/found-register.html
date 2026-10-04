@@ -97,7 +97,7 @@
       }
     }
   </style>
-  <script src="js/api.js?v=28" defer></script>
+  <script src="js/api.js?v=30" defer></script>
 </head>
 
 <body>
@@ -663,7 +663,8 @@
           email: document.getElementById('foundContactEmail')?.value.trim() || '',
           phone: '',
           details: detailParts,
-          edit_password: document.getElementById('editPassword')?.value || ''
+          edit_password: document.getElementById('editPassword')?.value || '',
+          pet_type: selectedAnimalFound || 'other'
         };
 
         const registered = await window.api.registerFoundPet(petData, selectedFoundImageFile);

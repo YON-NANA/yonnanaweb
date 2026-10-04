@@ -247,7 +247,7 @@
       opacity: 0.9;
     }
   </style>
-  <script src="js/api.js?v=29" defer></script>
+  <script src="js/api.js?v=30" defer></script>
 </head>
 <body>
 
@@ -368,6 +368,7 @@
 
     // 迷子マーカーの生成
     for (const item of (lostList || [])) {
+      if (item.status === 'protecting' || item.status === 'witness') continue;
       const coords = await resolveItemCoords(item);
       if (!coords) continue;
 
