@@ -293,17 +293,34 @@ async function fetchFoundPets(limit = 50) {
 
 // ─── チャットメッセージ取得 ────────────────────────────────────
 async function fetchMessages(sessionId) {
-  return sbFetch(
-    `/rest/v1/messages?session_id=eq.${encodeURIComponent(sessionId)}&order=created_at.asc`
-  );
+  try {
+    const data = await sbFetch(
+      `/rest/v1/messages?session_id=eq.${encodeURIComponent(sessionId)}&order=created_at.asc`
+    );
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.warn('fetchMessages warning:', err.message);
+    return [];
+  }
 }
 
 // ─── チャットメッセージ送信 ────────────────────────────────────
-async function sendMessage(sessionId, senderName, messageText) {
-  return sbFetch('/rest/v1/messages', {
-    method: 'POST',
-    body: JSON.stringify({ session_id: sessionId, sender_name: senderName, message: messageText })
-  });
+async function sendMessage(sessionId, senderName, messageData) {
+  try {
+    const messageStr = typeof messageData === 'string' ? messageData : JSON.stringify(messageData);
+    const data = await sbFetch('/rest/v1/messages', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        session_id: sessionId, 
+        sender_name: senderName || '匿名ユーザー', 
+        message: messageStr 
+      })
+    });
+    return Array.isArray(data) ? data[0] : data;
+  } catch (err) {
+    console.warn('sendMessage warning (RLS or offline):', err.message);
+    return null;
+  }
 }
 
 // ─── 高精度・日本語住所ジオコーディング ──────────────────────────

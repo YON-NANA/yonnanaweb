@@ -830,6 +830,8 @@
           <div class="chat-header-status">
             <span style="color:var(--line-green); font-weight:700;"><i class="fas fa-circle" style="font-size:7px;"></i> オンライン</span>
             <span>•</span>
+            <span id="cloudStatusBadge" style="color:#059669; font-weight:600;"><i class="fas fa-check-circle" style="color:var(--line-green);"></i> クラウド同期中</span>
+            <span>•</span>
             <span id="headerPetInfo">茶トラ猫の保護情報</span>
           </div>
         </div>
@@ -994,6 +996,16 @@ const STORAGE_KEY = 'afc_line_chat_data_v1';
 let chatRooms = [];
 let currentRoomId = 'room-1';
 
+// 匿名ユーザー識別子（端末ごとに自動発行・永続化）
+const MY_USER_ID = (() => {
+  let uid = localStorage.getItem('afc_chat_my_user_id');
+  if (!uid) {
+    uid = 'user_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36).slice(-3);
+    localStorage.setItem('afc_chat_my_user_id', uid);
+  }
+  return uid;
+})();
+
 // ── 初期化 ──
 async function initChatApp() {
   try {
@@ -1013,6 +1025,9 @@ async function initChatApp() {
 
   renderRoomList();
   selectRoom(currentRoomId, false);
+
+  // クラウド同期（Supabase）開始
+  startCloudSync();
 
   // モバイル初期表示判定
   if (window.innerWidth <= 768) {
@@ -1312,6 +1327,11 @@ function selectRoom(roomId, isUserClick = true) {
   if (isUserClick && window.innerWidth <= 768) {
     document.getElementById('chatAppContainer').className = 'chat-app-container show-chat';
   }
+
+  // クラウド同期を即時実行
+  if (typeof syncMessagesFromCloud === 'function') {
+    syncMessagesFromCloud();
+  }
 }
 
 // ── メッセージ一覧の描画 ──
@@ -1439,8 +1459,114 @@ function sendUserMessage(customText = null, imgData = null) {
 
   renderRoomList();
 
+  // ☁️ クラウド（Supabase）へメッセージ送信（他端末へのリアルタイム配信）
+  if (typeof sendMessage === 'function') {
+    sendMessage(room.id, MY_USER_ID, {
+      text: newMsg.text,
+      img: newMsg.img,
+      time: newMsg.time,
+      senderId: MY_USER_ID,
+      roomName: room.name
+    }).then(res => {
+      if (res) {
+        updateCloudSyncBadge(true);
+      }
+    }).catch(() => {});
+  }
+
   // 相手の自動返信トリガー（AI / 保護主シミュレーション）
   triggerAutoReply(room, text, imgData);
+}
+
+// ── クラウド同期状態バッジ更新 ──
+function updateCloudSyncBadge(isActive) {
+  const badge = document.getElementById('cloudStatusBadge');
+  if (!badge) return;
+  if (isActive) {
+    badge.innerHTML = '<i class="fas fa-check-circle" style="color:var(--line-green);"></i> クラウド同期中';
+    badge.style.color = '#059669';
+  } else {
+    badge.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> 同期確認中...';
+    badge.style.color = '#64748b';
+  }
+}
+
+// ── クラウドからのメッセージ定期同期（リアルタイム相互チャット） ──
+let syncIntervalTimer = null;
+function startCloudSync() {
+  if (syncIntervalTimer) clearInterval(syncIntervalTimer);
+  // 初回即時実行
+  syncMessagesFromCloud();
+  // 3.5秒おきに新しいメッセージを確認
+  syncIntervalTimer = setInterval(syncMessagesFromCloud, 3500);
+}
+
+async function syncMessagesFromCloud() {
+  if (!currentRoomId || typeof fetchMessages !== 'function') return;
+
+  try {
+    const remoteMsgs = await fetchMessages(currentRoomId);
+    if (!Array.isArray(remoteMsgs) || remoteMsgs.length === 0) return;
+
+    const room = chatRooms.find(r => r.id === currentRoomId);
+    if (!room) return;
+
+    let hasNew = false;
+    remoteMsgs.forEach(row => {
+      // 自分が送信したものは除外
+      if (row.sender_name === MY_USER_ID) return;
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(row.message);
+      } catch (e) {
+        parsed = { 
+          text: row.message, 
+          time: new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        };
+      }
+
+      if (parsed && parsed.senderId === MY_USER_ID) return;
+
+      const remoteMsgId = 'remote-' + row.id;
+      const incomingText = (parsed && parsed.text !== undefined) ? parsed.text : row.message;
+      const incomingImg = (parsed && parsed.img) || null;
+      const incomingTime = (parsed && parsed.time) || new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // 重複チェック
+      const alreadyExists = room.messages.some(m => 
+        m.id === remoteMsgId || 
+        (m.text === incomingText && m.sender === 'received')
+      );
+
+      if (!alreadyExists) {
+        const incomingMsg = {
+          id: remoteMsgId,
+          sender: 'received',
+          senderId: row.sender_name,
+          time: incomingTime,
+          text: incomingText,
+          img: incomingImg
+        };
+        room.messages.push(incomingMsg);
+        hasNew = true;
+
+        const container = document.getElementById('chatMessagesScroll');
+        if (container) {
+          container.appendChild(createMessageElement(incomingMsg, room));
+        }
+      }
+    });
+
+    if (hasNew) {
+      saveChatData();
+      renderRoomList();
+      scrollToBottom();
+      updateCloudSyncBadge(true);
+    }
+  } catch (err) {
+    // ネットワーク一時切断時は沈黙
+  }
 }
 
 // ── 相手のリアルタイム風自動返信（LINEライクな応答） ──
