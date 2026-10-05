@@ -2,66 +2,754 @@
 <html lang="ja">
 <head>
   <script>
-  window.deferredPrompt = window.deferredPrompt || null;
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    window.deferredPrompt = e;
-    console.log('⚡ Early beforeinstallprompt captured!');
-  });
-</script>
+    window.deferredPrompt = window.deferredPrompt || null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      console.log('⚡ Early beforeinstallprompt captured!');
+    });
+  </script>
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>匿名チャット — AFC Pet Finder</title>
-  <meta name="description" content="保護主と飼い主が安全に連絡を取り合える完全匿名のチャットシステム。">
+  <meta name="description" content="保護主と飼い主が安全に連絡を取り合えるLINE風の完全匿名チャットシステム。">
   <link rel="stylesheet" href="css/style.css?v=28">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-              <!-- PWA & App Icon -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- PWA & App Icon -->
   <link rel="manifest" href="manifest.json?v=28">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=19">
   <link rel="shortcut icon" href="favicon.ico?v=19">
   <link rel="icon" type="image/png" sizes="256x256" href="icons/icon-256.png?v=19">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=19">
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=19">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png?v=19">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=19">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <style>
-    .chat-layout { display: grid; grid-template-columns: 320px 1fr; height: calc(100vh - var(--nav-height) - 40px); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-dark); margin-top: var(--space-md); }
-    .chat-sidebar { border-right: 1px solid var(--border); background: var(--bg-deep); display: flex; flex-direction: column; }
-    .chat-list { flex: 1; overflow-y: auto; }
-    .chat-room { padding: var(--space-md); border-bottom: 1px solid var(--glass-border); cursor: pointer; transition: background 0.2s; display: flex; gap: 12px; align-items: center; }
-    .chat-room:hover { background: rgba(255,255,255,0.02); }
-    .chat-room.active { background: rgba(201,168,76,0.1); border-left: 3px solid var(--gold); }
-    .room-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #333; }
-    .chat-main { display: flex; flex-direction: column; background: var(--bg-card); position: relative; }
-    .chat-header { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; }
-    .messages-area { flex: 1; padding: var(--space-lg); overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-md); }
-    
-    .msg-bubble { max-width: 70%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; }
-    .msg-received .msg-bubble { background: rgba(255,255,255,0.1); border-bottom-left-radius: 4px; }
-    .msg-sent { align-self: flex-end; }
-    .msg-sent .msg-bubble { background: var(--primary-light); color: #fff; border-bottom-right-radius: 4px; }
-    
-    .chat-input-area { padding: var(--space-md); border-top: 1px solid var(--border); background: var(--bg-deep); display: flex; gap: 12px; align-items: flex-end; }
-    .chat-input { flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: #fff; border-radius: 24px; padding: 12px 20px; outline: none; font-family: inherit; resize: none; min-height: 48px; max-height: 120px; }
-    .chat-input:focus { border-color: var(--primary-light); }
-    .btn-send { width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: var(--bg-deep); border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
-    .btn-send:hover { transform: scale(1.05); }
 
-    .privacy-notice { background: rgba(231,76,60,0.1); border: 1px solid var(--alert); padding: 10px 16px; font-size: 0.85rem; color: #fff; display: flex; align-items: flex-start; gap: 10px; margin: var(--space-sm) var(--space-lg); border-radius: var(--radius-md); }
-    
+  <style>
+    /* ─── LINE風チャット全体レイアウト ─── */
+    :root {
+      --line-bg: #7494c0;          /* LINEおなじみのトーク背景 */
+      --line-green: #06c755;       /* LINE公式グリーン */
+      --line-green-hover: #05b34c;
+      --line-bubble-received: #ffffff;
+      --line-text-dark: #111827;
+      --line-subtext: rgba(255, 255, 255, 0.85);
+      --line-read-text: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+      background: var(--bg-deep, #0f172a);
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .chat-app-container {
+      max-width: 1080px;
+      margin: 16px auto 32px auto;
+      height: calc(100vh - var(--nav-height, 64px) - 40px);
+      min-height: 560px;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ── 左側：トーク一覧（サイドバー） ── */
+    .chat-sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-badge {
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+
+    .sidebar-search {
+      padding: 10px 14px;
+      background: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .sidebar-search-box {
+      background: #f1f5f9;
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .sidebar-search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 0.85rem;
+      color: #1e293b;
+    }
+
+    .chat-room-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .room-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      position: relative;
+    }
+
+    .room-item:hover {
+      background: #f8fafc;
+    }
+
+    .room-item.active {
+      background: #f1f5f9;
+      border-left: 4px solid var(--line-green);
+    }
+
+    .room-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .room-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+    }
+
+    .room-online-dot {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 13px;
+      height: 13px;
+      background: var(--line-green);
+      border: 2.5px solid #ffffff;
+      border-radius: 50%;
+    }
+
+    .room-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .room-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .room-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-time {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .room-last-msg {
+      font-size: 0.82rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+
+    .room-badge {
+      background: var(--line-green);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ── 右側：LINEトークメイン画面 ── */
+    .chat-room-main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--line-bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* トーク上部ヘッダー */
+    .chat-top-header {
+      background: #ffffff;
+      padding: 10px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .btn-back-rooms {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      color: #1e293b;
+      cursor: pointer;
+      padding: 4px 8px 4px 0;
+    }
+
+    .chat-header-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .chat-header-details {
+      min-width: 0;
+    }
+
+    .chat-header-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #0f172a;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-header-status {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header-action {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-header-action:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    /* ─── 上部注意喚起バナー（詐欺防止：白飛び完全解消） ─── */
+    .chat-safety-banner {
+      background: #fff1f2;
+      border-bottom: 1.5px solid #fecdd3;
+      padding: 8px 16px;
+      color: #9f1239;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      z-index: 9;
+      box-shadow: 0 2px 6px rgba(159, 18, 57, 0.08);
+      position: relative;
+    }
+
+    .chat-safety-icon {
+      color: #e11d48;
+      font-size: 1.1rem;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .chat-safety-body strong {
+      color: #be123c;
+      font-weight: 800;
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+
+    .chat-safety-body p {
+      margin: 0;
+      color: #881337;
+      font-size: 0.8rem;
+    }
+
+    .chat-safety-toggle {
+      background: none;
+      border: none;
+      color: #be123c;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      font-size: 0.78rem;
+    }
+
+    /* ─── メッセージ表示エリア ─── */
+    .chat-messages-scroll {
+      flex: 1;
+      padding: 16px 16px 20px 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* 日付バッジ（LINE中央バッジ） */
+    .chat-date-divider {
+      align-self: center;
+      background: rgba(0, 0, 0, 0.22);
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin: 8px 0 4px 0;
+      letter-spacing: 0.03em;
+    }
+
+    /* 相手のメッセージ行（左側） */
+    .chat-msg-row-received {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 82%;
+      animation: fadeInMsg 0.2s ease-out;
+    }
+
+    .msg-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    .msg-content-received {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .msg-sender-name {
+      font-size: 11.5px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 3px;
+      margin-left: 2px;
+      font-weight: 500;
+    }
+
+    .msg-bubble-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    /* 相手の白い吹き出し（角丸＋左シッポ） */
+    .bubble-received {
+      background: #ffffff;
+      color: #1e293b;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border-top-left-radius: 3px;
+      font-size: 0.93rem;
+      line-height: 1.5;
+      word-break: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+      position: relative;
+    }
+
+    .msg-time {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.85);
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+
+    /* 自分のメッセージ行（右側） */
+    .chat-msg-row-sent {
+      align-self: flex-end;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      max-width: 82%;
+      animation: fadeInMsg 0.2s ease-out;
+    }
+
+    .sent-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-bottom: 2px;
+    }
+
+    .sent-read-label {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    /* 自分の緑の吹き出し（角丸＋右シッポ） */
+    .bubble-sent {
+      background: var(--line-green);
+      color: #ffffff;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border-top-right-radius: 3px;
+      font-size: 0.93rem;
+      line-height: 1.5;
+      word-break: break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    /* 画像メッセージ吹き出し */
+    .bubble-img-wrap {
+      max-width: 240px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .bubble-img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.2s;
+    }
+
+    .bubble-img-wrap img:hover {
+      transform: scale(1.02);
+    }
+
+    /* LINE風「入力中...」アニメーション吹き出し */
+    .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 14px;
+      border-top-left-radius: 3px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-5px); background: var(--line-green); }
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── クイック返信サジェストチップス ─── */
+    .quick-replies-bar {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px 12px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+
+    .quick-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .quick-chip:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
+
+    /* ─── LINE風下部入力エリア ─── */
+    .chat-bottom-bar {
+      background: #ffffff;
+      padding: 10px 14px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .btn-input-tool {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 1.3rem;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-input-tool:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .chat-input-field-wrap {
+      flex: 1;
+      background: #f1f5f9;
+      border-radius: 22px;
+      padding: 4px 14px;
+      display: flex;
+      align-items: center;
+      border: 1px solid transparent;
+      transition: border 0.15s, background 0.15s;
+    }
+
+    .chat-input-field-wrap:focus-within {
+      background: #ffffff;
+      border-color: var(--line-green);
+      box-shadow: 0 0 0 2px rgba(6, 199, 85, 0.15);
+    }
+
+    .chat-text-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.95rem;
+      color: #0f172a;
+      resize: none;
+      padding: 6px 0;
+      max-height: 100px;
+      min-height: 24px;
+      line-height: 1.4;
+      font-family: inherit;
+    }
+
+    .btn-send-line {
+      background: var(--line-green);
+      color: #ffffff;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.05rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-send-line:hover {
+      background: var(--line-green-hover);
+      transform: scale(1.05);
+    }
+
+    .btn-send-line:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ─── メニューポップアップ ─── */
+    .chat-menu-dropdown {
+      position: absolute;
+      top: 55px;
+      right: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      width: 200px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .chat-menu-item {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+
+    .chat-menu-item:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .chat-menu-item.danger {
+      color: #ef4444;
+    }
+
+    /* ─── スマホ対応（768px以下） ─── */
     @media (max-width: 768px) {
-      .chat-layout { grid-template-columns: 1fr; }
-      .chat-sidebar { display: none; } /* On mobile, we would toggle this */
+      .chat-app-container {
+        margin: 0;
+        height: calc(100vh - var(--nav-height, 64px));
+        border-radius: 0;
+        border: none;
+        grid-template-columns: 1fr;
+      }
+
+      /* スマホ表示切替：一覧ビュー vs トーク画面ビュー */
+      .chat-app-container.show-chat .chat-sidebar {
+        display: none;
+      }
+      .chat-app-container.show-chat .chat-room-main {
+        display: flex;
+      }
+
+      .chat-app-container.show-list .chat-sidebar {
+        display: flex;
+        width: 100%;
+      }
+      .chat-app-container.show-list .chat-room-main {
+        display: none;
+      }
+
+      .btn-back-rooms {
+        display: inline-flex;
+      }
+
+      .chat-messages-scroll {
+        padding: 12px 10px 16px 10px;
+      }
+
+      .bubble-received, .bubble-sent {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+      }
     }
   </style>
-  <script src="js/api.js?v=28" defer></script>
 </head>
 <body>
 
+<!-- ナビゲーションバー -->
 <nav class="nav">
   <div class="nav-inner">
     <div class="nav-logo">
@@ -85,85 +773,627 @@
   </div>
 </nav>
 
-<div class="page-wrapper">
-  <div class="container">
-    <div class="chat-layout">
-    
-    <!-- Sidebar -->
-    <div class="chat-sidebar">
-      <div style="padding: var(--space-md); border-bottom: 1px solid var(--border);">
-        <h3 style="font-size:1.1rem;">メッセージ</h3>
+<!-- チャットメインコンテナ（スマホ時は初期状態でトーク画面を表示） -->
+<div class="chat-app-container show-chat" id="chatAppContainer">
+
+  <!-- ─── 左側：トーク一覧 ─── -->
+  <aside class="chat-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <i class="fab fa-line" style="color:var(--line-green); font-size:1.4rem;"></i>
+        トーク一覧
+        <span class="sidebar-badge" id="unreadBadge">2</span>
       </div>
-      <div class="chat-list">
-        <div class="chat-room active">
-          <img src="img/demo-cat.jpg" class="room-avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\'><rect width=\'48\' height=\'48\' fill=\'%23444\'/></svg>'">
-          <div style="flex:1; overflow:hidden;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-              <div style="font-weight:600; font-size:0.95rem;">保護主 Aさん</div>
-              <div class="text-xs text-muted">14:30</div>
-            </div>
-            <div class="text-xs text-secondary" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-              ありがとうございます。確認します。
-            </div>
-          </div>
-        </div>
+      <button onclick="resetAllChats()" title="会話を初期化" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.85rem;">
+        <i class="fas fa-redo-alt"></i> リセット
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <div class="sidebar-search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="名前やペット名で検索..." id="roomSearchInput" oninput="filterRooms()">
       </div>
     </div>
 
-    <!-- Main Chat -->
-    <div class="chat-main">
-      <div class="chat-header">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <img src="img/demo-cat.jpg" class="room-avatar" style="width:40px; height:40px;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'%23444\'/></svg>'">
-          <div>
-            <div style="font-weight:600;">保護主 Aさん</div>
-            <div class="text-xs text-found"><i class="fas fa-circle" style="font-size:8px;"></i> オンライン</div>
+    <div class="chat-room-list" id="chatRoomList">
+      <!-- JavaScript で動的生成 -->
+    </div>
+  </aside>
+
+  <!-- ─── 右側：LINEトーク画面 ─── -->
+  <main class="chat-room-main">
+    <!-- トーク上部ヘッダー -->
+    <header class="chat-top-header">
+      <div class="chat-header-left">
+        <button class="btn-back-rooms" onclick="showRoomListOnMobile()" title="トーク一覧に戻る">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="room-avatar-wrap">
+          <img src="" id="headerAvatar" class="chat-header-avatar" alt="アバター">
+        </div>
+        <div class="chat-header-details">
+          <div class="chat-header-name">
+            <span id="headerName">保護主 Aさん</span>
+            <i class="fas fa-check-circle" style="color:var(--line-green); font-size:13px;" title="本人確認済み保護主"></i>
+          </div>
+          <div class="chat-header-status">
+            <span style="color:var(--line-green); font-weight:700;"><i class="fas fa-circle" style="font-size:7px;"></i> オンライン</span>
+            <span>•</span>
+            <span id="headerPetInfo">茶トラ猫の保護情報</span>
           </div>
         </div>
-        <button class="btn btn-outline btn-sm"><i class="fas fa-ellipsis-v"></i></button>
-      </div>
-      
-      <!-- Impostor Warning -->
-      <div class="privacy-notice">
-        <i class="fas fa-exclamation-triangle" style="color:var(--alert); font-size:1.2rem; margin-top:2px;"></i>
-        <div>
-          <strong style="color:var(--alert); display:block; margin-bottom:4px;">【なりすまし・引き取り詐欺にご注意ください】</strong>
-          完全匿名チャットです。相手が本当の飼い主か確認するため、お互いの本名・住所・電話番号を教える前に、必ず<b>「非公開の特徴（傷や模様など）」</b>や<b>「一緒に写っている写真・診察券」</b>を画像として送ってもらい確認してください。
-        </div>
       </div>
 
-      <div class="messages-area" id="messagesArea">
-        <div class="msg-received">
-          <div class="text-xs text-muted" style="margin-bottom:4px; margin-left:12px;">保護主 Aさん • 14:15</div>
-          <div class="msg-bubble">はじめまして。AIマッチングで通知が来ました。私が保護している猫とそっくりなのですが、しっぽはどんな形ですか？</div>
-        </div>
-        
-        <div class="msg-sent">
-          <div class="text-xs text-muted" style="margin-bottom:4px; text-align:right; margin-right:12px;">あなた • 14:20</div>
-          <div class="msg-bubble">ご連絡ありがとうございます！しっぽは短めで、先端が少しカギ状に曲がっています。</div>
-        </div>
-
-        <div class="msg-received">
-          <div class="text-xs text-muted" style="margin-bottom:4px; margin-left:12px;">保護主 Aさん • 14:25</div>
-          <div class="msg-bubble">特徴が一致します！保護時にケガをしていないかも確認したいので、普段の様子がわかる写真か、病院の診察券の写真を送っていただけますか？（詐欺防止のためご協力をお願いします）</div>
-        </div>
-        
-        <div class="msg-sent">
-          <div class="text-xs text-muted" style="margin-bottom:4px; text-align:right; margin-right:12px;">あなた • 14:28</div>
-          <div class="msg-bubble">もちろんです。今写真を送ります。</div>
-        </div>
+      <div class="chat-header-actions">
+        <button class="btn-header-action" onclick="toggleSafetyBanner()" title="安全ガイド確認">
+          <i class="fas fa-shield-alt" style="color:#ef4444;"></i>
+        </button>
+        <button class="btn-header-action" onclick="toggleChatMenu()" title="メニュー">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
       </div>
 
-      <div class="chat-input-area">
-        <button class="btn btn-outline" style="border:none; padding:12px; border-radius:50%;"><i class="fas fa-image" style="font-size:1.2rem;"></i></button>
-        <textarea class="chat-input" placeholder="メッセージを入力..." rows="1"></textarea>
-        <button class="btn-send"><i class="fas fa-paper-plane"></i></button>
+      <!-- 右上ポップアップメニュー -->
+      <div class="chat-menu-dropdown" id="chatMenuDropdown">
+        <div class="chat-menu-item" onclick="triggerPhotoUpload()">
+          <i class="fas fa-image"></i> 写真を送信
+        </div>
+        <div class="chat-menu-item" onclick="toggleSafetyBanner(); toggleChatMenu();">
+          <i class="fas fa-info-circle"></i> 詐欺防止ガイド
+        </div>
+        <div class="chat-menu-item" onclick="clearCurrentChat()">
+          <i class="fas fa-trash-alt"></i> このトークを消去
+        </div>
+        <div class="chat-menu-item danger" onclick="blockUser()">
+          <i class="fas fa-ban"></i> 相手をブロック・通報
+        </div>
+      </div>
+    </header>
+
+    <!-- 詐欺防止注意喚起バナー（白飛び完全解消・高コントラスト） -->
+    <div class="chat-safety-banner" id="chatSafetyBanner">
+      <i class="fas fa-exclamation-triangle chat-safety-icon"></i>
+      <div class="chat-safety-body">
+        <strong>【重要】なりすまし・引き取り詐欺にご注意ください</strong>
+        <p id="safetyTextShort">完全匿名チャットです。お互いの氏名・住所・連絡先を教える前に、必ず写真や非公開の特徴（耳の傷、しっぽの形など）を確認し合ってください。</p>
+      </div>
+      <button onclick="this.parentElement.style.display='none'" style="background:none;border:none;color:#9f1239;cursor:pointer;font-size:16px;padding:0 4px;margin-left:auto;">✕</button>
     </div>
-  </div>
-</div>
+
+    <!-- メッセージ表示エリア -->
+    <div class="chat-messages-scroll" id="chatMessagesScroll">
+      <!-- JavaScript でメッセージを描画 -->
+    </div>
+
+    <!-- クイック返信定型文チップス（LINE風サジェスト） -->
+    <div class="quick-replies-bar">
+      <div class="quick-chip" onclick="sendQuickReply('写真を送ります。ご確認をお願いできますか？')">
+        <i class="fas fa-camera"></i> 写真を送ります
+      </div>
+      <div class="quick-chip" onclick="sendQuickReply('保護された場所はどのあたりでしょうか？')">
+        <i class="fas fa-map-marker-alt"></i> 保護場所は？
+      </div>
+      <div class="quick-chip" onclick="sendQuickReply('しっぽの形や毛並みの特徴を教えてください。')">
+        <i class="fas fa-paw"></i> 特徴を教えて
+      </div>
+      <div class="quick-chip" onclick="sendQuickReply('病院での診察やマイクロチップの確認はされましたか？')">
+        <i class="fas fa-stethoscope"></i> 病院受診・チップ有無
+      </div>
+    </div>
+
+    <!-- LINE風下部入力エリア -->
+    <footer class="chat-bottom-bar">
+      <!-- 写真添付ボタン（非表示inputをトリガー） -->
+      <input type="file" id="fileInputPhoto" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+      <button class="btn-input-tool" onclick="triggerPhotoUpload()" title="写真を送信">
+        <i class="fas fa-image" style="color:#06c755;"></i>
+      </button>
+      <button class="btn-input-tool" onclick="sendQuickReply('保護ありがとうございます。よろしくお願いいたします。')" title="挨拶定型文">
+        <i class="fas fa-plus-circle"></i>
+      </button>
+
+      <div class="chat-input-field-wrap">
+        <textarea 
+          id="chatTextInput" 
+          class="chat-text-input" 
+          placeholder="メッセージを入力..." 
+          rows="1" 
+          onkeydown="handleKeyDown(event)"
+          oninput="adjustInputHeight(this)"></textarea>
+      </div>
+
+      <button class="btn-send-line" id="btnSendMsg" onclick="sendUserMessage()" title="送信">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </footer>
+  </main>
+
 </div>
 
-<script src="js/app.js"></script>
+<!-- 画像拡大モーダル -->
+<div id="imagePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; padding:16px;" onclick="closeImagePreview()">
+  <img id="imagePreviewTarget" src="" style="max-width:92vw; max-height:85vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+</div>
+
+<script>
+// ─── チャットデータ定義 ───
+const DEFAULT_ROOMS = [
+  {
+    id: 'room-1',
+    name: '保護主 Aさん',
+    avatar: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80',
+    petInfo: '茶トラ猫（徳島市で保護）',
+    unread: 1,
+    messages: [
+      { id: 1, sender: 'received', time: '14:15', text: 'はじめまして。AIマッチングで通知が届きました。私が保護している茶トラの猫ちゃんと特徴が非常に似ているのですが、しっぽの形はどんな形でしょうか？' },
+      { id: 2, sender: 'sent', time: '14:20', text: 'ご連絡ありがとうございます！しっぽは短めで、先端が少しカギ状に曲がっています。' },
+      { id: 3, sender: 'received', time: '14:25', text: '特徴が一致します！保護時にケガをしていないかも確認したいので、普段の様子がわかる写真か、病院の診察券の写真を送っていただけますでしょうか？（詐欺防止のためご協力をお願いします）' }
+    ]
+  },
+  {
+    id: 'room-2',
+    name: '目撃者 田中さん',
+    avatar: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80',
+    petInfo: '柴犬風の迷子犬を目撃',
+    unread: 0,
+    messages: [
+      { id: 1, sender: 'received', time: '昨日 18:30', text: 'こんにちは。川内町の河川敷近くで、赤い首輪をつけた茶色いワンちゃんを見かけました。現在も周辺にいらっしゃるでしょうか？' },
+      { id: 2, sender: 'sent', time: '昨日 18:45', text: '貴重な目撃情報をありがとうございます！今から現場付近を捜索してみます。' }
+    ]
+  },
+  {
+    id: 'room-3',
+    name: 'AFC公式 迷子捜索アドバイザー',
+    avatar: 'assets/afc-logo-full.png?v=21',
+    petInfo: '自動捜索ガイダンス窓口',
+    unread: 0,
+    messages: [
+      { id: 1, sender: 'received', time: '10:00', text: 'AFCペットファインダーへようこそ。迷子ペットの発見確率を高めるため、警察署・保健所への届出番号を登録し、迷子ポスターの印刷・掲示をおすすめしています。ご不明点があればいつでもメッセージをお送りください。' }
+    ]
+  }
+];
+
+// ローカルストレージキー
+const STORAGE_KEY = 'afc_line_chat_data_v1';
+let chatRooms = [];
+let currentRoomId = 'room-1';
+
+// ── 初期化 ──
+function initChatApp() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      chatRooms = JSON.parse(saved);
+    } else {
+      chatRooms = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+      saveChatData();
+    }
+  } catch (e) {
+    chatRooms = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+  }
+
+  renderRoomList();
+  selectRoom(currentRoomId, false);
+
+  // モバイル初期表示判定
+  if (window.innerWidth <= 768) {
+    // モバイルで直接チャットを表示
+    document.getElementById('chatAppContainer').className = 'chat-app-container show-chat';
+  }
+}
+
+// データの保存
+function saveChatData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatRooms));
+  } catch (e) {}
+}
+
+// ── トークルーム一覧の描画 ──
+function renderRoomList(filterText = '') {
+  const container = document.getElementById('chatRoomList');
+  if (!container) return;
+  container.innerHTML = '';
+
+  let totalUnread = 0;
+
+  chatRooms.forEach(room => {
+    if (filterText && !room.name.includes(filterText) && !room.petInfo.includes(filterText)) {
+      return;
+    }
+
+    const lastMsg = room.messages[room.messages.length - 1];
+    const lastMsgText = lastMsg ? (lastMsg.img ? '[画像]' : lastMsg.text) : 'メッセージはありません';
+    const lastMsgTime = lastMsg ? lastMsg.time : '';
+
+    totalUnread += (room.unread || 0);
+
+    const div = document.createElement('div');
+    div.className = `room-item ${room.id === currentRoomId ? 'active' : ''}`;
+    div.onclick = () => selectRoom(room.id, true);
+
+    div.innerHTML = `
+      <div class="room-avatar-wrap">
+        <img src="${room.avatar}" class="room-avatar" onerror="this.src='https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80'">
+        <div class="room-online-dot"></div>
+      </div>
+      <div class="room-info">
+        <div class="room-name-row">
+          <div class="room-name">${escapeHtml(room.name)}</div>
+          <div class="room-time">${escapeHtml(lastMsgTime)}</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="room-last-msg">${escapeHtml(lastMsgText)}</div>
+          ${room.unread > 0 ? `<div class="room-badge">${room.unread}</div>` : ''}
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  const unreadBadge = document.getElementById('unreadBadge');
+  if (unreadBadge) {
+    unreadBadge.style.display = totalUnread > 0 ? 'inline-block' : 'none';
+    unreadBadge.textContent = totalUnread;
+  }
+}
+
+// ── トークルーム選択 ──
+function selectRoom(roomId, isUserClick = true) {
+  currentRoomId = roomId;
+  const room = chatRooms.find(r => r.id === roomId);
+  if (!room) return;
+
+  // 既読にする
+  room.unread = 0;
+  saveChatData();
+
+  // ヘッダー情報更新
+  document.getElementById('headerName').textContent = room.name;
+  document.getElementById('headerPetInfo').textContent = room.petInfo;
+  document.getElementById('headerAvatar').src = room.avatar;
+
+  // メッセージ一覧描画
+  renderMessages(room);
+
+  // サイドバーのアクティブ切り替え
+  renderRoomList();
+
+  // スマホ表示時、トーク画面に切り替え
+  if (isUserClick && window.innerWidth <= 768) {
+    document.getElementById('chatAppContainer').className = 'chat-app-container show-chat';
+  }
+}
+
+// ── メッセージ一覧の描画 ──
+function renderMessages(room) {
+  const container = document.getElementById('chatMessagesScroll');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // 日付バッジ
+  const dateDiv = document.createElement('div');
+  dateDiv.className = 'chat-date-divider';
+  const now = new Date();
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  dateDiv.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日(${days[now.getDay()]})`;
+  container.appendChild(dateDiv);
+
+  room.messages.forEach(msg => {
+    container.appendChild(createMessageElement(msg, room));
+  });
+
+  scrollToBottom();
+}
+
+// メッセージDOM要素の生成
+function createMessageElement(msg, room) {
+  const div = document.createElement('div');
+
+  if (msg.sender === 'sent') {
+    // 自分のメッセージ（右側・緑）
+    div.className = 'chat-msg-row-sent';
+    let bubbleContent = '';
+    if (msg.img) {
+      bubbleContent = `
+        <div class="bubble-img-wrap" onclick="openImagePreview('${msg.img}')">
+          <img src="${msg.img}" alt="送信写真">
+        </div>
+      `;
+    } else {
+      bubbleContent = `<div class="bubble-sent">${escapeHtml(msg.text).replace(/\n/g, '<br>')}</div>`;
+    }
+
+    div.innerHTML = `
+      <div class="sent-meta">
+        <span class="sent-read-label">既読</span>
+        <span class="msg-time">${msg.time}</span>
+      </div>
+      ${bubbleContent}
+    `;
+  } else {
+    // 相手のメッセージ（左側・白）
+    div.className = 'chat-msg-row-received';
+    let bubbleContent = '';
+    if (msg.img) {
+      bubbleContent = `
+        <div class="bubble-img-wrap" onclick="openImagePreview('${msg.img}')">
+          <img src="${msg.img}" alt="受信写真">
+        </div>
+      `;
+    } else {
+      bubbleContent = `<div class="bubble-received">${escapeHtml(msg.text).replace(/\n/g, '<br>')}</div>`;
+    }
+
+    div.innerHTML = `
+      <img src="${room.avatar}" class="msg-avatar" alt="相手アバター" onerror="this.src='https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80'">
+      <div class="msg-content-received">
+        <span class="msg-sender-name">${escapeHtml(room.name)}</span>
+        <div class="msg-bubble-wrap">
+          ${bubbleContent}
+          <span class="msg-time">${msg.time}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  return div;
+}
+
+// 最下部へスクロール
+function scrollToBottom(smooth = true) {
+  const container = document.getElementById('chatMessagesScroll');
+  if (container) {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: smooth ? 'smooth' : 'auto'
+    });
+  }
+}
+
+// ── メッセージ送信 ──
+function sendUserMessage(customText = null, imgData = null) {
+  const input = document.getElementById('chatTextInput');
+  const text = customText !== null ? customText : (input ? input.value.trim() : '');
+
+  if (!text && !imgData) return;
+
+  const room = chatRooms.find(r => r.id === currentRoomId);
+  if (!room) return;
+
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const newMsg = {
+    id: Date.now(),
+    sender: 'sent',
+    time: timeStr,
+    text: text || '',
+    img: imgData || null
+  };
+
+  room.messages.push(newMsg);
+  saveChatData();
+
+  // 画面追加
+  const container = document.getElementById('chatMessagesScroll');
+  if (container) {
+    container.appendChild(createMessageElement(newMsg, room));
+    scrollToBottom();
+  }
+
+  // 入力欄クリア
+  if (input && customText === null) {
+    input.value = '';
+    adjustInputHeight(input);
+  }
+
+  renderRoomList();
+
+  // 相手の自動返信トリガー（AI / 保護主シミュレーション）
+  triggerAutoReply(room, text, imgData);
+}
+
+// ── 相手のリアルタイム風自動返信（LINEライクな応答） ──
+function triggerAutoReply(room, userText, userImg) {
+  // 入力中インジケーターの表示（1秒後）
+  setTimeout(() => {
+    const container = document.getElementById('chatMessagesScroll');
+    if (!container || room.id !== currentRoomId) return;
+
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicatorRow';
+    typingDiv.className = 'chat-msg-row-received';
+    typingDiv.innerHTML = `
+      <img src="${room.avatar}" class="msg-avatar" alt="相手アバター">
+      <div class="msg-content-received">
+        <span class="msg-sender-name">${escapeHtml(room.name)}</span>
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    `;
+    container.appendChild(typingDiv);
+    scrollToBottom();
+
+    // 2〜2.5秒後に返信本文を確定・送信
+    setTimeout(() => {
+      const indicator = document.getElementById('typingIndicatorRow');
+      if (indicator) indicator.remove();
+
+      let replyText = '';
+      if (userImg) {
+        replyText = 'お写真をお送りいただきありがとうございます！画像を確認させていただきました。毛並みとしっぽの特徴が、当方で保護している子と大変よく似ています！ぜひ一度、対面しての確認や今後の受け渡し手順についてご相談させてください。';
+      } else if (userText.includes('場所') || userText.includes('どこ')) {
+        replyText = '保護した場所は、徳島市川内町のバイパス近くの商業施設裏手の茂みです。衰弱して鳴いていたため保護し、現在は自宅のケージ内で安全にお預かりしています。';
+      } else if (userText.includes('病院') || userText.includes('チップ') || userText.includes('診察')) {
+        replyText = '保護した翌日に動物病院へ連れて行きました。マイクロチップリーダーでは反応がありませんでしたが、大きな外傷はなく、ノミ・ダニ駆除薬を投与してもらっています。食欲もあり元気です！';
+      } else if (userText.includes('写真') || userText.includes('画像')) {
+        replyText = 'ありがとうございます！写真を見せていただけると飼い主様確認がスムーズになります。下の「写真」ボタンからお送りいただけますでしょうか？';
+      } else if (userText.includes('ありがとう') || userText.includes('助かります')) {
+        replyText = 'どういたしまして！無事におうちに帰れるよう協力させていただきますね。安全のため、お引き渡しの前に普段のかかりつけ医の診察券やワクチン証明書などの写真もご準備いただけますと安心です。';
+      } else {
+        replyText = 'メッセージありがとうございます。現在保護している子の安全第一で確認を進めております。お互いの個人情報をやり取りする前に、非公開の特徴（耳の先のカットやお腹の模様など）をお知らせいただけますと幸いです。';
+      }
+
+      const now = new Date();
+      const replyTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const replyMsg = {
+        id: Date.now(),
+        sender: 'received',
+        time: replyTime,
+        text: replyText
+      };
+
+      room.messages.push(replyMsg);
+      saveChatData();
+
+      if (room.id === currentRoomId && container) {
+        container.appendChild(createMessageElement(replyMsg, room));
+        scrollToBottom();
+      } else {
+        room.unread = (room.unread || 0) + 1;
+        saveChatData();
+      }
+      renderRoomList();
+    }, 2200);
+
+  }, 1000);
+}
+
+// ── クイック定型文送信 ──
+function sendQuickReply(text) {
+  sendUserMessage(text);
+}
+
+// ── 写真アップロード処理 ──
+function triggerPhotoUpload() {
+  const input = document.getElementById('fileInputPhoto');
+  if (input) input.click();
+  toggleChatMenu(false);
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    sendUserMessage('写真を送信しました', e.target.result);
+  };
+  reader.readAsDataURL(file);
+  event.target.value = ''; // リセット
+}
+
+// ── 画像拡大プレビュー ──
+function openImagePreview(src) {
+  const modal = document.getElementById('imagePreviewModal');
+  const target = document.getElementById('imagePreviewTarget');
+  if (modal && target) {
+    target.src = src;
+    modal.style.display = 'flex';
+  }
+}
+
+function closeImagePreview() {
+  const modal = document.getElementById('imagePreviewModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── 入力欄自動調整 & Enter送信 ──
+function adjustInputHeight(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendUserMessage();
+  }
+}
+
+// ── スマホ画面切り替え ──
+function showRoomListOnMobile() {
+  document.getElementById('chatAppContainer').className = 'chat-app-container show-list';
+}
+
+// ── ルーム検索フィルタ ──
+function filterRooms() {
+  const query = document.getElementById('roomSearchInput').value.trim();
+  renderRoomList(query);
+}
+
+// ── メニュー＆詐欺バナー ──
+function toggleChatMenu(forceState = null) {
+  const menu = document.getElementById('chatMenuDropdown');
+  if (!menu) return;
+  if (forceState !== null) {
+    menu.style.display = forceState ? 'flex' : 'none';
+  } else {
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  }
+}
+
+function toggleSafetyBanner() {
+  const banner = document.getElementById('chatSafetyBanner');
+  if (banner) {
+    banner.style.display = banner.style.display === 'none' ? 'flex' : 'none';
+  }
+}
+
+function clearCurrentChat() {
+  toggleChatMenu(false);
+  if (!confirm('このトークのメッセージ履歴を消去しますか？')) return;
+  const room = chatRooms.find(r => r.id === currentRoomId);
+  if (room) {
+    room.messages = [];
+    saveChatData();
+    renderMessages(room);
+    renderRoomList();
+  }
+}
+
+function blockUser() {
+  toggleChatMenu(false);
+  const room = chatRooms.find(r => r.id === currentRoomId);
+  const name = room ? room.name : '相手';
+  alert(`「${name}」をブロックし、運営事務局へ通報しました。悪質な詐欺やトラブルは24時間体制で厳正に対処いたします。`);
+}
+
+function resetAllChats() {
+  if (!confirm('すべてのトーク履歴を初期状態に戻しますか？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  initChatApp();
+}
+
+// ── HTMLエスケープ ──
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
+}
+
+// 画面クリックでメニューを閉じる
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('chatMenuDropdown');
+  const btn = e.target.closest('.btn-header-action');
+  if (menu && menu.style.display === 'flex' && !menu.contains(e.target) && !btn) {
+    menu.style.display = 'none';
+  }
+});
+
+// 開始
+document.addEventListener('DOMContentLoaded', initChatApp);
+</script>
 
 </body>
 </html>
