@@ -136,6 +136,144 @@
         max-width: 490px;
       }
     }
+
+    /* ── A4ポスター印刷用スタイル（印刷時にポスター1枚のみを綺麗に出力） ── */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      *, *:before, *:after {
+        box-sizing: border-box !important;
+      }
+
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* 画面用の全UI（ヘッダー、フッター、フォーム、SNSテキスト、モーダル等）を印刷から除外 */
+      .nav,
+      footer,
+      .pwa-banner,
+      .install-banner,
+      #offlineIndicator,
+      #pdfSuccessModal,
+      .poster-page-layout > div:first-child,
+      .controls-sticky > div:not(.poster-preview-wrapper),
+      .controls-sticky button,
+      button,
+      .btn {
+        display: none !important;
+      }
+
+      /* ラッパーの余白・枠線をリセット */
+      .page-wrapper,
+      .container-lg,
+      .poster-page-layout,
+      .controls-sticky,
+      .poster-preview-wrapper {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        max-height: 297mm !important;
+        background: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+      }
+
+      /* ポスター本体を用紙1枚（210mm x 297mm）いっぱいにレイアウト */
+      #posterExport {
+        display: flex !important;
+        flex-direction: column !important;
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        overflow: hidden !important;
+      }
+
+      #posterExport .poster-top-bar {
+        padding: 6mm 12mm !important;
+      }
+      #posterExport .poster-title-text {
+        font-size: 26pt !important;
+      }
+      #posterExport .poster-photo-area {
+        height: 100mm !important;
+        max-height: 100mm !important;
+        width: 100% !important;
+        background: #f1f5f9 !important;
+      }
+      #posterExport .poster-main-photo {
+        max-height: 100mm !important;
+        width: auto !important;
+      }
+      #posterExport .poster-body {
+        flex: 1 !important;
+        padding: 6mm 12mm !important;
+      }
+      #posterExport .poster-pet-name {
+        font-size: 32pt !important;
+      }
+      #posterExport .poster-breed {
+        font-size: 14pt !important;
+      }
+      #posterExport .poster-info-item label {
+        font-size: 10pt !important;
+      }
+      #posterExport .poster-info-item span {
+        font-size: 14pt !important;
+      }
+      #posterExport .poster-feature-tag {
+        font-size: 11pt !important;
+        padding: 3px 10px !important;
+      }
+      #posterExport .poster-message {
+        font-size: 12pt !important;
+        padding: 8px 14px !important;
+      }
+      #posterExport .poster-contact-bar {
+        padding: 6mm 12mm !important;
+      }
+      #posterExport .poster-contact-tel {
+        font-size: 24pt !important;
+      }
+      #posterExport .poster-contact-label {
+        font-size: 11pt !important;
+      }
+      #posterExport .poster-qr-placeholder {
+        width: 52px !important;
+        height: 52px !important;
+      }
+      #posterExport .poster-footer {
+        padding: 4mm 12mm !important;
+        font-size: 9pt !important;
+      }
+    }
   </style>
   <script src="js/api.js?v=32" defer></script>
 </head>
@@ -446,6 +584,8 @@
   </footer>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="js/mock-data.js"></script>
 <script src="js/app.js"></script>
@@ -616,6 +756,32 @@ async function initPetSelector() {
   updateSNSTexts();
 }
 
+// ポスター画像の縦横比を計算し、歪み（横伸び）を完全に防止する関数（トップレベル配置）
+function fitPosterPhoto(img) {
+  if (!img) return;
+  const nw = img.naturalWidth;
+  const nh = img.naturalHeight;
+  if (!nw || !nh) return;
+
+  const maxW = 490;
+  const maxH = 230;
+  const ratio = nw / nh;
+
+  let targetW = maxW;
+  let targetH = maxW / ratio;
+
+  if (targetH > maxH) {
+    targetH = maxH;
+    targetW = maxH * ratio;
+  }
+
+  img.style.width = Math.round(targetW) + 'px';
+  img.style.height = Math.round(targetH) + 'px';
+  img.style.maxWidth = '100%';
+  img.style.maxHeight = maxH + 'px';
+  img.style.objectFit = 'contain';
+}
+
 // ── ポスターを更新 ──
 function updatePoster() {
   if (!currentPet) return;
@@ -652,32 +818,6 @@ function updatePoster() {
   if (issueDateEl) {
     issueDateEl.textContent = `発行日: ${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
   }
-
-// ポスター画像の縦横比を計算し、歪み（横伸び）を完全に防止する関数
-function fitPosterPhoto(img) {
-  if (!img) return;
-  const nw = img.naturalWidth;
-  const nh = img.naturalHeight;
-  if (!nw || !nh) return;
-
-  const maxW = 490;
-  const maxH = 230;
-  const ratio = nw / nh;
-
-  let targetW = maxW;
-  let targetH = maxW / ratio;
-
-  if (targetH > maxH) {
-    targetH = maxH;
-    targetW = maxH * ratio;
-  }
-
-  img.style.width = Math.round(targetW) + 'px';
-  img.style.height = Math.round(targetH) + 'px';
-  img.style.maxWidth = '100%';
-  img.style.maxHeight = maxH + 'px';
-  img.style.objectFit = 'contain';
-}
 
   const img = document.getElementById('posterPhoto');
   const placeholder = document.getElementById('posterPhotoPlaceholder');
@@ -798,23 +938,32 @@ function shareLine() {
 }
 
 // ─── 外部画像URLをBase64 DataURLに安全変換（CORS/Taint完全防止） ───
-async function toDataURL(url) {
-  if (!url) return null;
-  if (url.startsWith('data:')) return url;
-  try {
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error('Fetch failed');
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => resolve(url);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.warn('Could not convert image to DataURL, fallback to raw URL:', e);
-    return url;
-  }
+// ─── 外部画像URLをBase64 DataURLに安全変換（CORS/Taint完全防止） ───
+function toDataURL(url) {
+  if (!url) return Promise.resolve(null);
+  if (url.startsWith('data:')) return Promise.resolve(url);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (e) {
+        console.warn('Canvas toDataURL fallback:', e);
+        resolve(url);
+      }
+    };
+    img.onerror = () => {
+      console.warn('Image load error for DataURL, fallback to url:', url);
+      resolve(url);
+    };
+    img.src = url;
+  });
 }
 
 let currentPdfBlobUrl = null;
@@ -822,28 +971,21 @@ let currentImageDataUrl = null;
 
 // ─── 写真（高画質PNG画像）として直接保存 ────────────────────────
 async function downloadPosterImage() {
+  const btns = document.querySelectorAll('button[onclick*="downloadPosterImage"]');
+  btns.forEach(b => {
+    b.dataset.origHtml = b.innerHTML;
+    b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 画像作成中...';
+    b.disabled = true;
+  });
+
   const el = document.getElementById('posterExport');
   const name = currentPet ? currentPet.name : 'ペット';
 
-  // 写真DataURLの確認
-  if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
-    const dataUrl = await toDataURL(currentPet.photo);
-    if (dataUrl) {
-      currentPet.photoDataUrl = dataUrl;
-      const img = document.getElementById('posterPhoto');
-      if (img) {
-        img.src = dataUrl;
-        fitPosterPhoto(img);
-      }
-    }
-  } else if (currentPet && currentPet.photo) {
-    const img = document.getElementById('posterPhoto');
-    if (img) fitPosterPhoto(img);
-  }
-
-  // スクロール等の準備
+  // スクロール位置のリセット
   const origScroll = document.documentElement.style.scrollBehavior;
   document.documentElement.style.scrollBehavior = 'auto';
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
   window.scrollTo(0, 0);
 
   const stickyParent = el.closest('.controls-sticky');
@@ -860,10 +1002,33 @@ async function downloadPosterImage() {
   el.style.boxShadow = 'none';
 
   try {
+    // 写真のDataURL化
+    if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
+      try {
+        const dUrl = await toDataURL(currentPet.photo);
+        if (dUrl) {
+          currentPet.photoDataUrl = dUrl;
+          const img = document.getElementById('posterPhoto');
+          if (img) {
+            img.src = dUrl;
+            fitPosterPhoto(img);
+          }
+        }
+      } catch (e) {}
+    } else if (currentPet && currentPet.photo) {
+      const img = document.getElementById('posterPhoto');
+      if (img) fitPosterPhoto(img);
+    }
+
+    if (typeof html2canvas === 'undefined') {
+      throw new Error('画像生成ライブラリの読み込み中です。数秒後に再度お試しください。');
+    }
+
     const canvas = await html2canvas(el, {
       scale: 3,
       useCORS: true,
-      allowTaint: false,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
       scrollY: 0,
       scrollX: 0
     });
@@ -880,7 +1045,7 @@ async function downloadPosterImage() {
 
   } catch (err) {
     console.error('Image capture error:', err);
-    alert('画像の生成に失敗しました。PDF出力をお試しください。');
+    alert('画像の保存に失敗しました: ' + (err.message || 'ブラウザを再読み込みしてください'));
   } finally {
     el.style.borderRadius = origRadius;
     el.style.boxShadow = origShadow;
@@ -888,39 +1053,17 @@ async function downloadPosterImage() {
       stickyParent.style.position = origStickyPos;
       stickyParent.style.top = origStickyTop;
     }
+    window.scrollTo(scrollX, scrollY);
     document.documentElement.style.scrollBehavior = origScroll;
+    btns.forEach(b => {
+      if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+      b.disabled = false;
+    });
   }
 }
 
 // ─── PDF出力・ブラウザ表示 ───────────────────────────────────────
 async function downloadPDF() {
-  if (typeof html2pdf === 'undefined') {
-    alert('PDFライブラリを読み込み中です。しばらくお待ちください。');
-    return;
-  }
-  
-  const el = document.getElementById('posterExport');
-  const name = currentPet ? currentPet.name : 'ペット';
-  const w = 490;
-  const h = 693;
-
-  // 写真が外部URLの場合、白紙化・Taint防止のため確実にBase64 DataURLへの変換を待つ
-  if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
-    const dataUrl = await toDataURL(currentPet.photo);
-    if (dataUrl) {
-      currentPet.photoDataUrl = dataUrl;
-      const img = document.getElementById('posterPhoto');
-      if (img) {
-        img.src = dataUrl;
-        fitPosterPhoto(img);
-      }
-    }
-  } else if (currentPet && currentPet.photo) {
-    const img = document.getElementById('posterPhoto');
-    if (img) fitPosterPhoto(img);
-  }
-
-  // ボタンのローディング表示
   const btns = document.querySelectorAll('button[onclick*="downloadPDF"]');
   btns.forEach(b => {
     b.dataset.origHtml = b.innerHTML;
@@ -928,12 +1071,16 @@ async function downloadPDF() {
     b.disabled = true;
   });
 
-  // 1. スクロールによる位置ズレや白紙化を防ぐため、スムーズスクロールを一時無効化して即時トップへ
-  const origScrollBehavior = document.documentElement.style.scrollBehavior;
+  const el = document.getElementById('posterExport');
+  const name = currentPet ? currentPet.name : 'ペット';
+  const filename = `迷子ポスター_${name}_AFC.pdf`;
+
+  const origScroll = document.documentElement.style.scrollBehavior;
   document.documentElement.style.scrollBehavior = 'auto';
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
   window.scrollTo(0, 0);
 
-  // 2. html2canvasがposition:stickyやcalc()の計算でズレるバグを防ぐため一時的にrelativeへ
   const stickyParent = el.closest('.controls-sticky');
   const origStickyPos = stickyParent ? stickyParent.style.position : '';
   const origStickyTop = stickyParent ? stickyParent.style.top : '';
@@ -942,94 +1089,123 @@ async function downloadPDF() {
     stickyParent.style.top = '0';
   }
 
-  // 3. 角丸・影を一時的に除去（PDFの端にゴミが出ないように）
   const originalRadius = el.style.borderRadius;
   const originalShadow = el.style.boxShadow;
   el.style.borderRadius = '0';
   el.style.boxShadow = 'none';
 
-  const cleanup = () => {
+  try {
+    // 写真のDataURL化
+    if (currentPet && currentPet.photo && !currentPet.photoDataUrl) {
+      try {
+        const dUrl = await toDataURL(currentPet.photo);
+        if (dUrl) {
+          currentPet.photoDataUrl = dUrl;
+          const img = document.getElementById('posterPhoto');
+          if (img) {
+            img.src = dUrl;
+            fitPosterPhoto(img);
+          }
+        }
+      } catch (e) {}
+    } else if (currentPet && currentPet.photo) {
+      const img = document.getElementById('posterPhoto');
+      if (img) fitPosterPhoto(img);
+    }
+
+    if (typeof html2canvas === 'undefined') {
+      throw new Error('ライブラリの読み込み中です。数秒後に再度お試しください。');
+    }
+
+    // 1. 高解像度キャンバス（Scale: 3）でレンダリング
+    const canvas = await html2canvas(el, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      scrollY: 0,
+      scrollX: 0
+    });
+
+    const imgPng = canvas.toDataURL('image/png');
+    currentImageDataUrl = imgPng;
+
+    // 2. jsPDFでA4ポスターPDFを直接構築
+    const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : window.jsPDF;
+    if (jsPDFClass) {
+      const pdf = new jsPDFClass({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+      // A4用紙（210mm x 297mm）全体にポスターを配置
+      pdf.addImage(imgPng, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+
+      const pdfBlob = pdf.output('blob');
+      if (currentPdfBlobUrl) URL.revokeObjectURL(currentPdfBlobUrl);
+      currentPdfBlobUrl = URL.createObjectURL(pdfBlob);
+
+      // PDFファイルの自動ダウンロード
+      pdf.save(filename);
+    } else if (typeof html2pdf !== 'undefined') {
+      // フォールバック: html2pdf
+      const opt = {
+        margin: 0,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 3, useCORS: true, allowTaint: true, scrollY: 0, scrollX: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      await html2pdf().set(opt).from(el).save();
+    }
+
+    // 3. モーダル表示（スマホでも確実に別タブで開けるようにする）
+    const modal = document.getElementById('pdfSuccessModal');
+    const btnOpenTab = document.getElementById('btnOpenPdfTab');
+    const btnImgModal = document.getElementById('btnDownloadImageModal');
+
+    if (btnOpenTab && currentPdfBlobUrl) {
+      btnOpenTab.href = currentPdfBlobUrl;
+      btnOpenTab.style.display = 'inline-flex';
+    } else if (btnOpenTab) {
+      btnOpenTab.style.display = 'none';
+    }
+
+    if (btnImgModal) {
+      btnImgModal.onclick = () => {
+        if (currentImageDataUrl) {
+          const a = document.createElement('a');
+          a.download = `迷子ポスター_${name}_AFC.png`;
+          a.href = currentImageDataUrl;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          downloadPosterImage();
+        }
+      };
+    }
+
+    if (modal) modal.style.display = 'flex';
+
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    alert('PDF生成中にエラーが発生しました: ' + (err.message || 'もう一度お試しください'));
+  } finally {
     el.style.borderRadius = originalRadius;
     el.style.boxShadow = originalShadow;
     if (stickyParent) {
       stickyParent.style.position = origStickyPos;
       stickyParent.style.top = origStickyTop;
     }
-    document.documentElement.style.scrollBehavior = origScrollBehavior;
+    window.scrollTo(scrollX, scrollY);
+    document.documentElement.style.scrollBehavior = origScroll;
     btns.forEach(b => {
       if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
       b.disabled = false;
     });
-  };
-
-  const filename = `迷子ポスター_${name}_AFC.pdf`;
-
-  const opt = {
-    margin: 0,
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 3, 
-      useCORS: true, 
-      allowTaint: false, // Taintは絶対許可しない（SecurityError・白紙防止）
-      scrollY: 0,
-      scrollX: 0
-    },
-    jsPDF: { unit: 'px', format: [w, h], orientation: 'portrait' }
-  };
-
-  // ブラウザの再描画を待って確実にキャプチャを実行
-  requestAnimationFrame(async () => {
-    try {
-      // html2pdf のインスタンスを作成
-      const worker = html2pdf().set(opt).from(el);
-
-      // PDF Blob を生成してブラウザ表示用URLを取得
-      const pdfBlob = await worker.outputPdf('blob');
-      if (currentPdfBlobUrl) URL.revokeObjectURL(currentPdfBlobUrl);
-      currentPdfBlobUrl = URL.createObjectURL(pdfBlob);
-
-      // 同時に高解像度画像も生成
-      if (typeof html2canvas !== 'undefined') {
-        try {
-          const canvas = await html2canvas(el, { scale: 3, useCORS: true, allowTaint: false, scrollY: 0, scrollX: 0 });
-          currentImageDataUrl = canvas.toDataURL('image/png');
-        } catch(e) {}
-      }
-
-      // ファイルのダウンロードを実行
-      await worker.save();
-
-      cleanup();
-
-      // モーダルを表示してスマホでもワンタップで直接「PDFを開く」「画像保存」「印刷」ができるようにする
-      const modal = document.getElementById('pdfSuccessModal');
-      const btnOpenTab = document.getElementById('btnOpenPdfTab');
-      const btnImgModal = document.getElementById('btnDownloadImageModal');
-
-      if (btnOpenTab) btnOpenTab.href = currentPdfBlobUrl;
-      if (btnImgModal) {
-        btnImgModal.onclick = () => {
-          if (currentImageDataUrl) {
-            const a = document.createElement('a');
-            a.download = `迷子ポスター_${name}_AFC.png`;
-            a.href = currentImageDataUrl;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          } else {
-            downloadPosterImage();
-          }
-        };
-      }
-      if (modal) modal.style.display = 'flex';
-
-    } catch (err) {
-      cleanup();
-      console.error('PDF generation error:', err);
-      alert('PDF生成中にエラーが発生しました。ブラウザをリロードして再試行してください。');
-    }
-  });
+  }
 }
 
 // ── 初期化 ──
