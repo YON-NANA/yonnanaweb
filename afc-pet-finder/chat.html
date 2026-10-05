@@ -262,15 +262,19 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       z-index: 10;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      min-width: 0;
     }
 
     .chat-header-left {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
+      flex: 1;
+      overflow: hidden;
     }
 
     .btn-back-rooms {
@@ -306,6 +310,7 @@
       gap: 5px;
       transition: all 0.15s ease;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .btn-header-change-pet:hover {
       background: #dcfce7;
@@ -323,31 +328,63 @@
 
     .chat-header-details {
       min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .chat-header-name {
       font-weight: 800;
       font-size: 1rem;
       color: #0f172a;
-      line-height: 1.2;
+      line-height: 1.25;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-header-name span#headerName {
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .chat-header-status {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: #64748b;
       margin-top: 2px;
       display: flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    .chat-header-status span {
+      white-space: nowrap !important;
+      flex-shrink: 0;
+    }
+
+    #headerPetInfo {
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     .chat-header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .btn-header-action {
@@ -790,26 +827,84 @@
         display: none !important;
       }
 
-      .btn-back-rooms {
-        display: inline-flex !important;
-      }
-
       .chat-top-header {
         padding: 8px 10px;
+        gap: 6px;
+      }
+
+      .chat-header-left {
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .btn-back-rooms {
+        display: inline-flex !important;
+        padding: 5px 8px;
+        font-size: 0.78rem;
+        gap: 3px;
       }
 
       .chat-header-avatar {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
+      }
+
+      .chat-header-details {
+        min-width: 0;
+        flex: 1;
       }
 
       .chat-header-name {
-        font-size: 0.92rem;
+        font-size: 0.90rem;
+        white-space: nowrap !important;
+      }
+
+      .chat-header-status {
+        font-size: 0.70rem;
+        gap: 3px;
+        white-space: nowrap !important;
+      }
+
+      .chat-header-actions {
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .btn-header-action {
+        width: 30px;
+        height: 30px;
+        font-size: 0.80rem;
       }
 
       .btn-header-change-pet {
-        padding: 4px 8px;
-        font-size: 0.74rem;
+        padding: 5px 8px;
+        font-size: 0.72rem;
+        gap: 3px;
+      }
+
+      @media (max-width: 520px) {
+        .cloud-status-badge .cloud-text {
+          display: none !important;
+        }
+        .btn-header-change-pet .change-pet-label {
+          display: none !important;
+        }
+        .btn-header-change-pet::after {
+          content: 'ペット';
+        }
+      }
+
+      @media (max-width: 380px) {
+        .btn-back-rooms span {
+          display: none !important;
+        }
+        .btn-header-change-pet::after {
+          content: '' !important;
+        }
+        .status-sep-2 {
+          display: none !important;
+        }
       }
 
       .chat-messages-scroll {
@@ -905,9 +1000,9 @@
           </div>
           <div class="chat-header-status">
             <span style="color:var(--line-green); font-weight:700;"><i class="fas fa-circle" style="font-size:7px;"></i> オンライン</span>
-            <span>•</span>
-            <span id="cloudStatusBadge" style="color:#059669; font-weight:600;"><i class="fas fa-check-circle" style="color:var(--line-green);"></i> クラウド同期中</span>
-            <span>•</span>
+            <span class="status-sep">•</span>
+            <span id="cloudStatusBadge" class="cloud-status-badge" style="color:#059669; font-weight:600;"><i class="fas fa-check-circle" style="color:var(--line-green);"></i> <span class="cloud-text">同期中</span></span>
+            <span class="status-sep status-sep-2">•</span>
             <span id="headerPetInfo">茶トラ猫の保護情報</span>
           </div>
         </div>
@@ -916,7 +1011,7 @@
       <div class="chat-header-actions">
         <!-- ヘッダーからもワンタップで他のペット選択モーダルを開けるボタン -->
         <button class="btn-header-change-pet" onclick="openNewChatModal()" title="他の迷子ペットと話す">
-          <i class="fas fa-paw" style="color:var(--line-green);"></i> 他のペット
+          <i class="fas fa-paw" style="color:var(--line-green);"></i> <span class="change-pet-label">他のペット</span>
         </button>
         <button class="btn-header-action" onclick="toggleSafetyBanner()" title="安全ガイド確認">
           <i class="fas fa-shield-alt" style="color:#ef4444;"></i>
@@ -1569,10 +1664,10 @@ function updateCloudSyncBadge(isActive) {
   const badge = document.getElementById('cloudStatusBadge');
   if (!badge) return;
   if (isActive) {
-    badge.innerHTML = '<i class="fas fa-check-circle" style="color:var(--line-green);"></i> クラウド同期中';
+    badge.innerHTML = '<i class="fas fa-check-circle" style="color:var(--line-green);"></i> <span class="cloud-text">同期中</span>';
     badge.style.color = '#059669';
   } else {
-    badge.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> 同期確認中...';
+    badge.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span class="cloud-text">確認中</span>';
     badge.style.color = '#64748b';
   }
 }
