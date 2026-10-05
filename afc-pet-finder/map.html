@@ -426,8 +426,11 @@
             <a href="poster.html?id=${item.id}" class="pet-popup-action" style="background:var(--gold); color:#1a1a1a !important; margin-bottom:6px;">
               <i class="fas fa-file-pdf"></i> ポスターを作成
             </a>
-            <a href="match.html" class="pet-popup-action" style="background:var(--lost);">
+            <a href="match.html" class="pet-popup-action" style="background:var(--lost); margin-bottom:6px;">
               <i class="fas fa-search"></i> 照合・詳細を確認
+            </a>
+            <a href="chat.html?target_id=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.pet_name || '迷子ペット')}&type=lost" class="pet-popup-action" style="background:var(--primary, #2D8A5A);">
+              <i class="fas fa-comments"></i> 飼い主とチャット
             </a>
           </div>
         </div>
@@ -495,7 +498,7 @@
             </div>
             ${detailText}
             ${editBtnFoundHtml}
-            <a href="chat.html" class="pet-popup-action" style="background:${themeColor};">
+            <a href="chat.html?target_id=${encodeURIComponent(item.id)}&name=${encodeURIComponent(label)}&type=found" class="pet-popup-action" style="background:${themeColor};">
               <i class="fas fa-comments"></i> 投稿者とチャット
             </a>
           </div>

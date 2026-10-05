@@ -30,6 +30,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+  <script src="js/api.js?v=32"></script>
+  <script src="js/mock-data.js"></script>
+
   <style>
     /* ─── LINE風チャット全体レイアウト ─── */
     :root {
@@ -796,6 +799,13 @@
       </div>
     </div>
 
+    <!-- 他の迷子ペットと新規チャット開始ボタン -->
+    <div style="padding: 8px 14px; border-bottom: 1px solid #f1f5f9; background: #ffffff;">
+      <button onclick="openNewChatModal()" class="btn btn-sm" style="width:100%; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-weight:700; border-radius:20px; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; font-size:0.83rem;">
+        <i class="fas fa-plus-circle" style="color:var(--line-green); font-size:14px;"></i> 他の迷子ペットと話す
+      </button>
+    </div>
+
     <div class="chat-room-list" id="chatRoomList">
       <!-- JavaScript で動的生成 -->
     </div>
@@ -916,6 +926,31 @@
   <img id="imagePreviewTarget" src="" style="max-width:92vw; max-height:85vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
 </div>
 
+<!-- 他の迷子ペット選択モーダル -->
+<div id="newChatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99999; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:#ffffff; width:100%; max-width:480px; max-height:85vh; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.3); animation:fadeInMsg 0.25s ease-out;">
+    <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#ffffff;">
+      <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+        <i class="fas fa-paw" style="color:var(--line-green);"></i> チャット相手のペットを選択
+      </h3>
+      <button onclick="closeNewChatModal()" style="background:none; border:none; font-size:1.5rem; color:#94a3b8; cursor:pointer; line-height:1; padding:4px 8px;">&times;</button>
+    </div>
+    <div style="padding:10px 18px; background:#f8fafc; font-size:0.82rem; color:#64748b; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:6px;">
+      <i class="fas fa-info-circle" style="color:var(--line-green);"></i>
+      現在登録されている迷子ペットや保護動物を選択して専用トークを開始できます。
+    </div>
+    <div id="petOptionsList" style="padding:14px 16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px; min-height:220px;">
+      <div style="text-align:center; padding:30px 10px; color:#94a3b8;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <div style="margin-top:8px; font-size:0.85rem;">ペット一覧を読み込み中...</div>
+      </div>
+    </div>
+    <div style="padding:12px 18px; border-top:1px solid #e2e8f0; text-align:right; background:#ffffff;">
+      <button onclick="closeNewChatModal()" class="btn btn-secondary btn-sm" style="border-radius:20px; padding:6px 16px; font-weight:600;">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ─── チャットデータ定義 ───
 const DEFAULT_ROOMS = [
@@ -960,7 +995,7 @@ let chatRooms = [];
 let currentRoomId = 'room-1';
 
 // ── 初期化 ──
-function initChatApp() {
+async function initChatApp() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -972,6 +1007,9 @@ function initChatApp() {
   } catch (e) {
     chatRooms = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
   }
+
+  // URLパラメータ（?target_id=... や ?pet_name=...）による個別トークルームの自動生成・起動
+  await checkUrlParamsAndOpenRoom();
 
   renderRoomList();
   selectRoom(currentRoomId, false);
@@ -988,6 +1026,216 @@ function saveChatData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(chatRooms));
   } catch (e) {}
+}
+
+// ── URLパラメータを解析して該当ペットのルームを開く ──
+async function checkUrlParamsAndOpenRoom() {
+  const params = new URLSearchParams(window.location.search);
+  const targetId = params.get('target_id') || params.get('pet_id') || params.get('id');
+  const petNameParam = params.get('name') || params.get('pet_name');
+  const petType = params.get('type') || 'lost';
+
+  if (!targetId && !petNameParam) return;
+
+  // 1. 既存のルームをチェック
+  let existingRoom = chatRooms.find(r => 
+    (targetId && (r.id === targetId || r.id === 'pet-' + targetId || (r.petId && r.petId === targetId))) ||
+    (petNameParam && r.petInfo && r.petInfo.includes(petNameParam))
+  );
+
+  if (existingRoom) {
+    currentRoomId = existingRoom.id;
+    return;
+  }
+
+  // 2. 存在しない場合はペット情報を検索・新設
+  let petInfoObj = null;
+  // Supabaseから検索
+  if (typeof fetchLostPets === 'function') {
+    try {
+      const lostList = await fetchLostPets(50);
+      petInfoObj = lostList.find(p => p.id === targetId || p.pet_name === petNameParam);
+    } catch (e) {}
+  }
+  // MOCK_LOSTから検索
+  if (!petInfoObj && typeof MOCK_LOST !== 'undefined') {
+    petInfoObj = MOCK_LOST.find(p => p.id === targetId || p.name === petNameParam);
+  }
+
+  const name = petNameParam || (petInfoObj ? (petInfoObj.pet_name || petInfoObj.name) : '迷子ペット');
+  const breed = petInfoObj ? (petInfoObj.breed || '') : '';
+  const photo = (petInfoObj && (petInfoObj.image_url || petInfoObj.photo)) || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80';
+  const ownerLabel = petType === 'found' ? `${name}の保護主さん` : `${name}の飼い主さん`;
+  const roleDesc = petType === 'found' ? `保護・目撃報告（${name}）` : `迷子捜索（${name}）`;
+
+  const newId = targetId ? ('pet-' + targetId) : ('room-' + Date.now());
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const newRoom = {
+    id: newId,
+    petId: targetId || null,
+    name: ownerLabel,
+    avatar: photo,
+    petInfo: `${roleDesc} ${breed ? `[${breed}]` : ''}`,
+    unread: 1,
+    messages: [
+      {
+        id: Date.now(),
+        sender: 'received',
+        time: timeStr,
+        text: `はじめまして！「${name}」に関する情報提供やご相談専用のトークルームです。目撃場所やお心当たりの特徴など、どんな些細なことでもお気軽にお知らせください。`
+      }
+    ]
+  };
+
+  chatRooms.unshift(newRoom);
+  currentRoomId = newId;
+  saveChatData();
+}
+
+// ── ペット選択モーダル ──
+async function openNewChatModal() {
+  const modal = document.getElementById('newChatModal');
+  const listEl = document.getElementById('petOptionsList');
+  if (!modal || !listEl) return;
+
+  modal.style.display = 'flex';
+  listEl.innerHTML = `
+    <div style="text-align:center; padding:30px 10px; color:#94a3b8;">
+      <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--line-green);"></i>
+      <div style="margin-top:8px; font-size:0.85rem;">登録中のペットを検索中...</div>
+    </div>
+  `;
+
+  // ペット一覧を収集（Supabase + MOCK_LOST）
+  let allPets = [];
+  try {
+    if (typeof fetchLostPets === 'function') {
+      const dbLost = await fetchLostPets(20);
+      if (Array.isArray(dbLost)) {
+        dbLost.forEach(p => {
+          allPets.push({
+            id: p.id,
+            name: p.pet_name || '名前不明',
+            breed: p.breed || '犬猫',
+            type: 'lost',
+            status: '迷子捜索中',
+            photo: p.image_url || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80',
+            location: p.location || '徳島県内'
+          });
+        });
+      }
+    }
+  } catch (e) {}
+
+  // MOCK_LOST追加
+  if (typeof MOCK_LOST !== 'undefined') {
+    MOCK_LOST.forEach(m => {
+      if (!allPets.some(p => p.name === m.name)) {
+        allPets.push({
+          id: m.id,
+          name: m.name,
+          breed: m.breed || '',
+          type: 'lost',
+          status: '迷子捜索中',
+          photo: m.photo || 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop',
+          location: (m.location && m.location.name) || '捜索中'
+        });
+      }
+    });
+  }
+
+  // 画面描画
+  if (allPets.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center; padding:30px 10px; color:#94a3b8;">
+        <i class="fas fa-paw fa-2x"></i>
+        <div style="margin-top:8px;">現在登録されているペットがありません</div>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  allPets.forEach(pet => {
+    // 既にルームがあるかチェック
+    const isAlreadyOpen = chatRooms.some(r => (r.petId && r.petId === pet.id) || (r.petInfo && r.petInfo.includes(pet.name)));
+
+    const card = document.createElement('div');
+    card.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; transition:transform 0.15s, box-shadow 0.15s; cursor:pointer;';
+    card.onmouseover = () => card.style.background = '#f8fafc';
+    card.onmouseout = () => card.style.background = '#ffffff';
+
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
+        <img src="${pet.photo}" alt="${pet.name}" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0;" onerror="this.src='https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80'">
+        <div style="min-width:0; flex:1;">
+          <div style="font-weight:700; font-size:0.95rem; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${escapeHtml(pet.name)} <span style="font-size:0.75rem; font-weight:normal; color:#64748b;">(${escapeHtml(pet.breed)})</span>
+          </div>
+          <div style="font-size:0.76rem; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <i class="fas fa-map-marker-alt"></i> ${escapeHtml(pet.location)}
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="background:${isAlreadyOpen ? '#f1f5f9' : 'var(--line-green)'}; color:${isAlreadyOpen ? '#475569' : '#ffffff'}; font-weight:700; border:none; border-radius:20px; padding:6px 14px; font-size:0.8rem; cursor:pointer; flex-shrink:0; margin-left:8px;">
+        ${isAlreadyOpen ? 'トークを開く' : '<i class="fas fa-comment-dots"></i> 話す'}
+      </button>
+    `;
+
+    card.onclick = () => {
+      startChatWithPet(pet);
+    };
+
+    listEl.appendChild(card);
+  });
+}
+
+function closeNewChatModal() {
+  const modal = document.getElementById('newChatModal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── 選択したペットとのトーク開始 ──
+function startChatWithPet(pet) {
+  closeNewChatModal();
+
+  // 既存ルームがあればそれへ移動
+  let existing = chatRooms.find(r => (r.petId && r.petId === pet.id) || (r.petInfo && r.petInfo.includes(pet.name)));
+  if (existing) {
+    selectRoom(existing.id, true);
+    return;
+  }
+
+  // 新規ルーム作成
+  const newId = 'pet-' + (pet.id || Date.now());
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const isFound = pet.type === 'found';
+  const roleName = isFound ? `${pet.name}の保護主さん` : `${pet.name}の飼い主さん`;
+
+  const newRoom = {
+    id: newId,
+    petId: pet.id,
+    name: roleName,
+    avatar: pet.photo,
+    petInfo: `「${pet.name}」（${pet.breed || '犬猫'}）の捜索連絡`,
+    unread: 1,
+    messages: [
+      {
+        id: Date.now(),
+        sender: 'received',
+        time: timeStr,
+        text: `はじめまして！「${pet.name}」についてご連絡ありがとうございます。保護や目撃情報、特徴の一致など、些細なことでもお気軽にお知らせください！`
+      }
+    ]
+  };
+
+  chatRooms.unshift(newRoom);
+  saveChatData();
+  renderRoomList();
+  selectRoom(newId, true);
 }
 
 // ── トークルーム一覧の描画 ──
@@ -1224,19 +1472,29 @@ function triggerAutoReply(room, userText, userImg) {
       const indicator = document.getElementById('typingIndicatorRow');
       if (indicator) indicator.remove();
 
+      // ペット名の抽出（カスタマイズ応答用）
+      let petName = '';
+      const pMatch = room.petInfo && room.petInfo.match(/「([^」]+)」/);
+      if (pMatch) {
+        petName = pMatch[1];
+      } else if (room.name && room.name.includes('の')) {
+        petName = room.name.split('の')[0];
+      }
+      const petMention = petName ? `「${petName}」` : '探している子';
+
       let replyText = '';
       if (userImg) {
-        replyText = 'お写真をお送りいただきありがとうございます！画像を確認させていただきました。毛並みとしっぽの特徴が、当方で保護している子と大変よく似ています！ぜひ一度、対面しての確認や今後の受け渡し手順についてご相談させてください。';
+        replyText = `お写真をお送りいただきありがとうございます！画像を確認させていただきました。毛並みや特徴が${petMention}と大変よく似ています！ぜひ一度、対面しての確認や今後の受け渡し手順についてご相談させてください。`;
       } else if (userText.includes('場所') || userText.includes('どこ')) {
-        replyText = '保護した場所は、徳島市川内町のバイパス近くの商業施設裏手の茂みです。衰弱して鳴いていたため保護し、現在は自宅のケージ内で安全にお預かりしています。';
+        replyText = `${petMention}についてのご連絡ありがとうございます！心当たりのある場所や発見された周辺の状況を詳しく教えていただけますでしょうか？`;
       } else if (userText.includes('病院') || userText.includes('チップ') || userText.includes('診察')) {
-        replyText = '保護した翌日に動物病院へ連れて行きました。マイクロチップリーダーでは反応がありませんでしたが、大きな外傷はなく、ノミ・ダニ駆除薬を投与してもらっています。食欲もあり元気です！';
+        replyText = `${petMention}の健康状態や保護時の特徴（首輪やマイクロチップの有無など）を確認しております。念のため、かかりつけ動物病院の診察券や普段の写真などがありましたら共有いただけますと安心です。`;
       } else if (userText.includes('写真') || userText.includes('画像')) {
-        replyText = 'ありがとうございます！写真を見せていただけると飼い主様確認がスムーズになります。下の「写真」ボタンからお送りいただけますでしょうか？';
+        replyText = `ありがとうございます！${petMention}の写真を見せていただけると確認がスムーズになります。左下の「写真」ボタンからお送りいただけますでしょうか？`;
       } else if (userText.includes('ありがとう') || userText.includes('助かります')) {
-        replyText = 'どういたしまして！無事におうちに帰れるよう協力させていただきますね。安全のため、お引き渡しの前に普段のかかりつけ医の診察券やワクチン証明書などの写真もご準備いただけますと安心です。';
+        replyText = `こちらこそ、${petMention}のためにご連絡いただき本当にありがとうございます！無事におうちに帰れるよう協力させていただきますね。`;
       } else {
-        replyText = 'メッセージありがとうございます。現在保護している子の安全第一で確認を進めております。お互いの個人情報をやり取りする前に、非公開の特徴（耳の先のカットやお腹の模様など）をお知らせいただけますと幸いです。';
+        replyText = `メッセージありがとうございます。${petMention}に関する情報として大切に確認を進めております。お互いの個人情報をやり取りする前に、非公開の特徴（耳の先のカットやお腹の模様など）をお知らせいただけますと幸いです。`;
       }
 
       const now = new Date();
