@@ -48,20 +48,34 @@
     body {
       background: var(--bg-deep, #0f172a);
       font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ─── ページ全体ラッパー（ナビゲーションバーの真下から配置） ─── */
+    .chat-page-wrapper {
+      padding-top: calc(var(--nav-height, 64px) + 16px);
+      padding-bottom: 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
     .chat-app-container {
-      max-width: 1080px;
-      margin: 16px auto 32px auto;
-      height: calc(100vh - var(--nav-height, 64px) - 40px);
-      min-height: 560px;
+      max-width: 1100px;
+      width: calc(100% - 32px);
+      margin: 0 auto;
+      height: calc(100vh - var(--nav-height, 64px) - 44px);
+      min-height: 580px;
       background: #ffffff;
       border-radius: 16px;
       overflow: hidden;
       display: grid;
       grid-template-columns: 320px 1fr;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+      border: 1px solid #e2e8f0;
+      position: relative;
     }
 
     /* ── 左側：トーク一覧（サイドバー） ── */
@@ -261,12 +275,41 @@
 
     .btn-back-rooms {
       display: none;
-      background: none;
-      border: none;
-      font-size: 1.25rem;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 5px 12px 5px 9px;
+      font-size: 0.8rem;
+      font-weight: 700;
       color: #1e293b;
       cursor: pointer;
-      padding: 4px 8px 4px 0;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-back-rooms:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-header-change-pet {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-header-change-pet:hover {
+      background: #dcfce7;
+      border-color: #86efac;
     }
 
     .chat-header-avatar {
@@ -711,32 +754,62 @@
 
     /* ─── スマホ対応（768px以下） ─── */
     @media (max-width: 768px) {
+      .chat-page-wrapper {
+        padding-top: var(--nav-height, 64px);
+        padding-bottom: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+
       .chat-app-container {
+        width: 100%;
         margin: 0;
         height: calc(100vh - var(--nav-height, 64px));
+        min-height: auto;
         border-radius: 0;
         border: none;
+        box-shadow: none;
         grid-template-columns: 1fr;
       }
 
       /* スマホ表示切替：一覧ビュー vs トーク画面ビュー */
       .chat-app-container.show-chat .chat-sidebar {
-        display: none;
+        display: none !important;
       }
       .chat-app-container.show-chat .chat-room-main {
-        display: flex;
+        display: flex !important;
+        height: 100%;
       }
 
       .chat-app-container.show-list .chat-sidebar {
-        display: flex;
+        display: flex !important;
         width: 100%;
+        height: 100%;
       }
       .chat-app-container.show-list .chat-room-main {
-        display: none;
+        display: none !important;
       }
 
       .btn-back-rooms {
-        display: inline-flex;
+        display: inline-flex !important;
+      }
+
+      .chat-top-header {
+        padding: 8px 10px;
+      }
+
+      .chat-header-avatar {
+        width: 36px;
+        height: 36px;
+      }
+
+      .chat-header-name {
+        font-size: 0.92rem;
+      }
+
+      .btn-header-change-pet {
+        padding: 4px 8px;
+        font-size: 0.74rem;
       }
 
       .chat-messages-scroll {
@@ -776,8 +849,11 @@
   </div>
 </nav>
 
-<!-- チャットメインコンテナ（スマホ時は初期状態でトーク画面を表示） -->
-<div class="chat-app-container show-chat" id="chatAppContainer">
+<!-- ページ全体ラッパー（固定ナビゲーションバー 64px の下にきれいに配置） -->
+<div class="chat-page-wrapper">
+
+<!-- チャットメインコンテナ（初期状態はPC:左右分割、スマホ:トーク一覧優先表示） -->
+<div class="chat-app-container show-list" id="chatAppContainer">
 
   <!-- ─── 左側：トーク一覧 ─── -->
   <aside class="chat-sidebar">
@@ -800,9 +876,9 @@
     </div>
 
     <!-- 他の迷子ペットと新規チャット開始ボタン -->
-    <div style="padding: 8px 14px; border-bottom: 1px solid #f1f5f9; background: #ffffff;">
-      <button onclick="openNewChatModal()" class="btn btn-sm" style="width:100%; background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; font-weight:700; border-radius:20px; padding:7px 12px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; font-size:0.83rem;">
-        <i class="fas fa-plus-circle" style="color:var(--line-green); font-size:14px;"></i> 他の迷子ペットと話す
+    <div style="padding: 10px 14px; border-bottom: 1px solid #f1f5f9; background: #ffffff;">
+      <button onclick="openNewChatModal()" class="btn btn-sm" style="width:100%; background:#f0fdf4; border:1.5px solid #86efac; color:#15803d; font-weight:800; border-radius:24px; padding:9px 14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-size:0.88rem; box-shadow:0 2px 6px rgba(22,163,74,0.12);">
+        <i class="fas fa-plus-circle" style="color:var(--line-green); font-size:16px;"></i> 他の迷子ペットと話す
       </button>
     </div>
 
@@ -817,7 +893,7 @@
     <header class="chat-top-header">
       <div class="chat-header-left">
         <button class="btn-back-rooms" onclick="showRoomListOnMobile()" title="トーク一覧に戻る">
-          <i class="fas fa-chevron-left"></i>
+          <i class="fas fa-chevron-left"></i> <span>一覧</span>
         </button>
         <div class="room-avatar-wrap">
           <img src="" id="headerAvatar" class="chat-header-avatar" alt="アバター">
@@ -838,6 +914,10 @@
       </div>
 
       <div class="chat-header-actions">
+        <!-- ヘッダーからもワンタップで他のペット選択モーダルを開けるボタン -->
+        <button class="btn-header-change-pet" onclick="openNewChatModal()" title="他の迷子ペットと話す">
+          <i class="fas fa-paw" style="color:var(--line-green);"></i> 他のペット
+        </button>
         <button class="btn-header-action" onclick="toggleSafetyBanner()" title="安全ガイド確認">
           <i class="fas fa-shield-alt" style="color:#ef4444;"></i>
         </button>
@@ -922,6 +1002,7 @@
   </main>
 
 </div>
+</div> <!-- /.chat-page-wrapper -->
 
 <!-- 画像拡大モーダル -->
 <div id="imagePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; padding:16px;" onclick="closeImagePreview()">
@@ -1029,10 +1110,15 @@ async function initChatApp() {
   // クラウド同期（Supabase）開始
   startCloudSync();
 
-  // モバイル初期表示判定
+  // モバイル初期表示判定（特定ペット指定時のみチャット直行、通常時はトーク一覧画面を初期表示）
   if (window.innerWidth <= 768) {
-    // モバイルで直接チャットを表示
-    document.getElementById('chatAppContainer').className = 'chat-app-container show-chat';
+    const params = new URLSearchParams(window.location.search);
+    const hasTarget = params.get('target_id') || params.get('pet_id') || params.get('name') || params.get('pet_name');
+    if (hasTarget) {
+      document.getElementById('chatAppContainer').className = 'chat-app-container show-chat';
+    } else {
+      document.getElementById('chatAppContainer').className = 'chat-app-container show-list';
+    }
   }
 }
 
