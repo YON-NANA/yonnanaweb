@@ -300,10 +300,12 @@
       /* 画面用の全UI（ヘッダー、フッター、フォーム、SNSテキスト、モーダル等）を印刷から除外 */
       .nav,
       footer,
+      .page-intro-header,
       .pwa-banner,
       .install-banner,
       #offlineIndicator,
       #pdfSuccessModal,
+      #downloadToastBar,
       .poster-page-layout > div:first-child,
       .controls-sticky > div:not(.poster-preview-wrapper),
       .controls-sticky button,
@@ -331,7 +333,7 @@
         overflow: visible !important;
       }
 
-      /* ポスター本体を用紙1枚（A4: 200mm x 285mm）に収め、はみ出し・改ページを完全防止 */
+      /* ポスター本体を用紙1枚（A4: 200mm x 275mm）に収め、はみ出し・改ページを完全防止 */
       #posterExport {
         display: flex !important;
         flex-direction: column !important;
@@ -340,8 +342,8 @@
         top: auto !important;
         width: 200mm !important;
         max-width: 200mm !important;
-        height: 285mm !important;
-        max-height: 285mm !important;
+        height: 275mm !important;
+        max-height: 275mm !important;
         margin: 0 auto !important;
         padding: 0 !important;
         border: 1px solid #e2e8f0 !important;
@@ -357,7 +359,7 @@
       }
 
       #posterExport .poster-top-bar {
-        padding: 4mm 10mm !important;
+        padding: 3.5mm 10mm !important;
         flex-shrink: 0 !important;
       }
       #posterExport .poster-org {
@@ -541,7 +543,7 @@
   <div class="container-lg" style="padding-top:var(--space-2xl);padding-bottom:var(--space-3xl);">
 
     <!-- ヘッダー -->
-    <div style="margin-bottom:var(--space-xl);">
+    <div class="page-intro-header" style="margin-bottom:var(--space-xl);">
       <div class="section-badge">POSTER GENERATOR</div>
       <h1 style="font-size:2rem;margin-top:var(--space-sm);">📄 迷子ポスター自動生成</h1>
       <p class="text-secondary mt-sm">QRコード付きのA4ポスターをワンクリックで生成。印刷して電柱・掲示板貼り付けにすぐ使えます。</p>
@@ -1259,18 +1261,111 @@ let currentPdfBlobUrl = null;
 let currentImageDataUrl = null;
 let currentImageBlob = null;
 
-// ─── 印刷実行関数（モーダル一時退避＋A4フル印刷） ───
-function printPoster() {
+// ─── 印刷実行関数（1ページ保証の印刷用 iframe 方式） ───
+async function printPoster() {
   const modal = document.getElementById('pdfSuccessModal');
-  const wasModalOpen = modal && modal.style.display === 'flex';
-  if (wasModalOpen) modal.style.display = 'none';
+  if (modal) modal.style.display = 'none';
 
-  window.print();
+  const btns = document.querySelectorAll('button[onclick*="printPoster"]');
+  btns.forEach(b => {
+    b.dataset.origHtml = b.innerHTML;
+    b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 印刷準備中...';
+    b.disabled = true;
+  });
 
-  if (wasModalOpen) {
-    setTimeout(() => {
-      if (modal) modal.style.display = 'flex';
-    }, 600);
+  try {
+    const el = document.getElementById('posterExport');
+    if (!el) {
+      window.print();
+      return;
+    }
+
+    // 既存の印刷用 iframe を取得または作成
+    let iframe = document.getElementById('posterPrintIframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'posterPrintIframe';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.style.visibility = 'hidden';
+      document.body.appendChild(iframe);
+    }
+
+    // html2canvas で A4 画像をレンダリングし、iframe に入れて印刷（改ページ・ズレが物理的にゼロ）
+    if (typeof html2canvas !== 'undefined') {
+      const origRadius = el.style.borderRadius;
+      const origShadow = el.style.boxShadow;
+      el.style.borderRadius = '0';
+      el.style.boxShadow = 'none';
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const canvas = await html2canvas(el, {
+        scale: 2.5,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        scrollY: 0,
+        scrollX: 0,
+        onclone: prepareCloneForCapture
+      });
+
+      el.style.borderRadius = origRadius;
+      el.style.boxShadow = origShadow;
+
+      const imgData = canvas.toDataURL('image/png');
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>迷子ポスター印刷</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 0;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              overflow: hidden !important;
+              background: #fff;
+            }
+            img {
+              width: 100vw;
+              height: 100vh;
+              object-fit: contain;
+              display: block;
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${imgData}" onload="setTimeout(() => { window.focus(); window.print(); }, 250);">
+        </body>
+        </html>
+      `);
+      doc.close();
+    } else {
+      window.print();
+    }
+  } catch (err) {
+    console.error('Print iframe error, fallback to window.print:', err);
+    window.print();
+  } finally {
+    btns.forEach(b => {
+      if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+      b.disabled = false;
+    });
   }
 }
 
@@ -1303,25 +1398,71 @@ function canvasToBlob(canvas, type = 'image/png') {
   });
 }
 
+// ダウンロード完了トースト通知（PCでのブロック対策・再保存ボタン付き）
+function showDownloadToast(blobUrl, filename) {
+  let toast = document.getElementById('downloadToastBar');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'downloadToastBar';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      max-width: 92vw;
+      border: 1px solid rgba(255,255,255,0.18);
+    `;
+    document.body.appendChild(toast);
+  }
+
+  toast.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:22px;">💾</span>
+      <div>
+        <strong style="color:#38bdf8;">高画質ポスター画像（PNG）を保存しました</strong><br>
+        <span style="font-size:11.5px;color:#cbd5e1;">ダウンロードフォルダーをご確認ください（${filename}）</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-left:auto;align-items:center;">
+      <a href="${blobUrl}" download="${filename}" class="btn btn-sm" style="background:#f59e0b;color:#000;font-weight:700;padding:6px 12px;text-decoration:none;border-radius:6px;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+        <i class="fas fa-download"></i> もう一度保存
+      </a>
+      <a href="${blobUrl}" target="_blank" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;padding:6px 12px;text-decoration:none;border-radius:6px;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+        <i class="fas fa-external-link-alt"></i> 画像を開く
+      </a>
+      <button onclick="document.getElementById('downloadToastBar').style.display='none'" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:18px;padding:0 6px;line-height:1;">✕</button>
+    </div>
+  `;
+  toast.style.display = 'flex';
+}
+
 function triggerDownloadBlob(blob, rawFilename) {
   const cleanName = (rawFilename || '迷子ポスター_AFC.png').replace(/[\\/:*?"<>|\r\n\t]/g, '_').trim();
   const blobUrl = URL.createObjectURL(blob);
+  
+  // 1. 通常のダウンロード実行
   const a = document.createElement('a');
   a.style.display = 'none';
   a.download = cleanName;
   a.href = blobUrl;
   document.body.appendChild(a);
-  
-  try {
-    a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-  } catch (e) {
-    a.click();
-  }
-
+  a.click();
   setTimeout(() => {
     if (a.parentNode) a.parentNode.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-  }, 120000);
+  }, 1000);
+
+  // 2. 画面下部に確実な通知とフォールバックリンクを表示（PCでの保存失敗を100%防止）
+  showDownloadToast(blobUrl, cleanName);
 }
 
 // ─── html2canvas用クローン補正（PDF/画像キャプチャ時特有の日本語文字下沈みバグを完全補正） ───
@@ -1570,7 +1711,7 @@ async function downloadPDF() {
         margin: 0,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 3, useCORS: true, allowTaint: true, scrollY: 0, scrollX: 0 },
+        html2canvas: { scale: 3, useCORS: true, allowTaint: false, scrollY: 0, scrollX: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       await html2pdf().set(opt).from(el).save();
@@ -1625,6 +1766,19 @@ async function downloadPDF() {
 // ── 初期化 ──
 document.addEventListener('DOMContentLoaded', () => {
   initPetSelector();
+
+  // モーダル内の画像保存ボタンの初期化バインド
+  const btnImgModal = document.getElementById('btnDownloadImageModal');
+  if (btnImgModal && !btnImgModal.onclick) {
+    btnImgModal.onclick = () => {
+      const name = currentPet ? currentPet.name : 'ペット';
+      if (currentImageBlob) {
+        triggerDownloadBlob(currentImageBlob, `迷子ポスター_${name}_AFC.png`);
+      } else {
+        downloadPosterImage();
+      }
+    };
+  }
 
   // SNSアンカーで直接スクロール
   if (window.location.hash === '#sns') {
