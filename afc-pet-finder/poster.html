@@ -90,8 +90,42 @@
     .poster-message { background: #fff8e1; border-left: 3px solid #ffc107; padding: 6px 12px; border-radius: 0 8px 8px 0; font-size: 10px; color: #555; margin-bottom: 8px; line-height: 1.3; }
     .poster-contact-bar { background: linear-gradient(135deg, #FF6B35, #e55a27); padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
     .poster-contact-label { font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
-    .poster-contact-tel { font-size: 18px; font-weight: 900; color: white; letter-spacing: 0.05em; }
-    .poster-qr-placeholder { width: 44px; height: 44px; background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #888; text-align: center; padding: 2px; }
+    .poster-qr-card {
+      background: #ffffff;
+      padding: 4px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+      min-width: 62px;
+    }
+    .poster-qr-canvas {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      overflow: hidden;
+    }
+    .poster-qr-canvas canvas,
+    .poster-qr-canvas img {
+      display: block !important;
+      width: 52px !important;
+      height: 52px !important;
+    }
+    .poster-qr-subtext {
+      font-size: 7px;
+      font-weight: 800;
+      color: #1f2937;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+      text-align: center;
+      white-space: nowrap;
+    }
     .poster-footer { padding: 6px 24px; background: #f8f8f8; display: flex; align-items: center; justify-content: space-between; font-size: 8px; color: #999; }
 
     /* ── SNSセクション ── */
@@ -265,9 +299,23 @@
       #posterExport .poster-contact-label {
         font-size: 11pt !important;
       }
-      #posterExport .poster-qr-placeholder {
-        width: 52px !important;
-        height: 52px !important;
+      #posterExport .poster-qr-card {
+        padding: 4px !important;
+        border-radius: 8px !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: 1px solid #e5e7eb !important;
+      }
+      #posterExport .poster-qr-canvas,
+      #posterExport .poster-qr-canvas canvas,
+      #posterExport .poster-qr-canvas img {
+        width: 60px !important;
+        height: 60px !important;
+      }
+      #posterExport .poster-qr-subtext {
+        font-size: 8pt !important;
+        margin-top: 2px !important;
+        color: #1f2937 !important;
       }
       #posterExport .poster-footer {
         padding: 4mm 12mm !important;
@@ -466,11 +514,9 @@
                 <div class="poster-contact-label">お心当たりの方はこちらへ（24時間受付）</div>
                 <div class="poster-contact-tel" id="posterTel">090-XXXX-XXXX</div>
               </div>
-              <div class="poster-qr-placeholder" id="posterQR">
-                <div>
-                  <i class="fas fa-qrcode" style="font-size:2rem;color:#333;display:block;text-align:center;"></i>
-                  <div style="font-size:8px;margin-top:2px;">詳細ページ</div>
-                </div>
+              <div class="poster-qr-card" id="posterQRCard">
+                <div id="posterQRCanvas" class="poster-qr-canvas"></div>
+                <div class="poster-qr-subtext">詳細・情報提供</div>
               </div>
             </div>
 
@@ -584,6 +630,7 @@
   </footer>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -844,6 +891,43 @@ function updatePoster() {
   } else {
     img.style.display = 'none';
     if (placeholder) placeholder.style.display = 'flex';
+  }
+
+  // 実際の読み取り可能なQRコードを動的に生成
+  const baseDomain = (window.location.origin && window.location.origin.startsWith('http')) 
+    ? window.location.origin 
+    : 'https://afc-pet-finder.vercel.app';
+  const qrTargetUrl = `${baseDomain}/poster.html?id=${encodeURIComponent(p.id || '')}`;
+  renderPosterQR(qrTargetUrl);
+}
+
+// ── QRコード生成（本物の読み取り可能QRコード） ──
+function renderPosterQR(url) {
+  const container = document.getElementById('posterQRCanvas');
+  if (!container) return;
+  container.innerHTML = '';
+  try {
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(container, {
+        text: url,
+        width: 52,
+        height: 52,
+        colorDark: '#111827',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      // フォールバック: APIから画像として取得
+      const img = document.createElement('img');
+      img.crossOrigin = 'anonymous';
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
+      img.style.width = '52px';
+      img.style.height = '52px';
+      img.style.display = 'block';
+      container.appendChild(img);
+    }
+  } catch (e) {
+    console.warn('QR code generation failed:', e);
   }
 }
 
