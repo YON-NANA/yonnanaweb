@@ -16,6 +16,9 @@
   <meta name="description" content="QRコード付き迷子ポスターをワンクリックでPDF出力。SNS拡散用テキスト自動生成にも対応。">
   <link rel="stylesheet" href="css/style.css?v=28">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Outfit:wght@700;900&display=swap" rel="stylesheet">
               <!-- PWA & App Icon -->
   <link rel="manifest" href="manifest.json?v=28">
   <link rel="icon" type="image/x-icon" href="favicon.ico?v=19">
@@ -1172,6 +1175,59 @@ function toDataURL(url) {
 let currentPdfBlobUrl = null;
 let currentImageDataUrl = null;
 
+// ─── html2canvas用クローン補正（PDF/画像キャプチャ時特有の日本語文字下沈みバグを完全補正） ───
+function prepareCloneForCapture(clonedDoc) {
+  // 1. 特徴タグ（枠の上下中央に綺麗に収めるため、下パディングをしっかり与えて文字を持ち上げる）
+  clonedDoc.querySelectorAll('.poster-feature-tag').forEach(tag => {
+    tag.style.display = 'inline-flex';
+    tag.style.alignItems = 'center';
+    tag.style.justifyContent = 'center';
+    tag.style.padding = '0 9px 5px 9px';
+    tag.style.boxSizing = 'border-box';
+  });
+
+  // 2. 右上の「犬・メス」バッジ
+  const animalBadge = clonedDoc.querySelector('.poster-animal-type');
+  if (animalBadge) {
+    animalBadge.style.display = 'inline-flex';
+    animalBadge.style.alignItems = 'center';
+    animalBadge.style.justifyContent = 'center';
+    animalBadge.style.padding = '0 12px 5px 12px';
+    animalBadge.style.boxSizing = 'border-box';
+  }
+
+  // 3. 左上の「行方不明○日目」バッジ
+  const daysBadge = clonedDoc.querySelector('.poster-days-elapsed');
+  if (daysBadge) {
+    daysBadge.style.display = 'inline-flex';
+    daysBadge.style.alignItems = 'center';
+    daysBadge.style.justifyContent = 'center';
+    daysBadge.style.padding = '0 12px 5px 12px';
+    daysBadge.style.boxSizing = 'border-box';
+  }
+
+  // 4. メッセージバッジ「目撃情報のみでも…」
+  const contactMsg = clonedDoc.querySelector('.poster-contact-msg');
+  if (contactMsg) {
+    contactMsg.style.padding = '1px 8px 5px 8px';
+    contactMsg.style.boxSizing = 'border-box';
+  }
+
+  // 5. オレンジ枠と電話番号（オレンジ枠下端のはみ出し・接触を完全防止）
+  const contactCard = clonedDoc.querySelector('.poster-contact-card');
+  if (contactCard) {
+    contactCard.style.padding = '5px 12px 14px 12px';
+    contactCard.style.boxSizing = 'border-box';
+  }
+
+  const contactTel = clonedDoc.querySelector('.poster-contact-tel');
+  if (contactTel) {
+    contactTel.style.fontSize = '22px';
+    contactTel.style.paddingBottom = '4px';
+    contactTel.style.lineHeight = '1';
+  }
+}
+
 // ─── 写真（高画質PNG画像）として直接保存 ────────────────────────
 async function downloadPosterImage() {
   const btns = document.querySelectorAll('button[onclick*="downloadPosterImage"]');
@@ -1227,13 +1283,18 @@ async function downloadPosterImage() {
       throw new Error('画像生成ライブラリの読み込み中です。数秒後に再度お試しください。');
     }
 
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
     const canvas = await html2canvas(el, {
       scale: 3,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       scrollY: 0,
-      scrollX: 0
+      scrollX: 0,
+      onclone: prepareCloneForCapture
     });
 
     const dataUrl = canvas.toDataURL('image/png');
@@ -1320,14 +1381,19 @@ async function downloadPDF() {
       throw new Error('ライブラリの読み込み中です。数秒後に再度お試しください。');
     }
 
-    // 1. 高解像度キャンバス（Scale: 3）でレンダリング
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+
+    // 1. 高解像度キャンバス（Scale: 3）でレンダリング（クローン補正適用）
     const canvas = await html2canvas(el, {
       scale: 3,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       scrollY: 0,
-      scrollX: 0
+      scrollX: 0,
+      onclone: prepareCloneForCapture
     });
 
     const imgPng = canvas.toDataURL('image/png');
