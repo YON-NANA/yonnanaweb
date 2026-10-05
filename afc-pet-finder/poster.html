@@ -1174,6 +1174,50 @@ function toDataURL(url) {
 
 let currentPdfBlobUrl = null;
 let currentImageDataUrl = null;
+let currentImageBlob = null;
+
+// ─── 巨大DataURI対策: Blob変換 & 安全なダウンロード実行 ───
+function dataURLtoBlob(dataurl) {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+}
+
+function canvasToBlob(canvas, type = 'image/png') {
+  return new Promise((resolve) => {
+    if (canvas.toBlob) {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          resolve(dataURLtoBlob(canvas.toDataURL(type)));
+        }
+      }, type);
+    } else {
+      resolve(dataURLtoBlob(canvas.toDataURL(type)));
+    }
+  });
+}
+
+function triggerDownloadBlob(blob, filename) {
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.download = filename;
+  a.href = blobUrl;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    if (a.parentNode) a.parentNode.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  }, 60000);
+}
 
 // ─── html2canvas用クローン補正（PDF/画像キャプチャ時特有の日本語文字下沈みバグを完全補正） ───
 function prepareCloneForCapture(clonedDoc) {
@@ -1297,15 +1341,11 @@ async function downloadPosterImage() {
       onclone: prepareCloneForCapture
     });
 
-    const dataUrl = canvas.toDataURL('image/png');
-    currentImageDataUrl = dataUrl;
+    const blob = await canvasToBlob(canvas, 'image/png');
+    currentImageBlob = blob;
+    currentImageDataUrl = canvas.toDataURL('image/png');
 
-    const link = document.createElement('a');
-    link.download = `迷子ポスター_${name}_AFC.png`;
-    link.href = dataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    triggerDownloadBlob(blob, `迷子ポスター_${name}_AFC.png`);
 
   } catch (err) {
     console.error('Image capture error:', err);
@@ -1396,6 +1436,8 @@ async function downloadPDF() {
       onclone: prepareCloneForCapture
     });
 
+    const blob = await canvasToBlob(canvas, 'image/png');
+    currentImageBlob = blob;
     const imgPng = canvas.toDataURL('image/png');
     currentImageDataUrl = imgPng;
 
@@ -1443,13 +1485,11 @@ async function downloadPDF() {
 
     if (btnImgModal) {
       btnImgModal.onclick = () => {
-        if (currentImageDataUrl) {
-          const a = document.createElement('a');
-          a.download = `迷子ポスター_${name}_AFC.png`;
-          a.href = currentImageDataUrl;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+        if (currentImageBlob) {
+          triggerDownloadBlob(currentImageBlob, `迷子ポスター_${name}_AFC.png`);
+        } else if (currentImageDataUrl) {
+          const b = dataURLtoBlob(currentImageDataUrl);
+          triggerDownloadBlob(b, `迷子ポスター_${name}_AFC.png`);
         } else {
           downloadPosterImage();
         }
