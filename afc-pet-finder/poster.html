@@ -249,29 +249,40 @@
     .pet-selector-info .name { font-weight: 700; font-size: 0.95rem; }
     .pet-selector-info .breed { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* ── プレビューラッパー（スマホ対応） ── */
+    /* ── プレビューラッパー（スマホ対応：A4比率490x693を維持しtransform scaleで綺麗にフィット） ── */
     .poster-preview-wrapper {
-      max-width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 10px 0;
     }
 
     @media (max-width: 900px) { 
       .poster-page-layout { grid-template-columns: 1fr; } 
       .controls-sticky { position: static; }
       #posterExport {
-        max-width: 100%;
         transform-origin: top center;
       }
     }
 
     @media (max-width: 520px) {
+      .poster-preview-wrapper {
+        overflow-x: hidden;
+        align-items: center;
+      }
       #posterExport {
-        width: 100% !important;
-        max-width: 490px;
+        width: 490px !important;
+        min-width: 490px !important;
+        max-width: 490px !important;
+        height: 693px !important;
+        min-height: 693px !important;
+        max-height: 693px !important;
+        transform-origin: top center;
+        /* 画面幅に合わせて比率を崩さず等倍縮小表示 */
+        transform: scale(calc((100vw - 32px) / 490));
+        margin-bottom: calc(693px * (calc((100vw - 32px) / 490) - 1));
       }
     }
 
@@ -645,8 +656,8 @@
             </div>
 
             <!-- 写真エリア -->
-            <div class="poster-photo-area" style="position:relative; width:100%; height:230px; background:#f1f5f9; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-              <img id="posterPhoto" class="poster-main-photo" src="" alt="ペット写真" style="max-width:100%; max-height:230px; width:auto; height:auto; margin:auto; display:block;" crossorigin="anonymous">
+            <div class="poster-photo-area" style="position:relative; width:100%; height:270px; background:#f1f5f9; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+              <img id="posterPhoto" class="poster-main-photo" src="" alt="ペット写真" style="max-width:100%; max-height:270px; width:auto; height:auto; margin:auto; display:block;" crossorigin="anonymous">
               <div id="posterPhotoPlaceholder" style="display:none; position:absolute; inset:0; background:#e8e8e8; align-items:center; justify-content:center; flex-direction:column; color:#aaa;">
                 <i class="fas fa-camera" style="font-size:3rem;margin-bottom:8px;"></i>
                 <span style="font-size:0.9rem;">写真が登録されていません</span>
@@ -1307,7 +1318,10 @@ async function printPoster() {
       }
 
       const canvas = await html2canvas(el, {
-        scale: 2.5,
+        scale: 3,
+        width: 490,
+        height: 693,
+        windowWidth: 1200,
         useCORS: true,
         allowTaint: false,
         backgroundColor: '#ffffff',
@@ -1342,10 +1356,11 @@ async function printPoster() {
               background: #fff;
             }
             img {
-              width: 100vw;
-              height: 100vh;
+              width: 100%;
+              height: 100%;
               object-fit: contain;
               display: block;
+              margin: 0 auto;
             }
           </style>
         </head>
@@ -1465,8 +1480,38 @@ function triggerDownloadBlob(blob, rawFilename) {
   showDownloadToast(blobUrl, cleanName);
 }
 
-// ─── html2canvas用クローン補正（PDF/画像キャプチャ時特有の日本語文字下沈みバグを完全補正） ───
+// ─── html2canvas用クローン補正（スマホ・PC問わず常に完全なA4比率490x693でレンダリング） ───
 function prepareCloneForCapture(clonedDoc) {
+  // 0. ポスター本体を常に厳密なA4サイズ（幅490px、高さ693px）に固定（スマホの引き伸ばし・縮小を完全防止）
+  const clonedPoster = clonedDoc.getElementById('posterExport');
+  if (clonedPoster) {
+    clonedPoster.style.width = '490px';
+    clonedPoster.style.minWidth = '490px';
+    clonedPoster.style.maxWidth = '490px';
+    clonedPoster.style.height = '693px';
+    clonedPoster.style.minHeight = '693px';
+    clonedPoster.style.maxHeight = '693px';
+    clonedPoster.style.transform = 'none';
+    clonedPoster.style.borderRadius = '0';
+    clonedPoster.style.boxShadow = 'none';
+    clonedPoster.style.margin = '0';
+  }
+
+  // 写真エリアも確実に 270px を確保
+  const photoArea = clonedDoc.querySelector('.poster-photo-area');
+  if (photoArea) {
+    photoArea.style.width = '100%';
+    photoArea.style.height = '270px';
+    photoArea.style.maxHeight = '270px';
+  }
+  const photoImg = clonedDoc.getElementById('posterPhoto');
+  if (photoImg) {
+    photoImg.style.maxHeight = '270px';
+    photoImg.style.maxWidth = '100%';
+    photoImg.style.width = 'auto';
+    photoImg.style.height = 'auto';
+  }
+
   // 1. 特徴タグ（枠の上下中央に綺麗に収めるため、下パディングをしっかり与えて文字を持ち上げる）
   clonedDoc.querySelectorAll('.poster-feature-tag').forEach(tag => {
     tag.style.display = 'inline-flex';
@@ -1579,6 +1624,9 @@ async function downloadPosterImage() {
 
     const canvas = await html2canvas(el, {
       scale: 3,
+      width: 490,
+      height: 693,
+      windowWidth: 1200,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
@@ -1674,6 +1722,9 @@ async function downloadPDF() {
     // 1. 高解像度キャンバス（Scale: 3）でレンダリング（クローン補正適用）
     const canvas = await html2canvas(el, {
       scale: 3,
+      width: 490,
+      height: 693,
+      windowWidth: 1200,
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
