@@ -81,7 +81,18 @@
     .poster-body { padding: 8px 24px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
     .poster-pet-name { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.02em; }
     .poster-breed { font-size: 12px; color: #555; margin-top: 2px; }
-    .poster-divider { border: none; border-top: 2px solid #eee; margin: 8px 0; }
+    .poster-details-box {
+      font-size: 11px;
+      color: #374151;
+      max-width: 60%;
+      text-align: right;
+      white-space: pre-line;
+      line-height: 1.45;
+      word-break: break-word;
+      padding-bottom: 3px;
+      margin-top: 2px;
+    }
+    .poster-divider { border: none; border-top: 1.5px solid #eee; margin: 6px 0 8px 0; }
     .poster-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
     .poster-info-item label { display: block; font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
     .poster-info-item span { font-size: 12px; font-weight: 700; color: #1a1a1a; }
@@ -276,6 +287,15 @@
       #posterExport .poster-breed {
         font-size: 14pt !important;
       }
+      #posterExport .poster-details-box {
+        font-size: 11pt !important;
+        line-height: 1.45 !important;
+        white-space: pre-line !important;
+        padding-bottom: 3mm !important;
+      }
+      #posterExport .poster-divider {
+        margin: 3mm 0 4mm 0 !important;
+      }
       #posterExport .poster-info-item label {
         font-size: 10pt !important;
       }
@@ -467,13 +487,12 @@
 
             <!-- 本文 -->
             <div class="poster-body">
-              <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                <div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:2px;">
+                <div style="flex-shrink:0;">
                   <div class="poster-pet-name" id="posterName">クロ</div>
                   <div class="poster-breed" id="posterBreed">雑種（日本猫）・推定3歳</div>
                 </div>
-                <div id="posterDetails" style="font-size:11px; color:#444; max-width:55%; text-align:right; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; line-height:1.4; word-break:break-word;">
-                </div>
+                <div id="posterDetails" class="poster-details-box"></div>
               </div>
               <hr class="poster-divider">
 
