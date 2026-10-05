@@ -62,7 +62,7 @@
       position: relative; 
       background: #f1f5f9; 
       width: 100%; 
-      height: 230px; 
+      height: 270px; 
       overflow: hidden; 
       display: flex; 
       align-items: center; 
@@ -70,7 +70,7 @@
     }
     .poster-main-photo { 
       max-width: 100% !important; 
-      max-height: 230px !important; 
+      max-height: 270px !important; 
       width: auto; 
       height: auto; 
       display: block; 
@@ -78,44 +78,100 @@
     }
     .poster-animal-type { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); color: white; padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; }
     .poster-days-elapsed { position: absolute; top: 12px; left: 12px; background: #FF6B35; color: white; padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .poster-body { padding: 8px 24px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
-    .poster-pet-name { font-size: 28px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.02em; }
-    .poster-breed { font-size: 12px; color: #555; margin-top: 2px; }
+    .poster-body { padding: 6px 20px; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .poster-pet-name { font-size: 26px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.02em; line-height: 1.1; }
+    .poster-breed { font-size: 11.5px; color: #555; margin-top: 2px; }
     .poster-details-box {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #374151;
       max-width: 60%;
       text-align: right;
       white-space: pre-line;
-      line-height: 1.45;
+      line-height: 1.4;
       word-break: break-word;
-      padding-bottom: 3px;
-      margin-top: 2px;
+      padding-bottom: 2px;
+      margin-top: 1px;
     }
-    .poster-divider { border: none; border-top: 1.5px solid #eee; margin: 6px 0 8px 0; }
-    .poster-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-    .poster-info-item label { display: block; font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
-    .poster-info-item span { font-size: 12px; font-weight: 700; color: #1a1a1a; }
-    .poster-features { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-    .poster-feature-tag { background: #f0f7f0; border: 1px solid #c8e6c9; color: #2e7d32; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
-    .poster-message { background: #fff8e1; border-left: 3px solid #ffc107; padding: 6px 12px; border-radius: 0 8px 8px 0; font-size: 10px; color: #555; margin-bottom: 8px; line-height: 1.3; }
-    .poster-contact-bar { background: linear-gradient(135deg, #FF6B35, #e55a27); padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-    .poster-contact-label { font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 2px; }
+    .poster-divider { border: none; border-top: 1px solid #e5e7eb; margin: 4px 0 6px 0; }
+    .poster-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-bottom: 5px; }
+    .poster-info-item label { display: block; font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; font-weight: 600; }
+    .poster-info-item span { font-size: 11.5px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+    .poster-features { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 1px; margin-bottom: 0; }
+    .poster-feature-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f7f0;
+      border: 1px solid #c8e6c9;
+      color: #2e7d32;
+      padding: 0 8px;
+      height: 22px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 600;
+      line-height: 1;
+      box-sizing: border-box;
+    }
+    .poster-contact-row {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      padding: 6px 20px 8px 20px;
+      background: #ffffff;
+      margin-top: auto;
+    }
+    .poster-contact-card {
+      flex: 1;
+      background: linear-gradient(135deg, #FF6B35, #e55a27);
+      border-radius: 10px;
+      padding: 7px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.22);
+    }
+    .poster-contact-msg {
+      font-size: 9.5px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.16);
+      border-radius: 5px;
+      padding: 3px 8px;
+      margin-bottom: 4px;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+    .poster-contact-label {
+      font-size: 8.5px;
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 2px;
+    }
+    .poster-contact-tel {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+    }
     .poster-qr-card {
       background: #ffffff;
-      padding: 4px;
-      border-radius: 8px;
+      border: 2px solid #fed7aa;
+      padding: 4px 6px;
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       flex-shrink: 0;
-      min-width: 62px;
+      width: 76px;
     }
     .poster-qr-canvas {
-      width: 52px;
-      height: 52px;
+      width: 58px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -125,19 +181,19 @@
     .poster-qr-canvas canvas,
     .poster-qr-canvas img {
       display: block !important;
-      width: 52px !important;
-      height: 52px !important;
+      width: 58px !important;
+      height: 58px !important;
     }
     .poster-qr-subtext {
-      font-size: 7px;
+      font-size: 7.5px;
       font-weight: 800;
-      color: #1f2937;
+      color: #c2410c;
       letter-spacing: 0.02em;
-      margin-top: 2px;
+      margin-top: 3px;
       text-align: center;
       white-space: nowrap;
     }
-    .poster-footer { padding: 6px 24px; background: #f8f8f8; display: flex; align-items: center; justify-content: space-between; font-size: 8px; color: #999; }
+    .poster-footer { padding: 6px 20px; background: #f8f8f8; display: flex; align-items: center; justify-content: space-between; font-size: 8px; color: #999; }
 
     /* ── SNSセクション ── */
     .template-tab { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius-full); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
@@ -268,77 +324,85 @@
         font-size: 26pt !important;
       }
       #posterExport .poster-photo-area {
-        height: 100mm !important;
-        max-height: 100mm !important;
+        height: 116mm !important;
+        max-height: 116mm !important;
         width: 100% !important;
         background: #f1f5f9 !important;
       }
       #posterExport .poster-main-photo {
-        max-height: 100mm !important;
+        max-height: 116mm !important;
         width: auto !important;
       }
       #posterExport .poster-body {
         flex: 1 !important;
-        padding: 6mm 12mm !important;
+        padding: 4mm 12mm !important;
       }
       #posterExport .poster-pet-name {
-        font-size: 32pt !important;
+        font-size: 30pt !important;
       }
       #posterExport .poster-breed {
-        font-size: 14pt !important;
+        font-size: 13pt !important;
       }
       #posterExport .poster-details-box {
         font-size: 11pt !important;
-        line-height: 1.45 !important;
+        line-height: 1.4 !important;
         white-space: pre-line !important;
-        padding-bottom: 3mm !important;
+        padding-bottom: 2mm !important;
       }
       #posterExport .poster-divider {
-        margin: 3mm 0 4mm 0 !important;
+        margin: 2mm 0 3mm 0 !important;
       }
       #posterExport .poster-info-item label {
-        font-size: 10pt !important;
+        font-size: 9pt !important;
       }
       #posterExport .poster-info-item span {
-        font-size: 14pt !important;
+        font-size: 13pt !important;
       }
       #posterExport .poster-feature-tag {
-        font-size: 11pt !important;
-        padding: 3px 10px !important;
+        font-size: 10pt !important;
+        padding: 0 10px !important;
+        height: 7mm !important;
       }
-      #posterExport .poster-message {
-        font-size: 12pt !important;
-        padding: 8px 14px !important;
+      #posterExport .poster-contact-row {
+        padding: 3mm 12mm 4mm 12mm !important;
+        gap: 4mm !important;
       }
-      #posterExport .poster-contact-bar {
-        padding: 6mm 12mm !important;
+      #posterExport .poster-contact-card {
+        padding: 3mm 6mm !important;
+        border-radius: 8px !important;
+      }
+      #posterExport .poster-contact-msg {
+        font-size: 10pt !important;
+        padding: 2mm 4mm !important;
+        margin-bottom: 2mm !important;
       }
       #posterExport .poster-contact-tel {
-        font-size: 24pt !important;
+        font-size: 28pt !important;
       }
       #posterExport .poster-contact-label {
-        font-size: 11pt !important;
+        font-size: 10pt !important;
       }
       #posterExport .poster-qr-card {
-        padding: 4px !important;
+        padding: 3mm !important;
         border-radius: 8px !important;
         background: #ffffff !important;
         box-shadow: none !important;
-        border: 1px solid #e5e7eb !important;
+        border: 1px solid #fed7aa !important;
+        width: 28mm !important;
       }
       #posterExport .poster-qr-canvas,
       #posterExport .poster-qr-canvas canvas,
       #posterExport .poster-qr-canvas img {
-        width: 60px !important;
-        height: 60px !important;
+        width: 22mm !important;
+        height: 22mm !important;
       }
       #posterExport .poster-qr-subtext {
         font-size: 8pt !important;
-        margin-top: 2px !important;
-        color: #1f2937 !important;
+        margin-top: 1mm !important;
+        color: #c2410c !important;
       }
       #posterExport .poster-footer {
-        padding: 4mm 12mm !important;
+        padding: 3mm 12mm !important;
         font-size: 9pt !important;
       }
     }
@@ -521,18 +585,20 @@
                 <span class="poster-feature-tag">サクラ耳</span>
                 <span class="poster-feature-tag">臆病・隠れがち</span>
               </div>
-
-              <div class="poster-message" id="posterMessage">
-                目撃情報のみでも大変助かります。お気軽にご連絡ください。
-              </div>
             </div>
 
-            <!-- 連絡先バー -->
-            <div class="poster-contact-bar">
-              <div>
+            <!-- 連絡先＆QRコードセクション（オレンジ枠とQRコードを分割・横並び） -->
+            <div class="poster-contact-row">
+              <!-- オレンジ枠：メッセージ＋特大太字電話番号 -->
+              <div class="poster-contact-card">
+                <div class="poster-contact-msg" id="posterMessage">
+                  目撃情報のみでも大変助かります。お気軽にご連絡ください。
+                </div>
                 <div class="poster-contact-label">お心当たりの方はこちらへ（24時間受付）</div>
                 <div class="poster-contact-tel" id="posterTel">090-XXXX-XXXX</div>
               </div>
+
+              <!-- 独立QRコード枠（しっかりサイズ確保） -->
               <div class="poster-qr-card" id="posterQRCard">
                 <div id="posterQRCanvas" class="poster-qr-canvas"></div>
                 <div class="poster-qr-subtext">詳細・情報提供</div>
@@ -830,7 +896,7 @@ function fitPosterPhoto(img) {
   if (!nw || !nh) return;
 
   const maxW = 490;
-  const maxH = 230;
+  const maxH = 270;
   const ratio = nw / nh;
 
   let targetW = maxW;
@@ -929,8 +995,8 @@ function renderPosterQR(url) {
     if (typeof QRCode !== 'undefined') {
       new QRCode(container, {
         text: url,
-        width: 52,
-        height: 52,
+        width: 58,
+        height: 58,
         colorDark: '#111827',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -940,8 +1006,8 @@ function renderPosterQR(url) {
       const img = document.createElement('img');
       img.crossOrigin = 'anonymous';
       img.src = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(url)}`;
-      img.style.width = '52px';
-      img.style.height = '52px';
+      img.style.width = '58px';
+      img.style.height = '58px';
       img.style.display = 'block';
       container.appendChild(img);
     }
