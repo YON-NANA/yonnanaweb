@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>運用システム一覧 | 日本動物共助機構 (AMAJ)</title>
+  <meta name="description" content="日本動物共助機構 (AMAJ) が運用・管理する公共情報システム（Animal Blood Connect、AFC Pet Finder）の仕様および利用手引きです。">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="gov-top-bar">
+    <div class="container gov-top-inner">
+      <div>日本動物共助機構（Animal Mutual Aid Japan - AMAJ）公式ポータル</div>
+      <div>最終更新日：2026年5月10日</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="site-identity">
+        <div class="seal-icon">
+          <span>共助</span>
+          <span class="en">AMAJ</span>
+        </div>
+        <div class="site-titles">
+          <span class="org-name-sub">ANIMAL MUTUAL AID JAPAN</span>
+          <span class="org-name-main">日本動物共助機構</span>
+        </div>
+      </a>
+
+      <button class="nav-toggle" aria-label="メニューを開く" aria-expanded="false">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </button>
+
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-item">トップページ</a>
+        <a href="about.html" class="nav-item">機構概要・規程</a>
+        <a href="projects.html" class="nav-item active">運用システム一覧</a>
+        <a href="news.html" class="nav-item">公表事項・お知らせ</a>
+        <a href="contact.html" class="nav-item">事務局窓口</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <div class="container">
+      <a href="index.html">トップ</a> ＞ <span>運用システム一覧</span>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <main class="page-wrapper">
+    <div class="container">
+
+      <div class="content-box">
+        <div class="page-title-block">
+          <h1 class="page-title">運用システム一覧・仕様</h1>
+          <div class="page-subtitle">Public Information Systems & Operational Specifications</div>
+        </div>
+
+        <p style="margin-bottom: 24px;">
+          日本動物共助機構（AMAJ）が開発・運用を行う2大中核システムの概要、利用対象、およびアクセス先は以下の通りです。
+        </p>
+
+        <!-- System 1 -->
+        <h2 class="section-heading">1. Animal Blood Connect（供血ドナー支援ネットワーク）</h2>
+        <div style="background-color: var(--gov-bg-panel); border: 1px solid var(--gov-border); padding: 20px; margin-bottom: 16px;">
+          <table class="gov-table" style="margin: 0;">
+            <tbody>
+              <tr>
+                <th style="width: 22%;">システム種別</th>
+                <td>動物供血ドナー・動物病院間マッチング支援システム</td>
+              </tr>
+              <tr>
+                <th>利用対象者</th>
+                <td>
+                  ・一般飼い主（ドナー登録ボランティア / 供血要請者）<br>
+                  ・全国の獣医療機関（動物病院）
+                </td>
+              </tr>
+              <tr>
+                <th>主な機能</th>
+                <td>
+                  ・供血ドナー事前登録機能（年齢・体重・感染症検査状況管理）<br>
+                  ・病院認証制による緊急要請発令機能<br>
+                  ・個人情報を開示しない匿名チャット連絡機能<br>
+                  ・ドナー上限年齢（犬9歳・猫8歳）自動除外ロジック
+                </td>
+              </tr>
+              <tr>
+                <th>利用料金</th>
+                <td>完全無償（利用料・登録料・手数料等は一切発生しません）</td>
+              </tr>
+              <tr>
+                <th>システムURL</th>
+                <td>
+                  <a href="https://animal-blood-connect.vercel.app/" target="_blank" rel="noopener noreferrer" style="font-weight: 700;">
+                    https://animal-blood-connect.vercel.app/ ↗
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- System 2 -->
+        <h2 class="section-heading">2. AFC Pet Finder（迷子動物捜索・保護情報システム）</h2>
+        <div style="background-color: var(--gov-bg-panel); border: 1px solid var(--gov-border); padding: 20px; margin-bottom: 24px;">
+          <table class="gov-table" style="margin: 0;">
+            <tbody>
+              <tr>
+                <th style="width: 22%;">システム種別</th>
+                <td>迷子ペット行動予測・特徴タグ自動照合・行政データ連携システム</td>
+              </tr>
+              <tr>
+                <th>利用対象者</th>
+                <td>
+                  ・迷子ペットの飼い主<br>
+                  ・保護・目撃者（一般住民・保護ボランティア）<br>
+                  ・自治体（動物愛護センター・保健所）
+                </td>
+              </tr>
+              <tr>
+                <th>主な機能</th>
+                <td>
+                  ・AI行動予測エンジンによる移動エリア・潜伏場所の推定<br>
+                  ・特徴タグ（毛色・首輪・身体的特徴）自動マッチング<br>
+                  ・全国47都道府県の自治体公開保護収容データ自動連携<br>
+                  ・QRコード付き迷子ポスター（PDF）およびSNS拡散文の自動生成
+                </td>
+              </tr>
+              <tr>
+                <th>利用料金</th>
+                <td>完全無償</td>
+              </tr>
+              <tr>
+                <th>システムURL</th>
+                <td>
+                  <a href="https://afc-pet-finder.vercel.app/" target="_blank" rel="noopener noreferrer" style="font-weight: 700;">
+                    https://afc-pet-finder.vercel.app/ ↗
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Poster Card -->
+        <h2 class="section-heading">3. 施設・店舗掲示用 広報ポスター（A3縦 / PDF出力）</h2>
+        <div style="background-color: var(--gov-bg-panel); border: 1px solid var(--gov-border); padding: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div style="max-width: 650px;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gov-navy); margin-bottom: 4px;">動物病院・自治体・警察署・ペットショップ掲示用</div>
+            <h3 style="font-family: var(--font-serif); font-size: 1.1rem; color: var(--gov-navy-dark); margin-bottom: 6px;">公認 啓発ポスター（A3縦型・A4縮小印刷対応）</h3>
+            <p style="font-size: 0.88rem; color: var(--gov-text-secondary); line-height: 1.7; margin: 0;">
+              上半分に供血支援ネットワーク（Animal Blood Connect）、下半分に迷子動物捜索情報システム（AFC Pet Finder）を配置し、各QRコードを備えた公式掲示用ポスターです。ブラウザから直接PDF保存・印刷いただけます。
+            </p>
+          </div>
+          <a href="poster.html" target="_blank" class="system-link-btn" style="background-color: #2563EB; padding: 12px 24px;">
+            ポスターを開く・印刷 ↗
+          </a>
+        </div>
+
+        <!-- Operation Note -->
+        <h2 class="section-heading">運用の透明性とセキュリティ</h2>
+        <p style="font-size: 0.9rem; line-height: 1.8; color: var(--gov-text-secondary);">
+          各システムは常時SSL暗号化通信により保護され、個人情報は厳格なアクセス権限管理のもとで運用されています。また、公的機関および研究機関との連携にあたっては、プライバシー保護およびセキュリティ指針に厳格に準拠いたします。
+        </p>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <div>© 2026 日本動物共助機構 (AMAJ). All Rights Reserved.</div>
+        <div>
+          <a href="poster.html" target="_blank" style="color: #CBD5E0; margin-right: 16px;">📄 ポスター印刷用PDF</a>
+          <a href="index.html" style="color: #CBD5E0;">トップページへ戻る</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
