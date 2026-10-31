@@ -1,43 +1,41 @@
 /* ==========================================================================
    日本動物共助機構 (AMAJ)
-   動物病院 待合室掲示用ポスター（A3縦 297mm x 420mm）
-   【待合室・遠隔視認性特化型リデザイン】
-   横幅いっぱいの超大見出し × 刺さるサブタイトル × 特大QRコード
+   公式院内掲示ポスター（A3縦 297mm x 420mm / 全2種）
+   - 供血ドナー支援（Animal Blood Connect）
+   - 迷子動物捜索・保護情報（Pet Finder Connect）
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&family=Outfit:wght@700;900&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@600;700;900&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap');
 
 :root {
-  /* Core Colors */
-  --c-navy-deep: #071526;
-  --c-navy-dark: #0F2D59;
-  --c-navy-mid: #1E3A8A;
-  
-  /* Blood Connect (Crimson / Ruby) */
-  --c-blood-main: #BE123C;
+  /* Brand Colors */
+  --c-navy-dark: #0A192F;
+  --c-navy-mid: #0F2D59;
+  --c-blue-primary: #2563EB;
+  --c-blue-hover: #1D4ED8;
+
+  /* Blood Connect */
+  --c-blood: #BE123C;
   --c-blood-dark: #881337;
-  --c-blood-light: #FFF8F8;
-  --c-blood-border: #FDA4AF;
-  --c-blood-tag-bg: #FFE4E6;
-  --c-blood-grad: linear-gradient(135deg, #BE123C 0%, #E11D48 100%);
+  --c-blood-light: #FFE4E6;
 
-  /* Pet Finder (Ocean / Cyan / Sky) */
-  --c-finder-main: #0284C7;
+  /* Pet Finder */
+  --c-finder: #0284C7;
   --c-finder-dark: #0369A1;
-  --c-finder-light: #F0F9FF;
-  --c-finder-border: #7DD3FC;
-  --c-finder-tag-bg: #E0F2FE;
-  --c-finder-grad: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%);
+  --c-finder-light: #E0F2FE;
 
-  /* Accents */
-  --c-gold: #F59E0B;
-  --c-gold-bright: #FDE047;
+  /* Accent */
   --c-emerald: #059669;
+  --c-emerald-hover: #047857;
+  --c-gold: #F59E0B;
 
-  /* Typography */
+  /* Text & Surface */
+  --c-bg: #1E293B;
+  --c-card-bg: #0F172A;
   --c-text-primary: #0F172A;
-  --c-text-secondary: #334155;
-  --c-text-muted: #64748B;
+  --c-text-sub: #475569;
+  --c-text-light: #F8FAFC;
+  --c-text-muted: #94A3B8;
 
   --font-main: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
   --font-en: 'Outfit', sans-serif;
@@ -51,11 +49,12 @@
 
 body {
   font-family: var(--font-main);
-  background-color: #334155;
-  color: var(--c-text-primary);
-  line-height: 1.4;
+  background-color: var(--c-bg);
+  color: var(--c-text-light);
+  line-height: 1.5;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  min-height: 100vh;
 }
 
 /* --------------------------------------------------------------------------
@@ -66,14 +65,47 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #0F172A;
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
   color: #FFFFFF;
-  padding: 12px 24px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.screen-control-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.btn-back {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #CBD5E1;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-back:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .screen-control-title {
@@ -81,23 +113,98 @@ body {
   font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .screen-control-title span.badge {
   background: linear-gradient(135deg, #BE123C 0%, #0284C7 100%);
   color: #FFFFFF;
-  font-size: 0.78rem;
-  padding: 3px 10px;
+  font-size: 0.75rem;
+  padding: 3px 9px;
   border-radius: 999px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
+/* Tabs switcher */
+.poster-tabs {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 4px;
+}
+
+.tab-btn {
+  background: transparent;
+  color: #94A3B8;
+  border: none;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.tab-btn.active {
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tab-btn.active[data-tab="blood"] {
+  background: linear-gradient(135deg, #BE123C 0%, #E11D48 100%);
+}
+
+.tab-btn.active[data-tab="finder"] {
+  background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%);
+}
+
+.tab-btn.active[data-tab="both"] {
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+}
+
+/* Action Buttons */
 .screen-control-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+}
+
+.btn-download {
+  background: linear-gradient(135deg, var(--c-emerald) 0%, var(--c-emerald-hover) 100%);
+  color: #FFFFFF;
+  border: none;
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+  transition: transform 0.1s ease, filter 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-download:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
 .btn-print {
@@ -105,16 +212,17 @@ body {
   color: #FFFFFF;
   border: none;
   font-family: var(--font-main);
-  font-size: 0.92rem;
-  font-weight: 900;
-  padding: 8px 24px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 20px;
   border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
   transition: transform 0.1s ease, filter 0.15s ease;
+  white-space: nowrap;
 }
 
 .btn-print:hover {
@@ -122,521 +230,63 @@ body {
   transform: translateY(-1px);
 }
 
-.btn-back {
-  background-color: transparent;
-  color: #94A3B8;
-  border: 1px solid #475569;
-  font-family: var(--font-main);
-  font-size: 0.85rem;
-  padding: 7px 14px;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.btn-back:hover {
+/* --------------------------------------------------------------------------
+   Mobile Info Banner (スマホのみ表示)
+-------------------------------------------------------------------------- */
+.mobile-info-banner {
+  display: none;
+  background: linear-gradient(135deg, #1E3A5F 0%, #0A4D8C 100%);
   color: #FFFFFF;
-  border-color: #94A3B8;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+  border-bottom: 2px solid var(--c-gold);
 }
 
 /* --------------------------------------------------------------------------
-   Poster Paper Setup (A3 Portrait: 297mm x 420mm)
+   Poster Preview Wrapper
 -------------------------------------------------------------------------- */
+.poster-page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
 .poster-preview-wrapper {
-  padding: 30px 10px;
+  padding: 20px 0 30px;
   display: flex;
   justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+/* Single Poster Sheet (A3 Portrait ratio 1 : 1.414) */
+.poster-sheet-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.poster-sheet-card.hidden {
+  display: none !important;
 }
 
 .poster-sheet {
   width: 297mm;
   height: 420mm;
+  max-width: 100%;
   background-color: #FFFFFF;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  display: flex;
-  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  border-radius: 4px;
 }
 
-/* Outer Border Frame (格調高い二重フレーム感) */
-.poster-frame {
-  position: absolute;
-  top: 4.5mm;
-  left: 4.5mm;
-  right: 4.5mm;
-  bottom: 4.5mm;
-  border: 1.5mm solid var(--c-navy-deep);
-  border-radius: 2mm;
-  pointer-events: none;
-  z-index: 20;
-}
-
-.poster-inner {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 8mm 8mm 7mm;
-  position: relative;
-  z-index: 2;
-  box-sizing: border-box;
-  justify-content: space-between;
-}
-
-/* --------------------------------------------------------------------------
-   1. Header Section (スリムかつ目を引く最上段宣言)
--------------------------------------------------------------------------- */
-.poster-header {
-  background: linear-gradient(135deg, #071526 0%, #0F2D59 70%, #173B6E 100%);
-  color: #FFFFFF;
-  padding: 4mm 6.5mm;
-  border-radius: 2.5mm;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3.5mm;
-  box-shadow: 0 4px 10px rgba(7, 21, 38, 0.15);
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 1mm;
-}
-
-.header-tagline {
-  display: flex;
-  align-items: center;
-  gap: 3mm;
-}
-
-.badge-public {
-  background-color: var(--c-gold);
-  color: #000000;
-  font-size: 8.5pt;
-  font-weight: 900;
-  padding: 0.6mm 2.8mm;
-  border-radius: 1mm;
-  letter-spacing: 0.05em;
-}
-
-.sub-lead {
-  font-size: 9.5pt;
-  font-weight: 700;
-  color: #E2E8F0;
-  letter-spacing: 0.04em;
-}
-
-.header-title {
-  font-size: 21pt;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-}
-
-.text-accent {
-  color: var(--c-gold-bright);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 3mm;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2mm 3.5mm;
-  border-radius: 2mm;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.amaj-seal {
-  width: 9.5mm;
-  height: 9.5mm;
-  border: 1.5px solid #FFFFFF;
-  border-radius: 1.5mm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  line-height: 1;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.amaj-seal .kanji {
-  font-size: 5.5pt;
-}
-
-.amaj-seal .alphabet {
-  font-family: var(--font-en);
-  font-size: 4.8pt;
-  color: var(--c-gold-bright);
-}
-
-.org-meta {
-  line-height: 1.25;
-}
-
-.org-jp {
-  font-size: 9pt;
-  font-weight: 900;
-  letter-spacing: 0.03em;
-}
-
-.org-en {
-  font-family: var(--font-en);
-  font-size: 6pt;
-  color: #93C5FD;
-  letter-spacing: 0.04em;
-}
-
-/* --------------------------------------------------------------------------
-   2. Main Area: Two Huge Strategic Cards
--------------------------------------------------------------------------- */
-.poster-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4.5mm;
-  justify-content: space-between;
-}
-
-/* Card Common */
-.poster-card {
-  border-radius: 3.5mm;
-  padding: 4mm 6mm 4mm;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  box-sizing: border-box;
-  flex: 1;
-  justify-content: space-between;
-}
-
-/* --- Card 1: Animal Blood Connect --- */
-.card-blood {
-  background-color: var(--c-blood-light);
-  border: 2.2mm solid var(--c-blood-main);
-  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.08);
-}
-
-/* --- Card 2: AFC Pet Finder --- */
-.card-finder {
-  background-color: var(--c-finder-light);
-  border: 2.2mm solid var(--c-finder-main);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
-}
-
-/* Brand Bar (Top of Card) */
-.card-brand-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5mm;
-}
-
-.brand-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 2.5mm;
-}
-
-.brand-icon {
-  width: 6.8mm;
-  height: 6.8mm;
-  border-radius: 1.5mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brand-icon svg {
-  width: 5mm;
-  height: 5mm;
-}
-
-.icon-blood {
-  background: var(--c-blood-grad);
-  color: #FFFFFF;
-}
-
-.icon-finder {
-  background: var(--c-finder-grad);
-  color: #FFFFFF;
-}
-
-.brand-name {
-  font-family: var(--font-en);
-  font-size: 13.5pt;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  color: var(--c-text-primary);
-  line-height: 1;
-}
-
-.brand-sub {
-  font-size: 9pt;
-  font-weight: 700;
-  color: var(--c-text-secondary);
-  margin-left: 2mm;
-}
-
-.brand-tag {
-  font-size: 8.2pt;
-  font-weight: 900;
-  padding: 0.8mm 3mm;
-  border-radius: 1.2mm;
-  letter-spacing: 0.04em;
-}
-
-.tag-blood {
-  background-color: var(--c-blood-tag-bg);
-  color: var(--c-blood-dark);
-  border: 1px solid var(--c-blood-border);
-}
-
-.tag-finder {
-  background-color: var(--c-finder-tag-bg);
-  color: var(--c-finder-dark);
-  border: 1px solid var(--c-finder-border);
-}
-
-/* ==========================================================================
-   【超重要】横幅いっぱいの大見出し＆なぜ必要なのかのサブタイトル
-   ========================================================================== */
-.card-hero-block {
-  margin-top: 0.5mm;
-  margin-bottom: 2.8mm;
-  border-bottom: 1.5px dashed rgba(0, 0, 0, 0.12);
-  padding-bottom: 2.8mm;
-}
-
-.hero-top-row {
-  display: flex;
-  align-items: center;
-  gap: 3mm;
-  margin-bottom: 1.5mm;
-}
-
-.badge-question {
-  background: var(--c-blood-main);
-  color: #FFFFFF;
-  font-size: 10pt;
-  font-weight: 900;
-  padding: 1.2mm 3.2mm;
-  border-radius: 1.2mm;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-.badge-alert {
-  background: var(--c-finder-main);
-  color: #FFFFFF;
-  font-size: 10pt;
-  font-weight: 900;
-  padding: 1.2mm 3.2mm;
-  border-radius: 1.2mm;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-.hero-top-note {
-  font-size: 8.8pt;
-  font-weight: 700;
-  color: var(--c-text-muted);
-  letter-spacing: 0.02em;
-}
-
-.hook-headline {
-  font-size: 24.5pt;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  margin-bottom: 1.5mm;
-}
-
-.headline-blood {
-  color: var(--c-blood-dark);
-}
-
-.headline-finder {
-  color: var(--c-finder-dark);
-}
-
-/* サブタイトル（なぜ必要なのか） */
-.hook-subtitle {
-  font-size: 13.2pt;
-  font-weight: 700;
-  color: #1E293B;
-  line-height: 1.45;
-  padding-left: 0.5mm;
-}
-
-.hook-subtitle strong {
-  font-weight: 900;
-  background: linear-gradient(transparent 60%, rgba(253, 224, 71, 0.75) 60%);
-  padding: 0 3px;
-  color: #0F172A;
-}
-
-/* ==========================================================================
-   Card Content Grid: 左側(要点・対象) + 右側(特大QRコード)
-   ========================================================================== */
-.card-content-grid {
-  display: grid;
-  grid-template-columns: 1fr 75mm;
-  gap: 6mm;
-  align-items: center;
-}
-
-/* Left Column: Key Points & Criteria */
-.info-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 2.8mm;
-}
-
-.key-points-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2mm;
-}
-
-.point-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 2.5mm;
-}
-
-.point-bullet {
-  font-size: 12.5pt;
-  font-weight: 900;
-  line-height: 1.3;
-  color: var(--c-blood-main);
-}
-
-.bullet-finder {
-  color: var(--c-finder-main);
-}
-
-.point-text {
-  font-size: 9.8pt;
-  line-height: 1.4;
-  color: #334155;
-}
-
-.point-text strong {
-  display: block;
-  font-size: 11pt;
-  font-weight: 900;
-  color: #0F172A;
-  margin-bottom: 0.4mm;
-}
-
-.point-text p {
-  margin: 0;
-}
-
-/* Criteria Banner (対象目安) */
-.criteria-banner {
-  background-color: #FFFFFF;
-  border-radius: 2mm;
-  padding: 2.2mm 3.5mm;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2mm;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-
-.banner-blood {
-  border: 1.5px solid var(--c-blood-border);
-}
-
-.banner-finder {
-  border: 1.5px solid var(--c-finder-border);
-}
-
-.criteria-label {
-  font-size: 8pt;
-  font-weight: 900;
-  color: var(--c-text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.criteria-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2.2mm;
-}
-
-.crit-pill {
-  background-color: #F1F5F9;
-  color: #0F172A;
-  font-size: 9.5pt;
-  font-weight: 900;
-  padding: 1.2mm 2.8mm;
-  border-radius: 1.5mm;
-  letter-spacing: 0.02em;
-}
-
-.highlight-pill {
-  background-color: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FDE68A;
-}
-
-/* ==========================================================================
-   【超重要】右側：特大QRコード（遠くの椅子からでもスマホで即認識）
-   ========================================================================== */
-.qr-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.qr-card {
-  background-color: #FFFFFF;
-  border-radius: 2.8mm;
-  padding: 3mm 3mm 2.5mm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
-}
-
-.qr-card-blood {
-  border: 2px solid var(--c-blood-border);
-}
-
-.qr-card-finder {
-  border: 2px solid var(--c-finder-border);
-}
-
-.qr-heading {
-  font-size: 10.2pt;
-  font-weight: 900;
-  color: #0F172A;
-  margin-bottom: 1.8mm;
-  letter-spacing: 0.02em;
-}
-
-/* QR Code Image Box: 約 58mm x 58mm の巨大サイズ */
-.qr-image-box {
-  width: 58mm;
-  height: 58mm;
-  background-color: #FFFFFF;
-  padding: 1.5mm;
-  border-radius: 1.5mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #E2E8F0;
-}
-
-.qr-image-box img {
+.poster-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -645,243 +295,268 @@ body {
   image-rendering: crisp-edges;
 }
 
-/* Big CTA Button Under QR */
-.qr-cta-btn {
-  width: 100%;
-  margin-top: 2.2mm;
-  padding: 2mm 0;
-  border-radius: 1.5mm;
-  font-size: 10.5pt;
-  font-weight: 900;
-  color: #FFFFFF;
+/* Poster Card Meta under the sheet */
+.poster-meta-card {
+  width: 297mm;
+  max-width: 100%;
+  margin-top: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 16px 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5mm;
-  letter-spacing: 0.03em;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.btn-blood {
-  background: var(--c-blood-grad);
-}
-
-.btn-finder {
-  background: var(--c-finder-grad);
-}
-
-.qr-hint {
-  font-size: 7.2pt;
-  font-weight: 700;
-  color: var(--c-text-muted);
-  margin-top: 1mm;
-}
-
-/* --------------------------------------------------------------------------
-   3. Authority Footer
--------------------------------------------------------------------------- */
-.poster-footer {
-  background: linear-gradient(135deg, #071526 0%, #0F2D59 100%);
-  color: #FFFFFF;
-  padding: 3mm 5mm;
-  border-radius: 2mm;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 3.5mm;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2mm;
-}
-
-.footer-org-row {
+.poster-meta-info h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FFFFFF;
   display: flex;
   align-items: center;
-  gap: 2.5mm;
+  gap: 8px;
 }
 
-.footer-emblem {
-  width: 7mm;
-  height: 7mm;
-  border: 1.2px solid #FFFFFF;
-  border-radius: 1mm;
+.poster-meta-info p {
+  font-size: 0.84rem;
+  color: var(--c-text-muted);
+  margin-top: 4px;
+}
+
+.poster-meta-actions {
   display: flex;
+  gap: 10px;
   align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 4.8pt;
-  background: rgba(255, 255, 255, 0.15);
 }
 
-.footer-org-name {
-  font-size: 9.5pt;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-}
-
-.footer-org-sub {
-  font-family: var(--font-en);
-  font-size: 6.5pt;
-  color: #93C5FD;
-  letter-spacing: 0.04em;
-}
-
-.footer-badges {
-  display: flex;
-  gap: 2.5mm;
-}
-
-.footer-badges span {
-  font-size: 7pt;
-  color: #CBD5E1;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5mm 2mm;
-  border-radius: 0.8mm;
-}
-
-.footer-right {
-  display: flex;
+.btn-meta-download {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
   align-items: center;
-  gap: 4mm;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
 
-.footer-contact {
-  font-size: 7pt;
-  color: #94A3B8;
-  text-align: right;
-  line-height: 1.35;
-}
-
-.portal-qr-mini {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #FFFFFF;
-  padding: 1.5mm;
-  border-radius: 1.5mm;
-  gap: 0.5mm;
-}
-
-.portal-qr-img {
-  width: 13.5mm;
-  height: 13.5mm;
-}
-
-.portal-qr-img img {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.portal-qr-caption {
-  font-size: 4.8pt;
-  font-weight: 900;
-  color: #0F172A;
-  white-space: nowrap;
+.btn-meta-download:hover {
+  background-color: var(--c-emerald);
+  border-color: var(--c-emerald);
 }
 
 /* --------------------------------------------------------------------------
-   4. Print Media Queries (A3 / A4 対応)
+   Hospital / Clinic Poster Guide Section (ポスター掲示・印刷の手引き)
+-------------------------------------------------------------------------- */
+.poster-guide-section {
+  margin-top: 40px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 28px 32px;
+}
+
+.guide-header {
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 14px;
+}
+
+.guide-header h2 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guide-header p {
+  font-size: 0.9rem;
+  color: var(--c-text-muted);
+  margin-top: 6px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.guide-item {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.guide-item h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #93C5FD;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-item p, .guide-item ul {
+  font-size: 0.86rem;
+  color: #CBD5E1;
+  line-height: 1.6;
+}
+
+.guide-item ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Print Media Queries (A3 / A4 対応)
 -------------------------------------------------------------------------- */
 @media print {
+  @page {
+    size: A3 portrait;
+    margin: 0;
+  }
+
   html, body {
     background: #FFFFFF !important;
     padding: 0 !important;
     margin: 0 !important;
     width: 297mm !important;
     height: 420mm !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   .screen-control-bar,
-  .mobile-info-banner {
+  .mobile-info-banner,
+  .poster-meta-card,
+  .poster-guide-section {
     display: none !important;
+  }
+
+  .poster-page-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
   }
 
   .poster-preview-wrapper {
     padding: 0 !important;
     margin: 0 !important;
+    display: block !important;
+  }
+
+  .poster-sheet-card {
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    break-inside: avoid;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 297mm !important;
+    height: 420mm !important;
+  }
+
+  .poster-sheet-card:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .poster-sheet-card.hidden {
+    display: none !important;
   }
 
   .poster-sheet {
     box-shadow: none !important;
     width: 297mm !important;
     height: 420mm !important;
+    border-radius: 0 !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
+  }
+
+  .poster-img {
+    width: 297mm !important;
+    height: 420mm !important;
+    object-fit: fill !important;
   }
 }
 
 /* --------------------------------------------------------------------------
-   5. Mobile Responsive (スマホ画面でのスケーリング)
+   Responsive Design for Screen
 -------------------------------------------------------------------------- */
-@media screen and (max-width: 768px) {
-  body {
-    background-color: #1E293B;
+@media screen and (max-width: 1200px) {
+  .poster-preview-wrapper {
+    padding: 10px 0;
   }
 
-  .pc-break {
+  /* Scale poster sheet to fit width */
+  .poster-sheet {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    aspect-ratio: 297 / 420;
+  }
+
+  .poster-meta-card {
+    max-width: 600px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .screen-control-bar {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .screen-control-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .screen-control-title span.badge {
     display: none;
   }
 
-  .screen-control-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 16px;
+  .poster-tabs {
+    width: 100%;
+    justify-content: space-between;
   }
 
-  .screen-control-title {
-    font-size: 0.82rem;
-    flex-wrap: wrap;
-    gap: 6px;
+  .tab-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 8px;
+    font-size: 0.78rem;
   }
 
   .screen-control-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: stretch;
   }
 
-  .btn-back {
-    font-size: 0.78rem;
-    padding: 6px 10px;
-  }
-
-  .btn-print {
+  .btn-download, .btn-print {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
     font-size: 0.82rem;
-    padding: 7px 14px;
-  }
-
-  .poster-preview-wrapper {
-    padding: 12px 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    display: block;
-  }
-
-  .poster-sheet {
-    transform-origin: top center;
-    transform: scale(calc((100vw - 16px) / 1122px));
-    margin-bottom: calc(-420mm * (1 - ((100vw - 16px) / 1122px)));
-    margin-top: 0;
   }
 
   .mobile-info-banner {
-    display: block !important;
-    background: linear-gradient(135deg, #1E3A5F 0%, #0A4D8C 100%);
-    color: #FFFFFF;
-    text-align: center;
-    padding: 10px 16px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1.5;
-    border-bottom: 2px solid var(--c-gold);
+    display: block;
   }
-}
 
-.mobile-info-banner {
-  display: none;
+  .poster-guide-section {
+    padding: 20px 16px;
+  }
 }

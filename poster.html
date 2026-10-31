@@ -1,297 +1,219 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>院内掲示用ポスター（A3縦） | 日本動物共助機構 (AMAJ)</title>
-  <meta name="description" content="もしもの時に命をつなぐ。動物医療における供血支援ネットワーク「Animal Blood Connect」および迷子動物捜索情報システム「AFC Pet Finder」の院内・施設掲示用A3縦ポスターです。">
+  <title>院内掲示用公式ポスター（A3縦・全2種） | 日本動物共助機構 (AMAJ)</title>
+  <meta name="description"
+    content="日本動物共助機構 (AMAJ) が発行する動物病院・関連施設向け公式院内掲示ポスター（A3縦・全2種）です。「供血ドナー支援 (Animal Blood Connect)」および「迷子動物捜索情報 (Pet Finder Connect)」の高解像度PDFダウンロード・ブラウザ印刷に対応しています。">
   <link rel="stylesheet" href="css/poster.css">
 </head>
+
 <body>
 
   <!-- Mobile Info Banner (スマホのみ表示) -->
   <div class="mobile-info-banner">
-    📱 スマートフォンプレビュー：A3縦ポスターを画面幅に縮小表示しています<br>
-    印刷・PDF保存は右上の「ポスターを印刷 / PDF保存」をご利用ください
+    📱 スマートフォン表示中：ポスターを画面幅に合わせて縮小表示しています。<br>
+    印刷や高解像度A3での保存は「PDF保存」または「ポスターを印刷」をご利用ください。
   </div>
 
-  <!-- Screen Control Bar (Print / Navigation) -->
-  <div class="screen-control-bar">
-    <div class="screen-control-title">
-      <span>日本動物共助機構 (AMAJ) 公式院内掲示ポスター</span>
-      <span class="badge">待合室視認性特化 / A3縦・A4縮小対応</span>
+  <!-- Screen Control Bar (Sticky UI) -->
+  <header class="screen-control-bar">
+    <div class="screen-control-left">
+      <a href="index.html" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        ポータルへ戻る
+      </a>
+      <div class="screen-control-title">
+        <span>AMAJ 公式院内掲示ポスター</span>
+        <span class="badge">A3縦 / 全2種</span>
+      </div>
     </div>
+
+    <!-- Tabs switcher -->
+    <nav class="poster-tabs" aria-label="ポスター切り替え">
+      <button type="button" class="tab-btn active" data-tab="blood" onclick="switchPoster('blood')">
+        <span class="tab-icon">🩸</span>
+        <span class="tab-label">供血ドナー支援（ABC）</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="finder" onclick="switchPoster('finder')">
+        <span class="tab-icon">🔍</span>
+        <span class="tab-label">迷子動物捜索（AFC）</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="both" onclick="switchPoster('both')">
+        <span class="tab-icon">📑</span>
+        <span class="tab-label">2種を並べて比較</span>
+      </button>
+    </nav>
+
+    <!-- Action buttons -->
     <div class="screen-control-actions">
-      <a href="index.html" class="btn-back">← ポータルへ戻る</a>
+      <a id="btnDownloadPdf" href="pdf/ABC_poster_blood_A3.pdf" download="ABC_poster_blood_A3.pdf" class="btn-download">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span id="btnDownloadText">A3 PDF保存</span>
+      </a>
       <button type="button" class="btn-print" onclick="window.print()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
           <rect x="6" y="14" width="12" height="8"></rect>
         </svg>
-        ポスターを印刷 / PDF保存
+        ポスターを印刷
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Poster Preview Wrapper -->
-  <div class="poster-preview-wrapper">
-    <div class="poster-sheet">
-      <!-- Outer Border Frame -->
-      <div class="poster-frame"></div>
+  <!-- Main Container -->
+  <main class="poster-page-container">
 
-      <div class="poster-inner">
+    <!-- Poster Preview Wrapper -->
+    <div class="poster-preview-wrapper" id="posterPreviewWrapper">
 
-        <!-- 1. Header: 院内掲示用 アイキャッチ -->
-        <header class="poster-header">
-          <div class="header-left">
-            <div class="header-tagline">
-              <span class="badge-public">動物病院・飼い主がつくる命のインフラ</span>
-              <span class="sub-lead">もし明日、愛するうちの子に何かが起きたら──</span>
-            </div>
-            <h1 class="header-title">
-              命をつなぐ、<span class="text-accent">2つの動物共助ネットワーク</span>
-            </h1>
+      <!-- ================= 1. 供血ドナー支援 (Animal Blood Connect) ================= -->
+      <article class="poster-sheet-card" id="cardBlood">
+        <div class="poster-sheet">
+          <img src="images/poster_blood_a3.png" alt="供血ドナー支援ポスター（Animal Blood Connect）-「助けられた僕が、今度は助ける番に」" class="poster-img" loading="eager">
+        </div>
+        <div class="poster-meta-card">
+          <div class="poster-meta-info">
+            <h3>🩸 供血ドナー支援ポスター（Animal Blood Connect）</h3>
+            <p>キャッチコピー：「助けられた僕が、今度は助ける番に」 / 掲載QR：ドナー登録受付ページ</p>
           </div>
-          <div class="header-right">
-            <div class="amaj-seal">
-              <span class="kanji">共助</span>
-              <span class="alphabet">AMAJ</span>
-            </div>
-            <div class="org-meta">
-              <div class="org-jp">日本動物共助機構</div>
-              <div class="org-en">Animal Mutual Aid Japan</div>
-            </div>
+          <div class="poster-meta-actions">
+            <a href="pdf/ABC_poster_blood_A3.pdf" download="ABC_poster_blood_A3.pdf" class="btn-meta-download">
+              📥 A3高解像度PDF（6.7MB）
+            </a>
           </div>
-        </header>
+        </div>
+      </article>
 
-        <!-- 2. Main 2 Sections -->
-        <main class="poster-main">
-
-          <!-- ================= TOP: 供血ドナー (Animal Blood Connect) ================= -->
-          <section class="poster-card card-blood">
-            <!-- カード上部：ブランドピル -->
-            <div class="card-brand-bar">
-              <div class="brand-title-wrap">
-                <div class="brand-icon icon-blood">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                </div>
-                <div class="brand-name">Animal Blood Connect</div>
-                <div class="brand-sub">動物供血ドナー支援ネットワーク</div>
-              </div>
-              <span class="brand-tag tag-blood">完全無償・獣医療機関連携</span>
-            </div>
-
-            <!-- 横幅いっぱいの超大見出し＆なぜ必要なのかのサブタイトル -->
-            <div class="card-hero-block">
-              <div class="hero-top-row">
-                <span class="badge-question">ご存知ですか？</span>
-                <span class="hero-top-note">人と違い、ペットには公的な血液バンクがありません</span>
-              </div>
-              <h2 class="hook-headline headline-blood">
-                犬や猫には、血液バンクがありません。
-              </h2>
-              <div class="hook-subtitle">
-                急な手術や重い貧血。輸血が必要になったとき、<br class="pc-break">
-                命を救えるのは<strong>「元気な子の事前のドナー登録」</strong>だけです。
-              </div>
-            </div>
-
-            <!-- 下段：要点と特大QRコード -->
-            <div class="card-content-grid">
-              <div class="info-column">
-                <div class="key-points-list">
-                  <div class="point-item">
-                    <span class="point-bullet">✚</span>
-                    <div class="point-text">
-                      <strong>助ける側にも、助けられる側にも。</strong>
-                      <p>お互い様の共助で、いざという時の輸血用血液を地域で支え合います。</p>
-                    </div>
-                  </div>
-                  <div class="point-item">
-                    <span class="point-bullet">✚</span>
-                    <div class="point-text">
-                      <strong>獣医師の管理下で安全に実施</strong>
-                      <p>要請は登録動物病院のみ。事前診察・適合検査を経て安全に実施されます。</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ドナー条件目安（目立つハイライトボックス） -->
-                <div class="criteria-banner banner-blood">
-                  <div class="criteria-label">ドナー登録の目安（JSVTM指針）</div>
-                  <div class="criteria-badges">
-                    <span class="crit-pill">🐶 大型犬：体重15kg以上（1〜8歳）</span>
-                    <span class="crit-pill">🐱 成猫：体重4kg以上（1〜7歳）</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 特大QRコードブロック -->
-              <div class="qr-column">
-                <div class="qr-card qr-card-blood">
-                  <div class="qr-heading">スマホで無料1分登録</div>
-                  <div class="qr-image-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=https%3A%2F%2Fanimal-blood-connect.vercel.app%2F" alt="Animal Blood Connect QRコード">
-                  </div>
-                  <div class="qr-cta-btn btn-blood">
-                    <span>ドナー登録・詳細 ↗</span>
-                  </div>
-                  <div class="qr-hint">カメラをかざして今すぐ確認</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-
-          <!-- ================= BOTTOM: 迷子捜索 (AFC Pet Finder) ================= -->
-          <section class="poster-card card-finder">
-            <!-- カード上部：ブランドピル -->
-            <div class="card-brand-bar">
-              <div class="brand-title-wrap">
-                <div class="brand-icon icon-finder">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                  </svg>
-                </div>
-                <div class="brand-name">AFC Pet Finder</div>
-                <div class="brand-sub">迷子動物捜索・保護情報アプリ</div>
-              </div>
-              <span class="brand-tag tag-finder">迷子ペット捜索アプリ・完全無料</span>
-            </div>
-
-            <!-- 横幅いっぱいの超大見出し＆なぜ必要なのかのサブタイトル -->
-            <div class="card-hero-block">
-              <div class="hero-top-row">
-                <span class="badge-alert">迷子捜索アプリ</span>
-                <span class="hero-top-note">雷・花火・地震・不意の脱走……「うちの子に限って」は突然やってきます</span>
-              </div>
-              <h2 class="hook-headline headline-finder">
-                迷子動物を、一刻も早く飼い主の元へ。
-              </h2>
-              <div class="hook-subtitle">
-                パニックになる前に。AI潜伏予測と全国目撃情報マッチングで、<br class="pc-break">
-                大切な家族との再会を全力でサポートする<strong>「命をつなぐ迷子捜索アプリ」</strong>です。
-              </div>
-            </div>
-
-            <!-- 下段：要点と特大QRコード -->
-            <div class="card-content-grid">
-              <div class="info-column">
-                <div class="key-points-list">
-                  <div class="point-item">
-                    <span class="point-bullet bullet-finder">🔍</span>
-                    <div class="point-text">
-                      <strong>AI潜伏予測で、探すべき場所がすぐわかる</strong>
-                      <p>ペットの性格・気象・失踪場所から科学的に捜索優先エリアを即座に可視化。</p>
-                    </div>
-                  </div>
-                  <div class="point-item">
-                    <span class="point-bullet bullet-finder">📄</span>
-                    <div class="point-text">
-                      <strong>迷子ポスター＆SNS文を1分で自動作成</strong>
-                      <p>いざという時、印刷してすぐ病院や街に配れるチラシPDFやSNS投稿文が瞬時に完成。</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 対象アピール（お守り登録を促す） -->
-                <div class="criteria-banner banner-finder">
-                  <div class="criteria-label">すべてのペットが対象</div>
-                  <div class="criteria-badges">
-                    <span class="crit-pill">🐶🐱 犬・猫・小動物（利用完全無料）</span>
-                    <span class="crit-pill highlight-pill">★ いざという時のため、今すぐスマホにお守り保存を</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 特大QRコードブロック -->
-              <div class="qr-column">
-                <div class="qr-card qr-card-finder">
-                  <div class="qr-heading">迷子捜索アプリを今すぐ保存</div>
-                  <div class="qr-image-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=https%3A%2F%2Fafc-pet-finder.vercel.app%2F" alt="AFC Pet Finder QRコード">
-                  </div>
-                  <div class="qr-cta-btn btn-finder">
-                    <span>迷子捜索アプリを開く ↗</span>
-                  </div>
-                  <div class="qr-hint">カメラをかざして今すぐ確認</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-        </main>
-
-        <!-- 3. Footer: 機構の信頼性クレジット -->
-        <footer class="poster-footer">
-          <div class="footer-left">
-            <div class="footer-org-row">
-              <div class="footer-emblem">共助</div>
-              <div class="footer-org-name">日本動物共助機構</div>
-              <div class="footer-org-sub">ANIMAL MUTUAL AID JAPAN (AMAJ)</div>
-            </div>
-            <div class="footer-badges">
-              <span>非営利・完全無償</span>
-              <span>獣医療機関・公的機関連携</span>
-              <span>個人情報厳重保護</span>
-              <span>協力動物病院 待合室掲示用</span>
-            </div>
+      <!-- ================= 2. 迷子動物捜索 (Pet Finder Connect) ================= -->
+      <article class="poster-sheet-card hidden" id="cardFinder">
+        <div class="poster-sheet">
+          <img src="images/poster_finder_a3.png" alt="迷子動物の捜索・保護情報ポスター（Pet Finder Connect）-「あなたの目撃情報で、飼い主のもとへ」" class="poster-img" loading="eager">
+        </div>
+        <div class="poster-meta-card">
+          <div class="poster-meta-info">
+            <h3>🔍 迷子動物捜索・保護情報ポスター（Pet Finder Connect）</h3>
+            <p>キャッチコピー：「あなたの目撃情報で、飼い主のもとへ」 / 掲載QR：全国捜索・目撃マップ</p>
           </div>
-          <div class="footer-right">
-            <div class="footer-contact">
-              事務局お問い合わせ：contact@amaj.or.jp<br>
-              animalbloodconnect@gmail.com
-            </div>
-            <div class="portal-qr-mini">
-              <div class="portal-qr-img">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Famaj-official-portal.vercel.app%2F" alt="AMAJ ポータルQR">
-              </div>
-              <span class="portal-qr-caption">機構公式ポータル</span>
-            </div>
+          <div class="poster-meta-actions">
+            <a href="pdf/AFC_poster_finder_A3.pdf" download="AFC_poster_finder_A3.pdf" class="btn-meta-download">
+              📥 A3高解像度PDF（9.1MB）
+            </a>
           </div>
-        </footer>
+        </div>
+      </article>
 
-      </div>
     </div>
-  </div>
 
-  <!-- Mobile Poster Scaling Script -->
+    <!-- Hospital / Facility Poster Guide -->
+    <section class="poster-guide-section">
+      <div class="guide-header">
+        <h2>🏥 院内・施設掲示および印刷のご案内</h2>
+        <p>日本動物共助機構（AMAJ）では、動物医療の現場および飼い主コミュニティの相互支援を推進するため、本ポスターを無償公開しています。</p>
+      </div>
+
+      <div class="guide-grid">
+        <div class="guide-item">
+          <h4>🖨️ 推奨印刷設定</h4>
+          <p>
+            ・<strong>推奨用紙サイズ</strong>：A3縦（待合室や遠隔からの視認性に最適化されています）<br>
+            ・<strong>縮小印刷</strong>：プリンタ設定で「用紙に合わせて縮小」を選択することでA4縦サイズでも鮮明に印刷可能です。<br>
+            ・<strong>用紙種類</strong>：厚手普通紙、または光沢を抑えたマットコート紙を推奨します。
+          </p>
+        </div>
+
+        <div class="guide-item">
+          <h4>📍 推奨掲示場所</h4>
+          <ul>
+            <li><strong>供血ドナー支援版</strong>：診察待合室、受付カウンター横、会計スペース、輸血・予防接種案内コーナー</li>
+            <li><strong>迷子動物捜索版</strong>：病院出入口付近、待合室情報掲示板、トリミングサロン受付、一時預かりコーナー</li>
+          </ul>
+        </div>
+
+        <div class="guide-item">
+          <h4>⚖️ 利用許諾・著作権について</h4>
+          <p>
+            全国の動物病院、トリミングサロン、動物保護施設、自治体関連窓口等において、事前の許可申請なく<strong>完全無償で印刷・掲示・配布</strong>いただけます。<br>
+            ※ポスター内のデザイン、ロゴマーク、QRコード等の改変や商用再販はご遠慮ください。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive Script -->
   <script>
-    function scalePosterForMobile() {
-      const sheet = document.querySelector('.poster-sheet');
-      if (!sheet) return;
-      const wrapper = document.querySelector('.poster-preview-wrapper');
-      const screenW = window.innerWidth;
+    // Tab switching logic
+    function switchPoster(tab) {
+      const cardBlood = document.getElementById('cardBlood');
+      const cardFinder = document.getElementById('cardFinder');
+      const tabs = document.querySelectorAll('.tab-btn');
+      const btnDownload = document.getElementById('btnDownloadPdf');
+      const btnDownloadText = document.getElementById('btnDownloadText');
+      const wrapper = document.getElementById('posterPreviewWrapper');
 
-      if (screenW <= 768) {
-        const posterNaturalWidth = 1122; // 297mm ≈ 1122px
-        const padding = 16;
-        const scale = (screenW - padding) / posterNaturalWidth;
-        const scaledWidth = posterNaturalWidth * scale;
-        const leftOffset = (screenW - scaledWidth) / 2;
+      // Update active tab buttons
+      tabs.forEach(btn => {
+        if (btn.getAttribute('data-tab') === tab) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
 
-        sheet.style.transformOrigin = 'top left';
-        sheet.style.transform = 'translateX(' + leftOffset + 'px) scale(' + scale + ')';
+      // Show/hide cards
+      if (tab === 'blood') {
+        cardBlood.classList.remove('hidden');
+        cardFinder.classList.add('hidden');
+        wrapper.classList.remove('mode-both');
+        btnDownload.href = 'pdf/ABC_poster_blood_A3.pdf';
+        btnDownload.setAttribute('download', 'ABC_poster_blood_A3.pdf');
+        btnDownloadText.textContent = '供血版 A3 PDF保存';
+      } else if (tab === 'finder') {
+        cardBlood.classList.add('hidden');
+        cardFinder.classList.remove('hidden');
+        wrapper.classList.remove('mode-both');
+        btnDownload.href = 'pdf/AFC_poster_finder_A3.pdf';
+        btnDownload.setAttribute('download', 'AFC_poster_finder_A3.pdf');
+        btnDownloadText.textContent = '迷子版 A3 PDF保存';
+      } else if (tab === 'both') {
+        cardBlood.classList.remove('hidden');
+        cardFinder.classList.remove('hidden');
+        wrapper.classList.add('mode-both');
+        btnDownload.href = 'pdf/ABC_poster_blood_A3.pdf';
+        btnDownload.setAttribute('download', 'ABC_poster_blood_A3.pdf');
+        btnDownloadText.textContent = 'A3 PDF保存';
+      }
 
-        const posterNaturalHeight = 1587; // 420mm ≈ 1587px
-        const scaledHeight = posterNaturalHeight * scale;
-        wrapper.style.height = (scaledHeight + 24) + 'px';
-        wrapper.style.overflow = 'hidden';
-        wrapper.style.display = 'block';
-      } else {
-        sheet.style.transform = '';
-        sheet.style.transformOrigin = '';
-        wrapper.style.height = '';
-        wrapper.style.overflow = '';
-        wrapper.style.display = '';
+      // Update URL hash/query without reload
+      if (history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tab);
+        history.replaceState(null, '', url);
       }
     }
 
-    scalePosterForMobile();
-    window.addEventListener('resize', scalePosterForMobile);
+    // Initialize from URL params if provided
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'finder' || tabParam === 'blood' || tabParam === 'both') {
+        switchPoster(tabParam);
+      }
+    });
   </script>
+
 </body>
+
 </html>
