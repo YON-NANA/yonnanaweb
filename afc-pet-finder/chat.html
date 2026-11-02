@@ -877,30 +877,21 @@
         font-size: 0.80rem;
       }
 
+      /* スマホ表示では「＜ 一覧」ボタンで全ペット一覧に戻れるため、
+         ヘッダー右側の「他のペット」ボタンは非表示にして名前・ステータス表示領域を最大化 */
       .btn-header-change-pet {
-        padding: 5px 8px;
-        font-size: 0.72rem;
-        gap: 3px;
+        display: none !important;
       }
 
       @media (max-width: 520px) {
         .cloud-status-badge .cloud-text {
           display: none !important;
         }
-        .btn-header-change-pet .change-pet-label {
-          display: none !important;
-        }
-        .btn-header-change-pet::after {
-          content: 'ペット';
-        }
       }
 
       @media (max-width: 380px) {
         .btn-back-rooms span {
-          display: none !important;
-        }
-        .btn-header-change-pet::after {
-          content: '' !important;
+          display: inline !important; /* 一覧の文字は残してわかりやすく */
         }
         .status-sep-2 {
           display: none !important;
@@ -1009,9 +1000,9 @@
       </div>
 
       <div class="chat-header-actions">
-        <!-- ヘッダーからもワンタップで他のペット選択モーダルを開けるボタン -->
-        <button class="btn-header-change-pet" onclick="openNewChatModal()" title="他の迷子ペットと話す">
-          <i class="fas fa-paw" style="color:var(--line-green);"></i> <span class="change-pet-label">他のペット</span>
+        <!-- PC表示時：ワンクリックで他のペット選択モーダルを開けるボタン -->
+        <button class="btn-header-change-pet" onclick="openNewChatModal()" title="他の迷子ペットとのチャットを開く">
+          <i class="fas fa-paw" style="color:var(--line-green);"></i> 他のペットを選ぶ
         </button>
         <button class="btn-header-action" onclick="toggleSafetyBanner()" title="安全ガイド確認">
           <i class="fas fa-shield-alt" style="color:#ef4444;"></i>
@@ -1023,6 +1014,9 @@
 
       <!-- 右上ポップアップメニュー -->
       <div class="chat-menu-dropdown" id="chatMenuDropdown">
+        <div class="chat-menu-item" onclick="openNewChatModal(); toggleChatMenu();">
+          <i class="fas fa-paw" style="color:var(--line-green);"></i> 他の迷子ペットと話す
+        </div>
         <div class="chat-menu-item" onclick="triggerPhotoUpload()">
           <i class="fas fa-image"></i> 写真を送信
         </div>
