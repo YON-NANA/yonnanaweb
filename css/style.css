@@ -125,6 +125,20 @@ img {
   text-decoration: none;
 }
 
+.site-logo {
+  height: 48px;
+  width: auto;
+  max-width: 52px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.site-identity:hover .site-logo {
+  transform: scale(1.02);
+}
+
 .seal-icon {
   width: 48px;
   height: 48px;
@@ -619,6 +633,37 @@ textarea.form-control {
   margin-bottom: 14px;
 }
 
+.footer-brand-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.footer-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.footer-mini-logo {
+  height: 16px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.9;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 .footer-col ul {
   list-style: none;
 }
@@ -668,6 +713,11 @@ textarea.form-control {
   /* Header & Navigation */
   .header-inner {
     padding: 12px 0;
+  }
+
+  .site-logo {
+    height: 40px;
+    max-width: 44px;
   }
 
   .seal-icon {
